@@ -1,0 +1,30 @@
+
+: factor ( i -- )
+  dup 3 > if (if it isn't bigger than 3 it's prime or negative)
+    1
+    begin
+      2
+      begin
+          swap pop 1 swap rot dup -4 rotate over over over % not
+          if
+            / 4 rotate pop -3 rotate dup . swap pop 0 swap break
+          else
+            pop pop
+          then
+          1 + dup 4 rotate dup -5 rotate 2 / <= while
+      repeat
+      pop dup
+      if
+        over dup 1 > if 
+          . ( factors of 1 aren't interesting )
+        else 
+          pop 
+        then
+      then
+      dup
+      until
+    pop pop
+  else 
+    pop 
+  then
+;
