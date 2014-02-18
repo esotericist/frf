@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 4.70 Beta 1 (Windows - x64)">
+<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.21 LTS (Windows - x86)">
   <section name="config">
     <options closefiles="1" openmode="0" name="frf"/>
   </section>
   <section name="data">
     <explorer view="" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2012-08-23 14:31" user="void" host="INSURGENT"/>
+    <lastopen date="2014-02-07 01:42" user="eso" host="TARRASQUETTE"/>
   </section>
   <section name="files">
     <file name="atoms.pb">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="2b9e1a46756719f5c2bd3df34dd59ce8"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="+"/>
+      <fingerprint md5="e90229dbc88dcdcb0590a46a2fe7d70d"/>
     </file>
     <file name="frf.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="17f920fd7015a30411cd7ac0325aee23"/>
+      <fingerprint md5="45815ecb99136c7d73ec4cd56cbb33dc"/>
     </file>
     <file name="vm.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="8ca5d4d71c651e8267a172b375f62c07"/>
+      <fingerprint md5="5cf3c25dd68aa1c89f2d1c3122ed83f2"/>
     </file>
     <file name="prims.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="1d3d051608f82d04ee7aa975e056b7d5"/>
+      <fingerprint md5="78faa6f74f747e0fb24f57cb49fc5ecb"/>
     </file>
     <file name="stack.pb">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="417ef68386c19ccf3a50154478415a9c"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="+"/>
+      <fingerprint md5="592c7e676f7f2727668728bb6ca4275a"/>
     </file>
     <file name="compiler.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="7f8f08d0d2cd01d7fa1975466248d298"/>
+      <fingerprint md5="fa9575e911257c66bb0af1abd9e73972"/>
     </file>
     <file name="defines.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="606b08f4fa41475c8f0d2709692d5fb3"/>
+      <fingerprint md5="baa4cae6713342a71543bf0307d99821"/>
     </file>
     <file name="mem.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="be6a1e8f0b9bb8007c61d0faada421c6"/>
+      <fingerprint md5="5caf6cb2133b98a5b0bcd264616d2772"/>
     </file>
     <file name="structures.pb">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="dd0298a1a4dd0fa5fe4e7eb680934fc6"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="+"/>
+      <fingerprint md5="bc413d9897e68837fb8e2f70a26984a5"/>
     </file>
     <file name="propgrid.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="+"/>
@@ -54,16 +54,23 @@
   <section name="targets">
     <target name="Default Target" enabled="1" default="1">
       <inputfile value="frf.pb"/>
-      <outputfile value="frf-debug.exe"/>
-      <executable value="frf-debug.exe"/>
+      <outputfile value="build\frf-debug.exe"/>
+      <executable value="build\frf-debug.exe"/>
       <options thread="1" xpskin="1" debug="1"/>
       <purifier enable="1"/>
     </target>
     <target name="non-debug" enabled="1" default="0">
       <inputfile value="frf.pb"/>
-      <outputfile value="frf.exe"/>
-      <executable value="frf.exe"/>
+      <outputfile value="build\frf.exe"/>
+      <executable value="build\frf.exe"/>
       <options thread="1" xpskin="1"/>
+    </target>
+    <target name="mac non-debug" enabled="0" default="0">
+      <inputfile value="frf.pb"/>
+      <outputfile value="build/frf.app"/>
+      <executable value="build\frf.app"/>
+      <options thread="1"/>
+      <purifier enable="1"/>
     </target>
   </section>
 </project>

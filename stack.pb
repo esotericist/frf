@@ -82,7 +82,7 @@ Procedure pushmark(P)
   *dataobject\typeatom = _type_stackmark
   push(P, identifier)
 EndProcedure
-registerprimunprintable("{", @pushmark())
+registerprim("core", "{", @pushmark())
 
 
 
@@ -143,7 +143,7 @@ Procedure.i pop(P)
   EndIf
   ProcedureReturn result
 EndProcedure
-registerprim(pop, @pop())
+registerprim("core", "pop", @pop())
 
 
 Procedure.i isint(P, x.i, *out.Integer)
@@ -346,9 +346,9 @@ Procedure.s stacktrace(P)
 EndProcedure
 
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 253
-; FirstLine = 222
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 145
+; FirstLine = 134
 ; Folding = -----
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

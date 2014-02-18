@@ -92,7 +92,7 @@ Procedure p_send(P)
   EndIf
   
 EndProcedure  
-registerprim(send,@p_send())
+registerprim("core", "send",@p_send())
 
 Procedure p_receive(P)
   Define messageID.i
@@ -104,12 +104,12 @@ Procedure p_receive(P)
     pushint(P, 0)
   EndIf
 EndProcedure  
-registerprim(receive, @p_receive())
+registerprim("core", "receive", @p_receive())
 
 Procedure p_messages(P)
   pushint(P, messagecount(P\node, P\pid))
 EndProcedure
-registerprim(messages, @p_messages())
+registerprim("core", "messages", @p_messages())
 
 
 Procedure setactive(P)
@@ -155,10 +155,10 @@ EndProcedure
 
 Procedure ResetP(P, reasonatom.i)
   ;Define *object.dataobject, *test.datastack
-  If pmode & 2 And cword\nameatom > 0
+  If 0 ;pmode & 2 And cword\nameatom > 0
     AddLine("Freeing memory for word: "+AtomToString(cword\nameatom))
-    DeleteMapElement(P\Node\atomtowordtable(),Str(cword\nameatom))
-    DeleteMapElement(P\Node\wordtoatomtable(),Str(cword))
+;    DeleteMapElement(P\Node\atomtowordtable(),Str(cword\nameatom))
+;    DeleteMapElement(P\Node\wordtoatomtable(),Str(cword))
     cword\nameatom = 0
   EndIf
   
@@ -166,7 +166,6 @@ Procedure ResetP(P, reasonatom.i)
   
   ctop = 0
   dtop = 0
-  pmode = 0
   *ThisProcess\debugmode = 0
   *ThisProcess\currentop = 0
   *ThisProcess\codeword = 0
@@ -191,7 +190,6 @@ Procedure killproc(P, reason.i, resulttext.s)
   
   ctop = 0
   dtop = 0
-  pmode = 0
   *ThisProcess\debugmode = 0
   *ThisProcess\currentop = 0
   *ThisProcess\codeword = 0
@@ -207,7 +205,7 @@ EndProcedure
 
 
 Procedure pushstate(P)
-  Define *test.flowcontrolframe, test2
+  Define *test.executeframe, test2
   test2 = *ThisProcess\instructions
   *test = cstack[ctop]
   If ctop < *ThisProcess\c\max
@@ -266,7 +264,7 @@ Procedure executetimeslice(P, timemax.i)
         Case @p_pushstring()
           debugstring+#DQUOTE$+AtomToString(cword\Codestream[*ThisProcess\currentop+1])+#DQUOTE$
         Case @p_call()
-          debugstring+"call: "+AtomToString(wordtoatom(P\node, cword\Codestream[*ThisProcess\currentop+1]))
+;          debugstring+"call: "+AtomToString(wordtoatom(P\node, cword\Codestream[*ThisProcess\currentop+1]))
         Case @cjmp()
           debugstring+"cjmp: "+Str(cword\Codestream[*ThisProcess\currentop+1])
         Case @jmp()
@@ -278,7 +276,7 @@ Procedure executetimeslice(P, timemax.i)
         Case @p_continue()
           debugstring+"continue: "+Str(cword\Codestream[*ThisProcess\currentop+1])
         Default
-          debugstring+AtomToString(primtoatom(P\Node,thisop))
+;          debugstring+AtomToString(primtoatom(P\Node,thisop))
       EndSelect
       AddLine(debugstring)
     EndIf
@@ -286,7 +284,7 @@ Procedure executetimeslice(P, timemax.i)
     *ThisProcess\currentop + 1
     Select ThisOp
       Case 0   ; Zero means we're done executing the current word but haven't closed out the P.
-        If pmode = 0
+        If 1 ; pmode = 0
           cword = 0
         Else
           Break
@@ -343,9 +341,8 @@ Procedure scheduler(N)
   ;tstart = gettime()    
   ForEach N\activeprocesses()
     P = N\activeprocesses()
-    If cword And pmode = 0
+    If cword ; And pmode = 0
       executetimeslice(P,20)
-;      releaseobjects(N)
       eventcheck(N,"")
     Else
       procreport(P)
@@ -367,16 +364,13 @@ Procedure scheduler(N)
     freeprocess(N,P)
   Next N\deadprocesses()
   releaseobjects(N)
-  ;tnow = gettime()
-  ;If tnow - tstart> 1
-  ;  Debug tnow - tstart
-  ;EndIf
+  
   ProcedureReturn ListSize(N\activeprocesses())
 EndProcedure
 
 
 Procedure interpret(N, inputline.s)
-  If Not Trim(inputline)
+  If Trim(inputline) = ""
     ProcedureReturn
   EndIf
   AddLine(" > "+inputline)
@@ -408,22 +402,22 @@ Procedure interpret(N, inputline.s)
   EndIf
   
   
-  parseline(P,inputline)
+  ; parseline(P,inputline)
   ;  appendinstruction(P, @p_exit())
-  If (flowcontroltop > 0) And Not (pmode & 2)
-    AddLine("Error: Unexpected end of stream.")
-    flowcontroltop = 0
-    ResetP(P, _error)
-  EndIf
+  ;If (flowcontroltop > 0) And Not (pmode & 2)
+  ;  AddLine("Error: Unexpected end of stream.")
+  ;  flowcontroltop = 0
+  ;  ResetP(P, _error)
+  ;EndIf
   If *ThisProcess\errorstate
   EndIf
   *ThisProcess\prevtime = *ThisProcess\runtime
 EndProcedure
 
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 407
-; FirstLine = 387
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 207
+; FirstLine = 205
 ; Folding = ----
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

@@ -8,13 +8,16 @@ EnableExplicit
 Declare AddLine(inputstr.s)
 Declare eventcheck(N,statusnote.s)
 Declare WindowResize()
-Declare populatenodestateview(N)
-Declare createnodestateview(N)
+
+;Declare populatenodestateview(N)
+;Declare createnodestateview(N)
+
 XIncludeFile "mem.pb"
 Define *thisNode.NodeState
 N = initnode()
 XIncludeFile "vm.pb"
-XIncludeFile "propgrid.pb"
+
+;XIncludeFile "propgrid.pb"
 
 Structure ProcessListData
   header.i
@@ -47,7 +50,7 @@ AddLine(" ready.")
 Define title.s, activity.i
 ;- MainLoop:
 
-createnodestateview(N)
+; createnodestateview(N) ; propgrid
 MainLoop:
 Repeat
   
@@ -63,7 +66,7 @@ Repeat
       Define counter.i
       counter +1
       If counter > 10
-        populatenodestateview(N)
+;        populatenodestateview(N)  ; propgrid
         counter = 0
       EndIf
     EndIf
@@ -115,7 +118,7 @@ Procedure eventcheck(N, statusnote.s)
             exit = 1
           Case 1
             If proplist <> 0
-              freepropertygridgadget(proplist)
+;              freepropertygridgadget(proplist)    ;propgrid
             EndIf
             ClearMap(pmap())
             proplist = 0
@@ -126,13 +129,13 @@ Procedure eventcheck(N, statusnote.s)
         Select EventMenu()
           Case 1
             Define RequestedFile.s
-            RequestedFile = OpenFileRequester("Load frf source:",GetCurrentDirectory(),"frf source|*.frf",0)
-            Debug "TODO: Load file from here. ("+RequestedFile+")"
-;            loadfile(P,RequestedFile)
+            ;RequestedFile = OpenFileRequester("Load frf source:",GetCurrentDirectory(),"frf source|*.frf",0)
+            RequestedFile = "C:\Users\void\Dropbox\frf\testsuite.frf"
+            loadfile(newcompilestate(N),RequestedFile)
           Case 2
             exit = 1
           Case 3
-            createnodestateview(N)
+;            createnodestateview(N)  ; propgrid
           Case 100
             Select GetActiveGadget()
               Case 0
@@ -148,7 +151,7 @@ Procedure eventcheck(N, statusnote.s)
             exit = 1
           Case 111
             If proplist <> 0
-              freepropertygridgadget(proplist)
+;              freepropertygridgadget(proplist)   ; propgrid
             EndIf
             ClearMap(pmap())
 ;            showprocesses = 0
@@ -192,7 +195,7 @@ Procedure eventcheck(N, statusnote.s)
             showprocesses = GetGadgetState(12)
           Default
             
-            CheckPropertyGridSectionClick ( proplist, EventGadget, EventType )
+;            CheckPropertyGridSectionClick ( proplist, EventGadget, EventType )   ; propgrid
         EndSelect
     EndSelect
   Else
@@ -214,14 +217,15 @@ SetupWindow:
   EditorGadget(0, 4, 4, width - 8, height - 24,#PB_Editor_ReadOnly)
   
   StringGadget(1, 4, height - 24, width - 8, 24, "")
+  DisableGadget(1,1)
   
   CreateMenu(0,WindowID(0))
   MenuTitle("VM")
   MenuItem(1,"Load Source")
   MenuBar()
   MenuItem(2,"Exit")
-  MenuTitle("Debug")
-  MenuItem(3,"NodeState")
+;  MenuTitle("Debug")
+;  MenuItem(3,"NodeState")
   
   SetActiveGadget(1)
   AddKeyboardShortcut(0, #PB_Shortcut_Return, 100)
@@ -247,6 +251,8 @@ Procedure AddLine(outputstr.s)
 EndProcedure
 
 
+CompilerIf 0
+
 Procedure populatenodestateview(N)
   Static refreshtimer.i
   Define section.i, *thisProcess.ProcessState, pid$, pstruct.ProcessListData
@@ -261,7 +267,7 @@ Procedure populatenodestateview(N)
   
   If (refreshtimer > 2) And showprocesses
     If proplist = 0
-      proplist = PropertyGridGadget(#PB_Any,4,220,394,380,RGB($40,$40,$40),RGB($FF,$FF,$FF))
+      proplist = PropertyGridGadget(#PB_Any,4,220,394,380,RGB($40,$40,$40),RGB($FF,$FF,$FF)) 
       
       
     EndIf
@@ -324,6 +330,7 @@ Procedure createnodestateview(N)
   EndIf
 EndProcedure
 
+CompilerEndIf
 
 
 ;- LocalPrims:
@@ -348,18 +355,19 @@ Procedure p_dot(P)
   
   addline(outstring)
 EndProcedure
-registerprimunprintable(".", @p_dot())
+registerprim("core", ".", @p_dot())
 
 Procedure p_clear(P)
   ClearGadgetItems(0)
   
 EndProcedure
-registerprim(clear,@p_clear())
+registerprim("clear", "clear",@p_clear())
 
 Return
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 349
-; FirstLine = 323
+
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 134
+; FirstLine = 113
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

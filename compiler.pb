@@ -5,16 +5,16 @@ XIncludeFile "stack.pb"
 XIncludeFile "prims.pb"
 XIncludeFile "mem.pb"
 
-Procedure.i appendinstruction(P,Op.i)
+Procedure.i appendcell(*cs.compilestate,Op.i)
   Define *new.codeset
-  If cword = 0
+  If *cs\codeword = 0
     ProcedureReturn
   EndIf
   
-  cword = growcodeword(P\Node, cword)
+  *cs\codeword = growcodeword(*cs\Node, *cs\codeword)
   
-  cword\codestream[cword\instructioncount] = Op
-  cword\InstructionCount + 1
+  *cs\codeword\codestream[*cs\codeword\instructioncount] = Op
+  *cs\codeword\InstructionCount + 1
 EndProcedure
 
 ;
@@ -25,43 +25,270 @@ EndProcedure
 ; 'codeset' is the structure that holds the stream. It's always 64-bit cells even on 32-bit systems, to accomodate double-sized floats.
 ;
 ; a matching hack is found in stack.pb
-Procedure.i appendinstructionD(P, value.D)
-  Define *thiscword.i, icount.i, *new.codeset
-  If cword = 0
+
+Procedure.i appendcellD(*cs.compilestate, value.D)
+  Define *thiscword, icount 
+  Define *new.codeset
+  If *cs\codeword = 0
     ProcedureReturn
   EndIf
   
-  cword = growcodeword(P\Node, cword)
+  *cs\codeword = growcodeword(*cs\Node, *cs\codeword)
   
-  *thiscword.i = cword + SizeOf(codeset)
-  icount = cword\instructioncount
+  *thiscword = *cs\codeword + SizeOf( codeset )
+  icount = *cs\codeword\instructioncount
   
   PokeD(*thiscword + (icount * SizeOf(quad)), value)
   
-  cword\InstructionCount + 1
+  *cs\codeword\InstructionCount + 1 
+EndProcedure
+
+
+atom(squote)
+atom(dquote)
+atom(parens)
+atom(unspecified)
+
+
+Procedure.s nextitem(*cs.compilestate)
+  
+  Define Result.s, workingstring.s, thischar.s, nextchar.s, escapedchar.s, index.i, done.i
+  Define BlockType
+  
+  workingstring = Trim(*cs\stream)
+  
+  ; First thing we do is make sure we're dealing with a non-whitespace first character.
+  ; The trim will get rid of leading spaces, but it won't get rid of leading cr/lf/tab,
+  ; and it's possible there's spaces after those. So, we iterate until we find a non-cr/lf/tab/space character.
+  index = 0
+  Repeat
+    thischar = Mid(workingstring,index, 1)
+    If (Not (thischar = #CR$ Or thischar = #LF$ Or thischar = " " Or thischar = #TAB$))
+      done = 1
+      index - 1
+    Else
+      index + 1
+    EndIf
+  Until done Or (Len(workingstring) <= index)
+  
+  workingstring = Right(workingstring, Len(workingstring) - index)
+  index = 0
+  done = 0
+  
+  ; Was there actually nothing useful left? If so, bail
+  If Len(workingstring) = 0
+    *cs\stream = ""
+    ProcedureReturn ""
+  EndIf
+  
+  thischar = Mid(workingstring,index, 1)
+  result = thischar
+  
+  index = 1
+  
+  ; The first character of the string is what determines what kind of string we have.
+  ; We deal in single and double quote delimited strings, as well as parentheses
+  ; delimited comments.
+  ; Everything else is a single 'word'.
+  Select thischar
+    Case #DQUOTE$
+      BlockType = _dquote
+    Case "("
+      BlockType = _parens
+    Case "'"
+      BlockType = _squote
+    Default
+      BlockType = _unspecified
+  EndSelect
+  
+  ; This is kind of ugly and has repetitive bits, but there isn't a good way to avoid that
+  ; without ugly macro use, which sharply cuts into readability.
+  Repeat
+    index + 1
+    thischar = Mid(workingstring,index, 1)
+    Select thischar
+      Case #DQUOTE$
+        If BlockType = _dquote
+          result = result + thischar
+          done = 1
+        Else
+          result = result + thischar
+        EndIf
+      Case ")"
+        If BlockType = _parens
+          result = result + thischar
+          done = 1
+        Else
+          result = result + thischar
+        EndIf
+      Case "'"
+        If BlockType = _squote
+          result = result + thischar
+          done = 1
+        Else
+          result = result + thischar
+        EndIf
+      Case " ", #TAB$, #CR$, #LF$
+        If blocktype = _unspecified
+          done = 1
+        Else
+          result = result + thischar
+        EndIf
+      Default
+        
+        ; this is where we handle 'escape characters'
+        ; These are only valid in double quote delimited strings
+        ; In every other case, \ is treated like any other printable character
+        If BlockType = _dquote And thischar = "\"
+          index + 1
+          escapedchar = Mid(workingstring,index,1)
+          Select escapedchar
+            Case "r", "R", "n", "N"
+              Result = Result + #LF$
+            Case "t", "T"
+              result = result + #TAB$
+            Case "["
+              result = result + #ESC$
+            Default
+              result = result + escapedchar  
+              ; We don't check for cr/lf here because a line ending inside a quoted string 
+              ; has undefined behavior. It should be disallowed, but that's work to enforce. :(
+          EndSelect
+        Else
+          result = result + thischar
+        EndIf
+        
+    EndSelect
+  Until done Or index > Len(workingstring)
+  
+  Debug "text (" + Str(Len(Trim(Result))) + " chars): " + result 
+  
+  *cs\stream = Right(workingstring, Len(workingstring) - index)
+  *cs\result = Result
+  ; This might be redundant, but I figure it's better to have it available
+  ; Alternately, I might disregard the return value from this procedure
+  *cs\resulttype = BlockType
+  
+  ProcedureReturn result
+EndProcedure
+
+atom(line)
+
+Procedure.s nextline(*cs.compilestate)
+  Define workingstring.s, index.i, thischar.s, done.i, result.s
+  workingstring = Trim(*cs\stream)
+  
+  Repeat
+    thischar = Mid(workingstring, index, 1)
+    If thischar = #CR$ Or thischar = #LF$
+      done = 1
+      Break
+    EndIf
+    index + 1
+  Until done Or index > Len(workingstring)
+  
+  result = Left(workingstring, index)
+  *cs\stream = Right(workingstring, Len(workingstring) - index)
+  *cs\result = result
+  ; This might be redundant, but I figure it's better to have it available
+  ; Alternately, I might disregard the return value from this procedure
+  *cs\resulttype = _line
+  
+  ProcedureReturn result
+EndProcedure
+
+
+Procedure pushcompilestate(*cs.compilestate, itematom.i, from.i, target.i)
+  
+EndProcedure
+
+
+Procedure popcompilestate(*cs.compilestate)
+  
+EndProcedure
+
+;Procedure
+  
+;EndProcedure
+
+
+Procedure.i checktopstate(*cs.compilestate)
+  ProcedureReturn *cs\compilestack[*cs\compilelevel]
+EndProcedure
+
+
+atom(If)
+atom(Else)
+atom(then)
+  
+Procedure.i ifhandler(*cs.compilestate, itematom.i)
+  Define self.i
+  self = @ifhandler()
+  Select itematom
+    Case 0
+      addflowterm(_if)
+      addflowterm(_else)
+      addflowterm(_then)
+    Case _if
+      pushcompilestate(*cs, _if)
+    Case _else
+      If checktopstate(*cs) = _if
+        
+      Else
+        
+      EndIf
+    Case _then
+      If checktopstate(*cs) = _if
+        
+      Else
+        
+      EndIf
+    Default
+      ProcedureReturn itematom
+  EndSelect  
+  
+  ProcedureReturn 0
 EndProcedure
 
 
 
-; flow control
 
-; we define 'pseudoprims' here. They don't have genuine procedures associated with them, so we just generate atoms.
-; 
-
-atom(If)
-atom(Else)  
-atom(then)
-atom(begin)
-atom(Until)
-atom(Repeat)
-atom(Continue)
-atom(Break)
-atom(While)
+Procedure parsestream(*cs.compilestate, inputstream.s)
   
-Structure flowcontrolitem
-  flowatom.i
-  celltarget.i
-EndStructure
+  
+EndProcedure
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ;-
+  ;- Old crap
+  ;-
+  
+CompilerIf #False
+  
+  
+;Structure flowcontrolitem
+;  flowatom.i
+;  celltarget.i
+;EndStructure
 
 Threaded Dim flowcontrolstack.flowcontrolitem(1024)
 Threaded flowcontroltop.i  
@@ -129,13 +356,13 @@ Procedure.i checkflowcontrol(P, maybeop.i)
   Select MaybeOp
     Case _if
       addflowframe(P, _if)
-      appendinstruction(P,0)
-      appendinstruction(P,0)
+      appendcell(P,0)
+      appendcell(P,0)
     Case _else
       If flowtopatom(P) = _if
         addflowframe(P, _else)
-        appendinstruction(P,0)
-        appendinstruction(P,0)
+        appendcell(P,0)
+        appendcell(P,0)
       Else
         unexpectedprim(P, _else, flowtopatom(P))
         ResetP(P, _error)
@@ -169,8 +396,8 @@ Procedure.i checkflowcontrol(P, maybeop.i)
         loopstart.i = flowtopcell(P)
         loopend.i = cword\instructioncount
         popflowtop(P)
-        appendinstruction(P, @cjmp())
-        appendinstruction(P, loopstart)
+        appendcell(P, @cjmp())
+        appendcell(P, loopstart)
         updatecells(P, loopstart, loopend, @p_continue(), loopstart)
         updatecells(P, loopstart, loopend, @p_break(), loopend+2)
         updatecells(P, loopstart, loopend, @p_while(), loopend+2)
@@ -183,8 +410,8 @@ Procedure.i checkflowcontrol(P, maybeop.i)
         loopstart.i = flowtopcell(P)
         loopend.i = cword\instructioncount
         popflowtop(P)
-        appendinstruction(P, @jmp())
-        appendinstruction(P, loopstart)
+        appendcell(P, @jmp())
+        appendcell(P, loopstart)
         updatecells(P, loopstart, loopend, @p_continue(), loopstart)
         updatecells(P, loopstart, loopend, @p_break(), loopend+2)
         updatecells(P, loopstart, loopend, @p_while(), loopend+2)
@@ -194,24 +421,24 @@ Procedure.i checkflowcontrol(P, maybeop.i)
       EndIf
     Case _while
       If searchflowstack(P, _begin)
-        appendinstruction(P, @p_while())
-        appendinstruction(P, @p_while())
+        appendcell(P, @p_while())
+        appendcell(P, @p_while())
       Else
         unexpectedprim(P, _while, flowtopatom(P))
         ResetP(P, _error)
       EndIf
     Case _continue
       If searchflowstack(P, _begin)
-        appendinstruction(P, @p_continue())
-        appendinstruction(P, @p_continue())
+        appendcell(P, @p_continue())
+        appendcell(P, @p_continue())
       Else
         unexpectedprim(P, _continue, flowtopatom(P))
         ResetP(P, _error)
       EndIf
     Case _break
       If searchflowstack(P, _begin)
-        appendinstruction(P, @p_break())
-        appendinstruction(P, @p_break())
+        appendcell(P, @p_break())
+        appendcell(P, @p_break())
       Else
         unexpectedprim(P, _break, flowtopatom(P))
         ResetP(P, _error)
@@ -227,7 +454,7 @@ EndProcedure
 
 
 Procedure tokenize(P,inputstr.s)
-  Define *op.i, firstcharasc.i, MaybeOp.i 
+  Define *op, firstcharasc, MaybeOp.i 
   *op = 0
   firstcharasc.i = Asc(Left(inputstr,1))
   
@@ -237,35 +464,35 @@ Procedure tokenize(P,inputstr.s)
   If (firstcharasc >= 48 And firstcharasc <= 57) Or (Len(inputstr) >=2 And (firstcharasc = 36 Or firstcharasc = 45 Or firstcharasc = 37))
     Select CountString(inputstr, ".")
       Case 0
-        appendinstruction(P,@p_pushint())
-        appendinstruction(P,Val(inputstr))
+        appendcell(P,@p_pushint())
+        appendcell(P,Val(inputstr))
         ProcedureReturn 0
       Case 1
         
-        appendinstruction(P,@p_pushfloat())
-        appendinstructionD(P,ValD(inputstr))
+        appendcell(P,@p_pushfloat())
+        appendcellD(P,ValD(inputstr))
         ProcedureReturn 0
     EndSelect
   EndIf
   
   MaybeOp.i = VerifyAtom(LCase(inputstr))
   
-  If checkflowcontrol(P, MaybeOp)
-  Else
-    *op = atomtoprim(P\Node, MaybeOp)
-    If *op
-      appendinstruction(P,*op)
-    Else
-      *op = atomtoword(P\Node, MaybeOp)
-      If *op
-        appendinstruction(P, @p_call())
-        appendinstruction(P, *op)
-      Else
-        AddLine("Error: unknown token '"+inputstr+"'.")
-        ResetP(P, _error)
-      EndIf
-    EndIf
-  EndIf
+;  If checkflowcontrol(P, MaybeOp)
+;  Else
+;    *op = atomtoprim(P\Node, MaybeOp)
+;    If *op
+;      appendcell(P,*op)
+;    Else
+;      *op = atomtoword(P\Node, MaybeOp)
+;      If *op
+;        appendcell(P, @p_call())
+;        appendcell(P, *op)
+;      Else
+;        AddLine("Error: unknown token '"+inputstr+"'.")
+;        ResetP(P, _error)
+;      EndIf
+;    EndIf
+;  EndIf
 EndProcedure
 
 Macro checktoken(this)
@@ -300,16 +527,16 @@ EndProcedure
 Procedure compileatom(P, inputstr.s)
   Define stringatom.i
   stringatom = StringtoAtom(inputstr)
-  appendinstruction(P,@p_pushatom())
-  appendinstruction(P, stringatom)
+  appendcell(P,@p_pushatom())
+  appendcell(P, stringatom)
 EndProcedure
 
 
 Procedure compilestring(P, inputstr.s)
   Define stringatom.i
   stringatom = StringtoAtom(inputstr)
-  appendinstruction(P,@p_pushstring())
-  appendinstruction(P, stringatom)
+  appendcell(P,@p_pushstring())
+  appendcell(P, stringatom)
 EndProcedure
 
 
@@ -506,19 +733,19 @@ Procedure newword(P, inputstr.s)
   EndSelect
   
   wordatom.i = newatom(inputstr)
-  If wordatom
-    If atomtoword(P\Node, wordatom)
-      pushstate(P)
-      cword = atomtoword(P\Node, wordatom)
-      cword\nameatom = wordatom
-      cword\instructioncount = 0
-      AddLine("Recompiling word '"+inputstr+"'.")
-    Else
-      pushstate(P)
-      cword = newcodeword(P\Node, 1024, wordatom)
-      AddLine("Compiling new word '"+inputstr+"'.")
-    EndIf
-  EndIf
+;  If wordatom
+;    If atomtoword(P\Node, wordatom)
+;      pushstate(P)
+;      cword = atomtoword(P\Node, wordatom)
+;      cword\nameatom = wordatom
+;      cword\instructioncount = 0
+;      AddLine("Recompiling word '"+inputstr+"'.")
+;    Else
+;      pushstate(P)
+;      cword = newcodeword(P\Node, 1024, wordatom)
+;      AddLine("Compiling new word '"+inputstr+"'.")
+;    EndIf
+;  EndIf
 EndProcedure
 
 
@@ -574,19 +801,42 @@ Procedure.i parseline(P,inputstr.s)
 EndProcedure
 
 
-Procedure loadfile(P, filename.s)
+
+
+
+
+
+
+
+
+CompilerEndIf
+
+
+
+;
+;- - asdf
+
+
+
+
+
+
+Procedure loadfile(*cs.compilestate, filename.s)
   Define filenum.i
   filename = Trim(LCase(filename))
   filenum.i = ReadFile(#PB_Any, filename)
+  Define *thisP.processstate
+  
+  
   If filenum
     While Eof(filenum) = 0
-      parseline(P, ReadString(filenum))
+;      parseline(P, ReadString(filenum))
     Wend
     CloseFile(filenum)
   Else
     addline("Error: '"+filename+"' could not be accessed.")
-    ResetP(P, _error)
   EndIf
+  
 EndProcedure
 
 
@@ -597,7 +847,7 @@ Procedure p_loadfile(P)
   popstring(*input)
   loadfile(P, *input\value)
 EndProcedure
-registerprim(loadfile, @p_loadfile())
+registerprim("core", "loadfile", @p_loadfile())
 
 
 
@@ -630,10 +880,11 @@ N\defines("3!") = "3 tuple_setelement "
 N\defines("4!") = "4 tuple_setelement "
 
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 629
-; FirstLine = 596
-; Folding = ------
+
+; IDE Options = PureBasic 5.21 LTS (Windows - x86)
+; CursorPosition = 212
+; FirstLine = 195
+; Folding = -------
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
 ; CompileSourceDirectory

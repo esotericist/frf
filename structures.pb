@@ -4,6 +4,10 @@
 XIncludeFile "stack.pb"
 XIncludeFile "mem.pb"
 
+; note that while arrays and tuples are both built on the same kit, tuples are a core feature.
+; Consequently, they go in the 'core' module. arrays are not, so they go in a separate module.
+
+
 Procedure.i struct_getelement(N, tupleID.i, element.i)
   Define *tuple.datatuple, resultID.i
   *tuple=tupleID & ~3
@@ -56,7 +60,7 @@ Procedure p_tuple_getelement(P)
     ProcedureReturn
   EndIf
 EndProcedure
-registerprim(tuple_getelement,@p_tuple_getelement())
+registerprim("core", "tuple_getelement",@p_tuple_getelement())
 
 Procedure p_tuple_explode(P)
   Define tuplesize.i, tupleID.i, *tuple.datatuple, i.i, x.i
@@ -70,7 +74,7 @@ Procedure p_tuple_explode(P)
   Next i
   pushint(P, tuplesize)
 EndProcedure
-registerprim(tuple_explode,@p_tuple_explode())
+registerprim("core", "tuple_explode",@p_tuple_explode())
 
 Procedure p_tuple_setelement(P)  ; data, tuple, index
   Define tupleID, *tuple.datatuple, input.i, element.i, resultID
@@ -89,7 +93,7 @@ Procedure p_tuple_setelement(P)  ; data, tuple, index
     ProcedureReturn
   EndIf
 EndProcedure
-registerprim(tuple_setelement,@p_tuple_setelement())
+registerprim("core", "tuple_setelement",@p_tuple_setelement())
 
 Procedure p_tuple_make(P)
   Define tuplesize.i, tupleID.i, *tuple.datatuple, i.i, x.i
@@ -114,13 +118,14 @@ Procedure p_tuple_make(P)
   
   pushtuple(P, tupleID)
 EndProcedure
-registerprim(tuple_make,@p_tuple_make())
+registerprim("core", "tuple_make",@p_tuple_make())
 
 
 
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 18
+; IDE Options = PureBasic 5.21 LTS (Windows - x86)
+; CursorPosition = 6
+; FirstLine = 78
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

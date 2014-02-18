@@ -5,9 +5,16 @@
 XIncludeFile "defines.pb"
 
 
-Declare registerword(N, wordatom.i, *word.codeset)
+;Declare registerword(N, moduleatom.i, wordatom.i, *word.codeset)
 Declare useobject(N, object.i)
 Declare unuseobject(N, object.i)
+
+
+
+; These are used in the object release queues
+atom(primary)
+atom(secondary)
+
 
 
 Procedure.i checktype(x.i)   ; Returns atom type
@@ -68,10 +75,10 @@ Procedure.i newprocess(N,dsize.i, csize.i)
   InitializeStructure(*ThisProcess,ProcessState)
   *ThisProcess\pid = pid
   *ThisProcess\opmax = 10000
-  *ThisProcess\c.callstack = AllocateMemory(SizeOf(callstack)+SizeOf(flowcontrolframe) * csize)
+  *ThisProcess\c.callstack = AllocateMemory(SizeOf(callstack)+SizeOf(executeframe) * csize)
   ;Debug "New callstack: " + Str(*ThisProcess\c)
-;  Debug SizeOf(callstack)
-;  Debug SizeOf(integer) * csize
+  ;  Debug SizeOf(callstack)
+  ;  Debug SizeOf(integer) * csize
   *ThisProcess\c\max = csize
   *ThisProcess\d = AllocateMemory(SizeOf(datastack)+SizeOf(integer) * dsize)
   ;Debug "New datastack: " + Str(*ThisProcess\d)
@@ -94,7 +101,7 @@ Procedure.i newtuple(N, cellcount.i)
   *object\length = cellcount
   unuseobject(N, identifier)
   *object\content = AllocateMemory(cellcount * SizeOf(quad))
-;  Debug *object\content
+  ;  Debug *object\content
   ProcedureReturn identifier
 EndProcedure
 
@@ -104,8 +111,11 @@ Procedure.i initnode()
   *thisNode = AllocateMemory(SizeOf(NodeState))
   InitializeStructure(*thisNode, NodeState)
   ResetList(*thisNode\objectpool())
-  *thisNode\NextProcessID = -1
-  setinactive(newprocess(N, 0, 0))
+  *thisNode\NextProcessID = 1
+  
+  *thisNode\releasestate = _primary  ; used for the release queues
+  
+  ;setinactive(newprocess(N, 0, 0))
   ProcedureReturn *thisNode
 EndProcedure
 
@@ -123,19 +133,23 @@ Procedure.i newcodeword(N, size.i, wordatom)
   *new\length = size
   If wordatom
     *new\nameatom = wordatom
-    registerword(N, wordatom,*new)
+    ;registerword(N, wordatom,*new)
   EndIf
   ; Debug "New word: " + Str(*new)
   ProcedureReturn *new
 EndProcedure
 
+
 Procedure.i newmodule(N, nameatom)
-  Define *new.module
-  *new = AllocateMemory(SizeOf(module))
-  InitializeStructure(*new, module)
+  Define *new.frfModule
+  *new = AllocateMemory(SizeOf(frfModule))
+  InitializeStructure(*new, frfModule)
   *new\nameatom = nameatom
   ProcedureReturn *new
 EndProcedure
+      
+
+
 
 Procedure.i newcompilestate(N)
   Define *new.compilestate
@@ -156,13 +170,14 @@ EndProcedure
 
 Procedure FreePBString(*Address)  ; Provided by freak:   http://www.purebasic.fr/english/viewtopic.php?f=13&t=23099
   Protected String.String  ; the String Structure contains one String element, which is initialized to 0 on procedure start
-  PokeI(@String, *Address) ; poke our strings address into the structure
+  PokeI(@String, *Address) ; poke our string's address into the structure
 EndProcedure               ; when returning, PB's string free routine for the local structure will actually free the passed string.
-;
+; Kinda hazardous if used improperly
+
 
 Procedure freetuple(N, *object.datatuple)
   Define i.i, obj.i, *otherobject.dataobject
- ; Debug *object\content
+  ; Debug *object\content
   For i = 0 To *object\length - 1
     obj = *object\content\q[i]
     *otherobject = obj & ~3
@@ -219,7 +234,7 @@ Procedure useobject(N,object.i)
       key=Str(object)
       DeleteMapElement(N\primaryreleaselist(),key)
       DeleteMapElement(N\secondaryreleaselist(),key)
-      ;Debug "Unqueued"+Str(object)+"; "+AtomToString(*object\typeatom)
+      Debug "Unqueued"+Str(object)+"; "+AtomToString(*object\typeatom)
     Else
       *object\refcount + 1
     EndIf
@@ -231,16 +246,20 @@ Procedure queuerelease(N, x.i)
   Define *object.dataobject, key.s
   *object = x & ~3
   key=Str(x)
-  If (N\releasestate) = 1
-    ;Debug "primary release queued for: "+key+"; "+AtomToString(*object\typeatom)
-    
-    N\primaryreleaselist(key) = x
-    
-  Else
-    ;Debug "secondary release queued for: "+key+"; "+AtomToString(*object\typeatom)
-    
-    N\secondaryreleaselist(key) = x
-  EndIf
+  
+  Select N\releasestate
+      
+    Case _primary
+      ;Debug "primary release queued for: "+key+"; "+AtomToString(*object\typeatom)
+      
+      N\primaryreleaselist(key) = x
+      
+    Case _secondary
+      ;Debug "secondary release queued for: "+key+"; "+AtomToString(*object\typeatom)
+      
+      N\secondaryreleaselist(key) = x
+  EndSelect
+
 EndProcedure
 
 Procedure unuseobject(N,object.i)
@@ -270,10 +289,10 @@ Procedure releasethis(N, x.i)
           *stringobject = *object
           FreePBString(@*stringobject.datastring\value)
           freeobject(N, *object)
-          Case _type_indirect
-            *indirect = *object
-            unuseobject(N, *indirect\target)
-            freeobject(N, *object)
+        Case _type_indirect
+          *indirect = *object
+          unuseobject(N, *indirect\target)
+          freeobject(N, *object)
         Case _type_tuple
           freetuple(N, *object)
         Default
@@ -286,13 +305,14 @@ EndProcedure
 
 Procedure releaseobjects(N)
   Define x.i
-  N\releasestate = 0   
+  N\releasestate = _secondary
+  ; Setting this to _secondary causes the queuerelease() procedure to put future releases into the secondary list
+  ; We do this so that if we go to release an object and that reduces references to another object to 0, we
+  ; aren't changing the size of the releasequeue we're working on. That would be awkward.
+  
   If MapSize(N\primaryreleaselist())
     
     ResetMap(N\primaryreleaselist())
-    ; Setting this to 0 causes the queuerelease() procedure to put future releases into the secondary list
-    ; We do this so that if we go to release an object and that reduces references to another object to 0, we
-    ; aren't changing the size of the releasequeue we're working on. That would be awkward.
     ForEach N\primaryreleaselist()
       x = N\primaryreleaselist()
       releasethis(N, x)
@@ -302,7 +322,7 @@ Procedure releaseobjects(N)
     ClearMap(N\primaryreleaselist())
   EndIf 
   
-  N\releasestate = 1
+  N\releasestate = _primary
   ; Now we're done with the primary list, we set the state back so that if we have to release anything
   ; during the secondary pass, it can go in the primary queue.
   
@@ -316,116 +336,131 @@ Procedure releaseobjects(N)
     ; second verse, same as the first, a little bit obtuse, a little bit recursed
     
   EndIf
-    ; We keep doing this until we run out of objects. This could potentially hitch things, but fukkit, we can optimize later.
+  ; We keep doing this until we run out of objects. This could potentially hitch things, but fukkit, we can optimize later.
   If MapSize(N\primaryreleaselist())
     releaseobjects(N)
   EndIf
-  N\releasestate = 1
+  
+  ; Being explicit.
+  N\releasestate = _primary
 EndProcedure
 
 
 ;-
-;- Prim and word management
+;- Module, Prim, and word management
 
+;Procedure.i addflowterm(N, controlproc.i, termatom.i)
+;  N\terms(Str(termatom)) = controlproc
+;EndProcedure
 
-; Primitive registration stuff
-
-; This is used to register simple prim names while also making them   
-Define pointer.i
-Macro registerprim(primname, pointer)
-  atom(primname)
-  If Not(FindMapElement(N\atomtoprimtable(), Str(_#primname)))
-    N\atomtoprimtable(Str(_#primname)) = pointer
-    N\primtoatomtable(Str(pointer)) = _#primname
-  Else
-    ;Debug "Redefining prim?"
-  EndIf
+Macro addflowterm(termatom)
+  *cs\node\terms(Str(termatom)) = self
 EndMacro
 
 
 
-Define primatom.i
-Macro registerprimunprintable(primname, pointer)
-  primatom.i = newatom(primname)
-  If Not(FindMapElement(N\atomtoprimtable(), Str(primatom)))
-    N\atomtoprimtable(Str(primatom)) = pointer
-    N\primtoatomtable(Str(pointer)) = primatom
-  Else
-    ;Debug "Redefining prim?"
-  EndIf
-EndMacro
-
-
-
-Procedure.i atomtoprim(N, inputatom.i)
-  Define *primptr, primval.i
-  *primptr = FindMapElement(N\atomtoprimtable(),Str(inputatom))
-  If *primptr
-    primval = PeekI(*primptr)
-  EndIf
-  ProcedureReturn primval
+atom(prim)
+atom(word)
+Procedure.i modulelookup(N, modulenameatom.i)
+;  Define *moduleptr.frfmodule
+;  *moduleptr = 
+  ProcedureReturn N\moduleset(Str(modulenameatom))
 EndProcedure
+
+
+Define moduleatom.i, primatom.i, primatomstr.s
+Define *modptr.frfmodule
+
+Macro registerprim(modulename, primname, pointer)
+  moduleatom = newatom(modulename)
+  primatom = newatom(primname)
+  *modptr = modulelookup(N, moduleatom)
+  If *modptr = 0
+    *modptr = newmodule(N, moduleatom)
+  EndIf
+  primatomstr = Str(primatom)
+  *modptr\dictionary(primatomstr)\EntryTypeAtom = _prim
+  *modptr\dictionary(primatomstr)\primpointer = pointer
+ 
+  N\primtoatomtable(Str(pointer)) = primatom
+EndMacro
 
 Procedure.i primtoatom(N, inputprim.i)
-  Define *atomptr, atomval.i
-  *atomptr = FindMapElement(N\primtoatomtable(),Str(inputprim))
-  If *atomptr
-    atomval = PeekI(*atomptr)
-  EndIf
-  ProcedureReturn atomval
-EndProcedure
-
-
-Procedure registerword(N, wordatom.i, *word.codeset)
-  If Not(FindMapElement(N\wordtoatomtable(), Str(wordatom)))
-    N\atomtowordtable(Str(wordatom)) = *word
-    N\wordtoatomtable(Str(*word)) = wordatom
-  EndIf
-EndProcedure
-
-Procedure unregisterword(N, wordatom.i)
-  Define *word.codeset
-  *word = N\atomtowordtable(Str(wordatom))
-  DeleteMapElement(N\atomtowordtable())
-  N\wordtoatomtable(Str(*word))
-  DeleteMapElement(N\wordtoatomtable())
-  
-EndProcedure
-
-
-Procedure.i atomtoword(N, inputatom.i)
-  Define *wordptr, wordval.i
-  *wordptr = FindMapElement(N\atomtowordtable(),Str(inputatom))
-  If *wordptr
-    wordval = PeekI(*wordptr)
-  EndIf
-  ProcedureReturn wordval
-EndProcedure
-
-Procedure.i wordtoatom(N, inputword.i)
-  Define *atomptr, atomval.i
-  *atomptr = FindMapElement(N\wordtoatomtable(), Str(inputword))
-  If *atomptr 
-    atomval = PeekI(*atomptr)
-  EndIf
-  ProcedureReturn atomval
+  ProcedureReturn N\primtoatomtable(Str(inputprim))
 EndProcedure
 
 
 
 
-;Procedure useword(*word.codeset)
-;  *word\refcount + 1
+
+;Procedure.i atomtoprim(N, inputatom.i)
+;  Define *primptr, primval.i
+;  *primptr = FindMapElement(N\atomtoprimtable(),Str(inputatom))
+;  If *primptr
+;    primval = PeekI(*primptr)
+;  EndIf
+;  ProcedureReturn primval
 ;EndProcedure
 
-;Procedure unuseword(*word.codeset)
-;  *word\refcount - 1
-;  If *word\refcount <= 0
-;    If *word\nameatom = 0 Or *word\superceded
-;      FreeMemory(*word)
-;    EndIf
+;Procedure.i primtoatom(N, inputprim.i);
+;  Define *atomptr, atomval.i
+;  *atomptr = FindMapElement(N\primtoatomtable(),Str(inputprim))
+;  If *atomptr
+;    atomval = PeekI(*atomptr)
+;  EndIf
+;  ProcedureReturn atomval
+;EndProcedure
+
+
+Procedure registerword(N, moduleatom.i, wordatom.i, *word.codeset) 
+  Define *modptr.frfmodule, *dictentry.frfDictionaryEntry
+  *modptr = N\moduleset(Str(moduleatom))
+  If *modptr
+    *dictentry = FindMapElement(*modptr\dictionary(), Str(wordatom))
+    *dictentry\EntryTypeAtom = _word
+    *dictentry\wordpointer = *word
+  Else
+    Debug "registerword error: module not found"
+  EndIf
+EndProcedure
+
+
+
+;Procedure registerword(N, wordatom.i, *word.codeset)
+;  If Not(FindMapElement(N\wordtoatomtable(), Str(wordatom)))
+;    N\atomtowordtable(Str(wordatom)) = *word
+;    N\wordtoatomtable(Str(*word)) = wordatom
 ;  EndIf
 ;EndProcedure
+
+;Procedure unregisterword(N, wordatom.i)
+;  Define *word.codeset
+;  *word = N\atomtowordtable(Str(wordatom))
+;  DeleteMapElement(N\atomtowordtable())
+;  N\wordtoatomtable(Str(*word))
+;  DeleteMapElement(N\wordtoatomtable())
+;EndProcedure
+
+
+;Procedure.i atomtoword(N, inputatom.i)
+;  Define *wordptr, wordval.i
+;  *wordptr = FindMapElement(N\atomtowordtable(),Str(inputatom))
+;  If *wordptr
+;    wordval = PeekI(*wordptr)
+;  EndIf
+;  ProcedureReturn wordval
+;EndProcedure
+
+;Procedure.i wordtoatom(N, inputword.i)
+;  Define *atomptr, atomval.i
+;  *atomptr = FindMapElement(N\wordtoatomtable(), Str(inputword))
+;  If *atomptr 
+;    atomval = PeekI(*atomptr)
+;  EndIf
+;  ProcedureReturn atomval
+;EndProcedure
+
+
 
 Procedure growcodeword(N, *word.codeset)
   Define *new.codeset
@@ -439,10 +474,10 @@ Procedure growcodeword(N, *word.codeset)
 EndProcedure
 
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 143
-; FirstLine = 114
-; Folding = ------
+; IDE Options = PureBasic 5.21 LTS (Windows - x86)
+; CursorPosition = 256
+; FirstLine = 194
+; Folding = g+---
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
 ; CompileSourceDirectory

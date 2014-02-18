@@ -11,12 +11,6 @@ XIncludeFile "structures.pb"
 
 ;-----Stack management prims
 
-Procedure displaytop(P)
-  needstack(1)
-  Debug "Top:"+Str(dstack[dtop-1])
-EndProcedure
-registerprim(displaytop,@displaytop())
-
 Procedure p_dup(P) ; ( x -- x x )
   Define Input.i
   needstack(1)
@@ -24,7 +18,7 @@ Procedure p_dup(P) ; ( x -- x x )
   push(P,Input)
   push(P,Input)
 EndProcedure
-registerprim(dup, @p_dup())
+registerprim("core", "dup", @p_dup())
 
 Procedure p_over(P) ; ( x y -- x y x )
   Define firstinput.i, secondinput.i
@@ -35,7 +29,7 @@ Procedure p_over(P) ; ( x y -- x y x )
   push(P,secondinput)
   push(P,firstinput)
 EndProcedure
-registerprim(over, @p_over())
+registerprim("core", "over", @p_over())
 
 Procedure p_swap(P) ; ( x y -- y x )
   Define first.i, second.i
@@ -45,7 +39,7 @@ Procedure p_swap(P) ; ( x y -- y x )
   push(P,second)
   push(P,first)
 EndProcedure
-registerprim(Swap, @p_swap())
+registerprim("core", "swap", @p_swap())
 
 Procedure p_rot(P)  ; ( x y z -- y z x )
   Define first.i, second.i, third.i
@@ -57,7 +51,7 @@ Procedure p_rot(P)  ; ( x y z -- y z x )
   push(P,third)
   push(P,first)
 EndProcedure
-registerprim(rot, @p_rot())
+registerprim("core", "rot", @p_rot())
 
 Procedure p_pick(P) ; ( xi ... x1 i -- xi ... x1 xi ) // 1 2 3 4 4 pick -> 1 2 3 4 1
   Define argument.i, object.i
@@ -71,7 +65,7 @@ Procedure p_pick(P) ; ( xi ... x1 i -- xi ... x1 xi ) // 1 2 3 4 4 pick -> 1 2 3
   object = dstack[dtop - argument]
   push(P, object)
 EndProcedure
-registerprim(pick, @p_pick())
+registerprim("core", "pick", @p_pick())
 
 
 Procedure p_rotate(P)  ; ( xi ... x1 i -- x(i-1) ... x1 xi ) // '"a" "b" "c" "d" 4 rotate' would leave "b" "c" "d" "a" on the stack.  
@@ -97,7 +91,7 @@ Procedure p_rotate(P)  ; ( xi ... x1 i -- x(i-1) ... x1 xi ) // '"a" "b" "c" "d"
     dstack[dtop - stackrange] = rangetop
   EndIf
 EndProcedure
-registerprim(rotate, @p_rotate())
+registerprim("core", "rotate", @p_rotate())
 
 Procedure p_popn(P) ; ( xi ... x1 i -- )
   Define argument.i
@@ -114,12 +108,12 @@ Procedure p_popn(P) ; ( xi ... x1 i -- )
     argument - 1
   Wend
 EndProcedure
-registerprim(popn, @p_popn())
+registerprim("core", "popn", @p_popn())
 
 Procedure p_depth(P) ; (xn ... x0 -- n )
   pushint(P,dtop)
 EndProcedure
-registerprim(depth, @p_depth())
+registerprim("core", "depth", @p_depth())
 
 
 ; special: searches stack for a stack marker ( { ), removes it, and pushes an integer
@@ -143,7 +137,7 @@ Procedure stackrange(P)
   EndIf
   pushint(P, stackrange)
  EndProcedure
-registerprimunprintable("}", @stackrange())
+registerprim("core", "}", @stackrange())
   
 ;
 ;-----Data conversion
@@ -157,7 +151,7 @@ Procedure p_isint(P) ; ( x -- b )
     pushint(P,0)
   EndIf
 EndProcedure
-registerprimunprintable("int?", @p_isint())
+registerprim("core", "int?", @p_isint())
 
 Procedure p_isfloat(P) ; ( x -- b )
   needstack(1)
@@ -167,7 +161,7 @@ Procedure p_isfloat(P) ; ( x -- b )
     pushint(P,0)
   EndIf
 EndProcedure
-registerprimunprintable("float?", @p_isfloat())
+registerprim("core", "float?", @p_isfloat())
 
 Procedure p_isstring(P) ; ( x -- b )
   needstack(1)
@@ -177,7 +171,7 @@ Procedure p_isstring(P) ; ( x -- b )
     pushint(P,0)
   EndIf
 EndProcedure
-registerprimunprintable("string?", @p_isstring())
+registerprim("core", "string?", @p_isstring())
 
 Procedure p_isatom(P) ; ( x -- b )
   needstack(1)
@@ -187,7 +181,7 @@ Procedure p_isatom(P) ; ( x -- b )
     pushint(P,0)
   EndIf
 EndProcedure
-registerprimunprintable("atom?", @p_isatom())
+registerprim("core", "atom?", @p_isatom())
 
 Procedure p_ismark(P) ; ( x -- b )
   needstack(1)
@@ -197,7 +191,7 @@ Procedure p_ismark(P) ; ( x -- b )
     pushint(P, 0)
   EndIf
 EndProcedure
-registerprimunprintable("mark?", @p_ismark())
+registerprim("core", "mark?", @p_ismark())
 
 Procedure p_intostr(P) ; ( i -- s )
   Define i.i, output.s
@@ -206,7 +200,7 @@ Procedure p_intostr(P) ; ( i -- s )
   output = Str(i)
   pushstring(P, output)
 EndProcedure
-registerprim(intostr, @p_intostr())
+registerprim("core", "intostr", @p_intostr())
 
 Procedure p_ftostr(P) ; ( f -- s )
   Define float.d, output.s
@@ -218,7 +212,7 @@ Procedure p_ftostr(P) ; ( f -- s )
   EndIf
   pushstring(P, output)
 EndProcedure
-registerprim(ftostr, @p_ftostr())
+registerprim("core", "ftostr", @p_ftostr())
 
 
 Procedure p_atoi(P) ; ( s -- i )
@@ -228,7 +222,7 @@ Procedure p_atoi(P) ; ( s -- i )
   output = Val(*string\value)
   pushint(P, output)
 EndProcedure
-registerprim(atoi, @p_atoi())
+registerprim("core", "atoi", @p_atoi())
   
 Procedure p_strtof(P) ; ( s -- f )
   Define output.D, *string.datastring
@@ -237,7 +231,7 @@ Procedure p_strtof(P) ; ( s -- f )
   output = ValD(*string\value)
   pushfloat(P, output)
 EndProcedure
-registerprim(strtof, @p_strtof())
+registerprim("core", "strtof", @p_strtof())
 
 ;
 ;
@@ -251,7 +245,7 @@ Procedure p_maxint(P) ; ( -- i )
   value = 0 ;(2 << 60) -1
   pushint(P, value)
 EndProcedure
-registerprim(maxint, @p_maxint())
+registerprim("core", "maxint", @p_maxint())
 
 
 Procedure p_random(P) ; ( -- i )
@@ -259,13 +253,7 @@ Procedure p_random(P) ; ( -- i )
   value = Random((2<<60)-1)
   pushint(P, value)
 EndProcedure
-registerprim(random, @p_random())
-
-
-;Procedure 
-  
-;EndProcedure
-
+registerprim("core", "random", @p_random())
 
 
 Procedure p_add(P) ; ( n1 n2 -- n3)
@@ -283,7 +271,7 @@ Procedure p_add(P) ; ( n1 n2 -- n3)
     pushfloat(P, outputfloat)
   EndIf
 EndProcedure
-registerprimunprintable("+", @p_add())
+registerprim("core", "+", @p_add())
 
 
 Procedure p_sub(P) ; ( n1 n2 -- n3)
@@ -301,7 +289,7 @@ Procedure p_sub(P) ; ( n1 n2 -- n3)
     pushfloat(P, outputfloat)
   EndIf
 EndProcedure
-registerprimunprintable("-", @p_sub())
+registerprim("core", "-", @p_sub())
 
 Procedure p_mult(P) ; ( n1 n2 -- n3)
   Define firstinput.i, secondinput.i, output.i, firstfloat.d, secondfloat.d, outputfloat.d
@@ -318,7 +306,7 @@ Procedure p_mult(P) ; ( n1 n2 -- n3)
     pushfloat(P, outputfloat)
   EndIf
 EndProcedure
-registerprimunprintable("*", @p_mult())
+registerprim("core", "*", @p_mult())
 
 Procedure p_div(P) ; ( n1 n2 -- n3)
   Define firstinput.i, secondinput.i, output.i, firstfloat.d, secondfloat.d, outputfloat.d
@@ -335,7 +323,7 @@ Procedure p_div(P) ; ( n1 n2 -- n3)
     pushfloat(P, outputfloat)
   EndIf
 EndProcedure
-registerprimunprintable("/", @p_div())
+registerprim("core", "/", @p_div())
 
 Procedure p_mod(P) ; ( n1 n2 -- n3)
   Define firstinput.i, secondinput.i, output.i
@@ -345,7 +333,7 @@ Procedure p_mod(P) ; ( n1 n2 -- n3)
   output.i = Mod(firstinput, secondinput)
   pushint(P,output)
 EndProcedure
-registerprimunprintable("%", @p_mod())
+registerprim("core", "%", @p_mod())
 
 
 ;-----logic
@@ -373,7 +361,7 @@ Procedure p_gt(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprimunprintable(">", @p_gt())
+registerprim("core", ">", @p_gt())
 
 Procedure p_lt(P) ; ( x1 x2 -- b )
   Define firstinput.i, secondinput.i, output.i, firstfloat.d, secondfloat.d
@@ -397,7 +385,7 @@ Procedure p_lt(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprimunprintable("<", @p_lt())
+registerprim("core", "<", @p_lt())
 
 Procedure p_gte(P) ; ( x1 x2 -- b )
   Define firstinput.i, secondinput.i, output.i, firstfloat.d, secondfloat.d
@@ -421,7 +409,7 @@ Procedure p_gte(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprimunprintable(">=", @p_gte())
+registerprim("core", ">=", @p_gte())
 
 Procedure p_lte(P) ; ( x1 x2 -- b )
   Define firstinput.i, secondinput.i, output.i, firstfloat.d, secondfloat.d
@@ -445,7 +433,7 @@ Procedure p_lte(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprimunprintable("<=", @p_lte())
+registerprim("core", "<=", @p_lte())
 
 Procedure p_eq(P) ; ( x1 x2 -- b )
   Define firstinput.i, secondinput.i, output.i, firstfloat.d, secondfloat.d
@@ -469,7 +457,7 @@ Procedure p_eq(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprimunprintable("=", @p_eq())
+registerprim("core", "=", @p_eq())
 
 
 Procedure p_or(P) ; ( x1 x2 -- b )
@@ -487,7 +475,7 @@ Procedure p_or(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprim(Or, @p_or())
+registerprim("core", "or", @p_or())
 
 Procedure p_and(P) ; ( x1 x2 -- b )
   Define firstinput.i, secondinput.i, firsttruth.i, secondtruth.i, output.i
@@ -504,7 +492,7 @@ Procedure p_and(P) ; ( x1 x2 -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprim(And, @p_and())
+registerprim("core", "and", @p_and())
 
 Procedure p_not(P) ; ( x -- b )
   Define firstinput.i, firsttruth.i, output.i
@@ -519,7 +507,7 @@ Procedure p_not(P) ; ( x -- b )
   EndIf
   pushint(P,output)
 EndProcedure
-registerprim(Not, @p_not())
+registerprim("core", "not", @p_not())
 
 ;
 ;
@@ -534,7 +522,7 @@ Procedure p_instr(P) ; ( s1 s2 -- i )
   outputposition = FindString(*firststring\value, *secondstring\value)
   pushint(P, outputposition)
 EndProcedure
-registerprim(instr, @p_instr())
+registerprim("core", "instr", @p_instr())
 
 
 Procedure p_instring(P) ; ( s1 s2 -- i )
@@ -544,7 +532,7 @@ Procedure p_instring(P) ; ( s1 s2 -- i )
   outputposition = FindString(LCase(*firststring\value), LCase(*secondstring\value))
   pushint(P, outputposition)
 EndProcedure
-registerprim(instring, @p_instring())
+registerprim("core", "instring", @p_instring())
 
 
 
@@ -565,7 +553,7 @@ Procedure p_strcut(P) ; ( s1 i -- s2 s3 )
   pushstring(P, firstoutput)
   pushstring(P, secondoutput)
 EndProcedure
-registerprim(strcut, @p_strcut())
+registerprim("core", "strcut", @p_strcut())
 
 Procedure p_strlen(P) ; ( s -- i )
   Define *inputstring.datastring, outputlength.i
@@ -574,7 +562,7 @@ Procedure p_strlen(P) ; ( s -- i )
   outputlength = Len(*inputstring\value)
   pushint(P, outputlength)
 EndProcedure
-registerprim(strlen, @p_strlen())
+registerprim("core", "strlen", @p_strlen())
 
 
 Procedure p_strcat(P) ; ( s1 s2 -- s3 )
@@ -585,7 +573,7 @@ Procedure p_strcat(P) ; ( s1 s2 -- s3 )
   outputstring = *firststring\value + *secondstring\value
   pushstring(P, outputstring)
 EndProcedure
-registerprim(strcat, @p_strcat())
+registerprim("core", "strcat", @p_strcat())
 
 
 ;
@@ -609,7 +597,7 @@ Procedure p_fwrite(P) ; ( filename:s, writestring:s, offset:i -- success:i)
   EndIf
   pushint(P, success)
 EndProcedure
-registerprim(fwrite, @p_fwrite())
+registerprim("file", "fwrite", @p_fwrite())
 
 
 Procedure p_fappend(P)  ; ( filename:s, appendstring:s -- success:i )
@@ -634,11 +622,11 @@ Procedure p_fappend(P)  ; ( filename:s, appendstring:s -- success:i )
   EndSelect
   pushint(P, success)
 EndProcedure
-registerprim(fappend, @p_fappend())
+registerprim("file", "fappend", @p_fappend())
 
 
 Procedure p_freadto(P)  ; ( filename:s, initialoffset:i, delimiter:s -- finaloffset:i outputstring:s )
-  Define *inputstring.datastring, filenum.i, initialoffset.i, *inputdelim.datastring, delimiter.s, finaloffset.i, outputstring.s, done.i, thischar.c, thisstring.s
+  Define *inputstring.datastring, filenum.i, initialoffset.i, *inputdelim.datastring, delimiter.s, finaloffset.i, outputstring.s, done.i, thischar.C, thisstring.s
   Define filelength.i, charcount.i, statusstring.s
   needstack(3)
   popstring(*inputdelim)
@@ -692,7 +680,7 @@ Procedure p_freadto(P)  ; ( filename:s, initialoffset:i, delimiter:s -- finaloff
     runtimefault(P, "Error: Could not open file '"+*inputstring\value+"'.")
   EndIf
 EndProcedure
-registerprim(freadto, @p_freadto())
+registerprim("file", "freadto", @p_freadto())
 
 
 ;
@@ -714,14 +702,14 @@ Procedure cjmp(P) ; This is only used internally by the compiler.
     *ThisProcess\currentop = targetop
   EndIf
 EndProcedure
-registerprim(cjmp, @cjmp())
+registerprim("core", "cjmp", @cjmp())
 
 Procedure jmp(P) ; This is only used internally by the compiler.
   Define targetop.i
   targetop.i = cword\codestream[*ThisProcess\currentop]
   *ThisProcess\currentop = targetop
 EndProcedure
-registerprim(jmp, @jmp())
+registerprim("core", "jmp", @jmp())
 
 
 Procedure p_continue(P) ; ( -- )
@@ -729,14 +717,14 @@ Procedure p_continue(P) ; ( -- )
   targetop.i = cword\codestream[*ThisProcess\currentop]
   *ThisProcess\currentop = targetop
 EndProcedure
-registerprim(Continue, @p_continue())
+registerprim("core", "continue", @p_continue())
 
 Procedure p_break(P) ; ( -- )
   Define targetop.i
   targetop.i = cword\codestream[*ThisProcess\currentop]
   *ThisProcess\currentop = targetop
 EndProcedure
-registerprim(Break, @p_break())
+registerprim("core", "break", @p_break())
 
 
 Procedure p_while(P) ; ( x -- )
@@ -751,7 +739,7 @@ Procedure p_while(P) ; ( x -- )
     *ThisProcess\currentop = targetop
   EndIf
 EndProcedure
-registerprim(While, @p_while())
+registerprim("core", "while", @p_while())
   
 Procedure p_call(P) ; ( -- )
   Define targetword.i
@@ -763,12 +751,12 @@ Procedure p_call(P) ; ( -- )
     *ThisProcess\currentop = 0
   EndIf
 EndProcedure
-registerprim(call, @p_call())  
+registerprim("core", "call", @p_call())  
   
 Procedure p_exit(P) ; ( -- )
   popstate(P)
 EndProcedure
-registerprim(exit, @p_exit())
+registerprim("core", "exit", @p_exit())
   
 ;
 ;
@@ -779,13 +767,13 @@ registerprim(exit, @p_exit())
 Procedure p_now(P) ; ( -- i )
   pushint(P, gettime())
 EndProcedure
-registerprim(now, @p_now())
+registerprim("core", "now", @p_now())
 
 
 Procedure p_pid(P) ; ( -- i )
   pushint(P, *ThisProcess\pid)
 EndProcedure
-registerprim(pid,@p_pid())
+registerprim("core", "pid",@p_pid())
 
 Procedure p_ispid(P) ; ( i -- b )
   Define input.i
@@ -797,7 +785,7 @@ Procedure p_ispid(P) ; ( i -- b )
     pushint(P, 0)
   EndIf
 EndProcedure
-registerprimunprintable("ispid?",@p_ispid())
+registerprim("core", "ispid?",@p_ispid())
 
 Procedure p_kill(P) ; ( i -- b )
   Define *thatP.ProcessState, pid.i
@@ -815,11 +803,11 @@ Procedure p_kill(P) ; ( i -- b )
     runtimefault(P, "kill expects integer greater than zero")
   EndIf
 EndProcedure
-registerprim(kill, @p_kill())
+registerprim("core", "kill", @p_kill())
 
 ; This structure is only used to help with copying flow control frames from an old process to a new process during a fork.
 Structure workstackframe
-  work.flowcontrolframe[0]
+  work.executeframe[0]
 EndStructure
 
 Procedure copyframe(*input.workstackframe,*output.workstackframe)
@@ -848,7 +836,7 @@ Procedure p_fork(*ThisProcess.ProcessState) ; ( -- i )
   pushint(*NewProcess, 0)
   pushint(*ThisProcess, *NewProcess\pid)
 EndProcedure
-registerprim(fork, @p_fork())
+registerprim("core", "fork", @p_fork())
 
 ;
 ;
@@ -874,15 +862,21 @@ registerprim(fork, @p_fork())
 ;
 ;
 
+Procedure displaytop(P)
+  needstack(1)
+  Debug "Top:"+Str(dstack[dtop-1])
+EndProcedure
+registerprim("debug", "displaytop",@displaytop())
+
 Procedure p_debugon(P) ; ( -- )
   debugstate = 1
 EndProcedure
-registerprim(debugon, @p_debugon())
+registerprim("debug", "debugon", @p_debugon())
 
 Procedure p_debugoff(P) ; ( -- )
   debugstate = 0
 EndProcedure
-registerprim(debugoff, @p_debugoff())
+registerprim("debug", "debugoff", @p_debugoff())
 
 Procedure p_setmaxops(P) ; ( i -- )
   Define input.i
@@ -892,16 +886,16 @@ Procedure p_setmaxops(P) ; ( i -- )
     *ThisProcess\opmax = input
   EndIf
 EndProcedure
-registerprim(setmaxops, @p_setmaxops())
+registerprim("debug", "setmaxops", @p_setmaxops())
 
 Procedure p_stacktrace(P) ; ( -- )
   AddLine("Stack: ( "+stacktrace(P)+" )")
 EndProcedure
-registerprim(stacktrace, @p_stacktrace())
+registerprim("debug", "stacktrace", @p_stacktrace())
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 846
-; FirstLine = 820
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 809
+; FirstLine = 807
 ; Folding = ----------
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

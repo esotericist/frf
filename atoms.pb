@@ -25,6 +25,7 @@ AtomTable("") = 0
 ; Ensures valid string input only.
 ; TODO: Possibly this should error out on invalid input?
 ; Currently skipping a lot of sanitization because the VM asks weird things.
+; Will clean up later
 Procedure.s SanitizeAtomString(InputString.s) 
   Define OutputString.s, ThisChar.i
   InputString = LCase(Trim(InputString))
@@ -109,8 +110,11 @@ Macro atom(atomtext)
   Global _#atomtext.i = newatom(AtomQuote#atomtext#AtomQuote) ; effectively stringtoatom("atomtext")
 EndMacro
 
-; IDE Options = PureBasic 4.60 (Windows - x64)
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 27
+; FirstLine = 20
 ; Folding = --
 ; EnableXP
 ; Executable = ..\pref.exe
 ; CurrentDirectory = C:\Users\void\Dropbox\
+; CompileSourceDirectory

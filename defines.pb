@@ -38,7 +38,7 @@ Structure ScanPBDataTypes
   f.f[0]  ; float
   d.d[0]  ; double
   a.a[0]  ; ascii
-  c.c[0]  ; character
+  C.C[0]  ; character
   u.u[0]  ; unicode
   s.s[0]  ; string
 EndStructure
@@ -53,7 +53,7 @@ Structure dataobject
 EndStructure
 
 ; Integers and Atoms don't require objects at this time, since they can 
-; be stored directly on the stack/inside variables.
+; be stored directly on the stack or inside containers (variables, tuples, etc).
 
 Structure datafloat Extends dataobject
   value.d
@@ -111,6 +111,7 @@ EndStructure
 ; The Datablock isn't used for anything, but its job is to be the allocation
 ; unit for our object pools.
 ; It should always be at least as large as the largest dataobject inheritor.
+; Currently, that's four quads.
 ; It's measured in quads for 32bit/64bit compatibility. Better to be too big
 ; than too small, and we can afford the extra bytes.
 Structure datablock
@@ -128,7 +129,7 @@ EndStructure
 ; Codeset holds actual compiled instructions for words.
 Structure Codeset
   nameatom.i
-  moduleatom.i     ; Owning module name
+  *modptr.frfmodule ; owning module
   length.i
   InstructionCount.i
   *var.variableset
@@ -140,16 +141,29 @@ Structure Codeset
 ; TODO: Test more thoroughly on x86.
 EndStructure
 
+Structure frfDictionaryEntry
+  EntryTypeAtom.i    ; Should be 'prim' or 'word'.
+  StructureUnion
+    *primpointer
+    *wordpointer
+  EndStructureUnion
+EndStructure
 
-Structure module
+
+Structure frfModule
   nameatom.i
   
   refcount.i         ; It's possible for a new version of a module to be compiled
-  superceded.i       ; mid-flight. These fields help track that.
+  *supercededby.frfmodule ; mid-flight. These fields help track that.
+  *supercedes.frfmodule
   
-  List requires.module()  ; a list of module pointers that are needed by this module.
+  List requires.frfModule()  ; a list of module pointers that are needed by this module. 
+  
   Map defines.s(512) ; this-module-only defines
-  Map wordlist.codeset(512) ; all the words this module knows
+  
+  Map dictionary.frfDictionaryEntry(512) ; given an atom, returns a pointer to a prim/word
+  Map reversedictionary.i(512) ; Given a pointer to a prim/word, returns an atom
+  
   *var.variableset          ; all the variables this module knows
 EndStructure
 
@@ -159,24 +173,33 @@ Structure variable
 EndStructure
 
 
-
-; not currently active
-
 Structure compileitem
-  atom.i
-  source.i
-  target.i
+  atom.i ; Current token
+  source.i ; For jumps, this is the stream position we're jumping from
+  target.i ; For jumps, this is the stream position we're jumping to
 EndStructure
 
 Structure CompileState
-  parsemode.i
+  *Node.NodeState   ; owning node
+  *modptr.frfModule ; current module being compiled
+  *codeword.Codeset ; Current word being compiled, if any
+  
+  stream.s
+  result.s
+  resulttype.i ; atom for result type
+  
   compilelevel.i
-  compilestack.compileitem[1024]
-  *module.module
-  List modulevariables.s()
-  *codeword.Codeset
-  List wordvariables.s()
+  compilestack.compileitem[1024] 
+  ; ~1024 levels of compilation in a given module should be more than sufficient to start with
+  ; I can always make it dynamic later.
+  
+  
+  Map modulevariables.s(256)
+  
+  nextwordvarID.i
+  Map wordvariables.i(256)
 EndStructure
+
 
 
 
@@ -184,7 +207,7 @@ EndStructure
 ;- Data and Call stacks
 
 
-Structure FlowControlFrame
+Structure ExecuteFrame
   *codeword.codeset
   context.i         ; matched against context data in variable references
   currentop.i
@@ -200,7 +223,7 @@ EndStructure
 Structure callstack
   top.i
   max.i
-  stack.FlowControlFrame[0]
+  stack.Executeframe[0]
 EndStructure
 
 Structure datastack
@@ -223,10 +246,7 @@ Structure ProcessState
   ;                   NodeState fails. But it's okay to put NodeState as the type of a pointer
   ;                   because pointers are inherently typeless in PB.   W. T. F.
   
-  ; TODO: This should probably be moved to a separate 'compilestate' structure someday. It doesn't belong in every process.
-  parsemode.i       ; Parsing Mode. Only applicable while parsing text for immediate mode or compiling.
-  
-  
+    
   ; TODO: Combine executestate and errorstate, and deal with the fallout.
   errorstate.i      ; If nonzero, this process is exiting for some reason, probably an error.
   executestate.i    ; Can currently be active, inactive, or killed. 
@@ -236,7 +256,7 @@ Structure ProcessState
   debugmode.i       ; 0 for off, 1 for per-instruction debug output
   instructions.i    ; The number of instructions this process has executed this timeslice.
   opmax.i           ; The maximum number of instructions this process my execute in one timeslice.
-  runtime.i         ; Time in ms this process has executed so far in its life.
+  Runtime.i         ; Time in ms this process has executed so far in its life.
   prevtime.i        ; Time in ms this process had executed prior to its current task. (only meaningful for interpreted processes)
 
   *d.datastack
@@ -264,11 +284,15 @@ EndStructure
 
 Structure NodeState
   NextProcessID.i
-  Map atomtoprimtable.i(256)
-  Map primtoatomtable.i(256)
   
-  Map atomtowordtable.i(256)
-  Map wordtoatomtable.i(256)
+  
+  Map moduleset.frfmodule()
+  
+  Map terms.i()  ; This holds all the callbacks for atoms that have special flow control meaning
+  
+  ; TODO need to find everything referencing this and kill it
+  ; because this should be handled under modules
+  Map primtoatomtable.i(256) 
   
   Map defines.s(512)  ; holds global defines for the whole system, at present only settable in pb source.
   
@@ -381,9 +405,26 @@ CompilerElse
   EndMacro
 CompilerEndIf
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 150
-; FirstLine = 138
+;- pseudoprims
+
+
+; we define 'pseudoprims' here. They don't have genuine procedures associated with them, so we just generate atoms.
+; 
+
+atom(If)
+atom(Else)  
+atom(then)
+atom(begin)
+atom(Until)
+atom(Repeat)
+atom(Continue)
+atom(Break)
+atom(While)
+  
+
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 179
+; FirstLine = 172
 ; Folding = ---
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

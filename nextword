@@ -1,0 +1,145 @@
+EnableExplicit
+
+Global inputstr.s
+
+inputstr = #CR$ + #LF$ + " " + #DQUOTE$ + "ABC" + #DQUOTE$ + " asdf  ( asdf ' dfs ) ' f \1' \r  fd s " + #DQUOTE$ + " . \" + #DQUOTE$ + " . " + #DQUOTE$ + #CR$ + #LF$
+
+inputstr = inputstr + " " + #DQUOTE$ + " 1 2 3 \r 5 6 \R 7 8 \\ " + #DQUOTE$
+
+;inputstr = #DQUOTE$ + "\n-#-\nA-B\nC#D\n" + #DQUOTE$
+
+Global _dquote = 3
+Global _squote = 5
+Global _parens = 7
+
+Debug inputstr
+
+Procedure.s nextword()
+
+Define Result.s, workingstring.s, thischar.s, nextchar.s, escapedchar.s, index.i, done.i
+Define BlockType
+
+workingstring = Trim(inputstr)
+
+
+; First thing we do is make sure we're dealing with a non-whitespace first character.
+; The trim will get rid of leading spaces, but it won't get rid of leading cr/lf/tab,
+; and it's possible there's spaces after those. So, we iterate until we find a non-whitespace character.
+index = 0
+Repeat
+  thischar = Mid(workingstring,index, 1)
+  If (Not (thischar = #CR$ Or thischar = #LF$ Or thischar = " " Or thischar = #TAB$))
+    done = 1
+    index - 1
+  Else
+    index + 1
+  EndIf
+Until done Or (Len(workingstring) <= index)
+
+workingstring = Right(workingstring, Len(workingstring) - index)
+index = 0
+done = 0
+
+
+; Was there actually nothing useful left? If so, bail
+If Len(workingstring) = 0
+  inputstr= ""
+  End
+EndIf
+
+thischar = Mid(workingstring,index, 1)
+result = thischar
+
+index = 1
+
+
+; The first character of the string is what determines what kind of string we have.
+; We deal in single and double quote delimited strings, as well as parentheses
+; delimited comments.
+; Everything else is a single 'word'.
+Select thischar
+  Case #DQUOTE$
+    BlockType = _dquote
+  Case "("
+    BlockType = _parens
+  Case "'"
+    BlockType = _squote
+  Default
+    BlockType = 0
+EndSelect
+
+
+; This is kind of ugly and has repetitive bits, but there isn't a good way to avoid that
+; without ugly macro use, which sharply cuts into readability.
+Repeat
+  index + 1
+  thischar = Mid(workingstring,index, 1)
+  Select thischar
+    Case #DQUOTE$
+      If BlockType = _dquote
+        result = result + thischar
+        done = 1
+      Else
+        result = result + thischar
+      EndIf
+    Case ")"
+      If BlockType = _parens
+        result = result + thischar
+        done = 1
+      Else
+        result = result + thischar
+      EndIf
+    Case "'"
+      If BlockType = _squote
+        result = result + thischar
+        done = 1
+      Else
+        result = result + thischar
+      EndIf
+    Case " ", #TAB$, #CR$, #LF$
+      If blocktype = 0
+        done = 1
+      Else
+        result = result + thischar
+      EndIf
+    Default
+      
+      ; this is where we handle 'escape characters'
+      If BlockType = _dquote And thischar = "\"
+        index + 1
+        escapedchar = Mid(workingstring,index,1)
+        Select escapedchar
+          Case "r", "R", "n", "N"
+            Result = Result + #LF$
+          Case "t", "T"
+            result = result + #TAB$
+          Case "["
+            result = result + #ESC$
+          Default
+            result = result + escapedchar
+        EndSelect
+      Else
+        result = result + thischar
+      EndIf
+      
+  EndSelect
+Until done Or index > Len (workingstring)
+
+Debug "text: " + result 
+Debug "Length: " + Str(Len(Trim(Result)))
+
+inputstr = Right(workingstring, Len(workingstring) - index)
+
+EndProcedure
+
+Repeat
+
+nextword()
+
+Until Len(inputstr) <= 0
+; IDE Options = PureBasic 5.20 beta 16 LTS (Windows - x86)
+; CursorPosition = 106
+; Folding = -
+; EnableXP
+; CurrentDirectory = C:\Users\void\Dropbox\
+; CompileSourceDirectory
