@@ -20,10 +20,14 @@ eventually i'll start posting releases properly, but as i see it not much point 
 
 ## documentation
 
-documentation is clearly some kind of attempt at graphing the design as of 2012, i have no idea on how accurate it is at this point
+in the archival branches, documentation is clearly some kind of attempt at graphing the design as of 2012, i have no idea on how accurate it is at this point.
 
-somewhere i should have a txt file that is a dump of the "man" pages for muf, the primary reference material i am using for this stuff. because let's be honest, frf is an attempt at creating a general purpose version of muf not attached to a text-based game server.
+i am dubious as to their value, so I have removed those files from master.
+
+### `documentation/mufman.txt`
+i do now however have a copy of the muf manual from protomuck (with license alongside, since that is a) not my work, and b) i am making no claim that it is my work)
+
+since muf is one of the primary inspirations, it can be seen as a temporary loose design document, although obviously large swaths of it are inapplicable due to the fact this isn't exactly a text-based multiplayer game server w/all of the database particulars that go alongside.
 
 ## temp
-temp contains mysterious things. i cannot remember their purpose. (except the propertygrid bits, those are probably source examples that I used for `propgrid.pb`)
-
+temp in the archival branches contains mysterious things. i cannot remember their purpose. (except the propertygrid bits, those are probably source examples that I used for `propgrid.pb`)
