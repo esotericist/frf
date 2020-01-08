@@ -224,11 +224,11 @@ SetupWindow:
     End
   EndIf
   SetWindowTitle(0,"frf shell - 0 processes, 0 active, 0 inactive.")
-  Width = WindowWidth(0)
-  Height = WindowHeight(0)
-  EditorGadget(0, 4, 4, width - 8, height - 24,#PB_Editor_ReadOnly)
+  Width = WindowWidth(0, #PB_Window_InnerCoordinate)
+  Height = WindowHeight(0, #PB_Window_InnerCoordinate)
+  EditorGadget(0, 4, 4, width - 8, height - 30,#PB_Editor_ReadOnly)
   
-  StringGadget(1, 4, height - 24, width - 8, 24, "")
+  StringGadget(1, 4, height - 30, width - 8, 24, "")
   
   CreateMenu(0,WindowID(0))
   MenuTitle("VM")
@@ -241,15 +241,16 @@ SetupWindow:
   SetActiveGadget(1)
   AddKeyboardShortcut(0, #PB_Shortcut_Return, 100)
   AddKeyboardShortcut(0, #PB_Shortcut_Escape, 101)
+  WindowResize()
 Return
 
 ;- ResizeWindow:
   
 Procedure WindowResize()
-  Width = WindowWidth(0)
-  Height = WindowHeight(0)
-  ResizeGadget(0, 4, 4, width - 8, height - 56)
-  ResizeGadget(1, 4, height - 48, width - 8, 24)
+  Width = WindowWidth(0,  #PB_Window_InnerCoordinate)
+  Height = WindowHeight(0,  #PB_Window_InnerCoordinate)
+  ResizeGadget(0, 4, 4, width - 8, height - 60)
+  ResizeGadget(1, 4, height - 54, width - 8, 24)
   SetActiveGadget(1)
 EndProcedure
 
@@ -395,8 +396,8 @@ registerprim(clear,@p_clear())
 
 Return
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 270
-; FirstLine = 251
+; CursorPosition = 252
+; FirstLine = 215
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
