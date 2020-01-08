@@ -74,6 +74,21 @@ End
 
 ;- Events:
 
+Procedure replloadfile(N, filename.s) 
+  Define filenum.i
+  filename = Trim(LCase(filename))
+  filenum.i = ReadFile(#PB_Any, filename)
+  If filenum
+    While Eof(filenum) = 0
+      interpret(N, ReadString(filenum))
+    Wend
+    CloseFile(filenum)
+  Else
+    addline("Error: '"+filename+"' could not be accessed.")
+  EndIf
+EndProcedure
+
+
 
 Procedure eventcheck(N, statusnote.s)
   Define event.i, inputline.s, title.s, z.i, messages.i, messageID.i, i.i
@@ -127,8 +142,8 @@ Procedure eventcheck(N, statusnote.s)
           Case 1
             Define RequestedFile.s
             RequestedFile = OpenFileRequester("Load frf source:",GetCurrentDirectory(),"frf source|*.frf",0)
-            Debug "TODO: Load file from here. ("+RequestedFile+")"
-;            loadfile(P,RequestedFile)
+            AddLine("Loading from source file: " + RequestedFile )
+            replloadfile(N, RequestedFile)
           Case 2
             exit = 1
           Case 3
@@ -357,9 +372,9 @@ EndProcedure
 registerprim(clear,@p_clear())
 
 Return
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 349
-; FirstLine = 323
+; IDE Options = PureBasic 5.71 LTS (Windows - x64)
+; CursorPosition = 154
+; FirstLine = 127
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
