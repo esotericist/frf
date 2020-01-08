@@ -232,6 +232,9 @@ Procedure popstate(P)
     cstack[ctop]\codeword = 0
     cstack[ctop]\currentop = 0
     cstack[ctop]\context = 0
+    If ctop = 0 And P <> P\node\interpreterprocess
+      killproc(P, _exit, "")
+    EndIf
   Else
     killproc(P, _exit, "")
   EndIf
@@ -421,8 +424,8 @@ Procedure interpret(N, inputline.s)
 EndProcedure
 
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 380
-; FirstLine = 365
+; CursorPosition = 234
+; FirstLine = 230
 ; Folding = ----
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
