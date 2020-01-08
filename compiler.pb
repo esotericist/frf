@@ -26,14 +26,14 @@ EndProcedure
 ;
 ; a matching hack is found in stack.pb
 Procedure.i appendinstructionD(P, value.D)
-  Define *thiscword.i, icount.i, *new.codeset
+  Define *thiscword, icount.i, *new.codeset
   If cword = 0
     ProcedureReturn
   EndIf
   
   cword = growcodeword(P\Node, cword)
   
-  *thiscword.i = cword + SizeOf(codeset)
+  *thiscword = cword + SizeOf(codeset)
   icount = cword\instructioncount
   
   PokeD(*thiscword + (icount * SizeOf(quad)), value)
@@ -227,7 +227,7 @@ EndProcedure
 
 
 Procedure tokenize(P,inputstr.s)
-  Define *op.i, firstcharasc.i, MaybeOp.i 
+  Define *op, firstcharasc.i, MaybeOp.i 
   *op = 0
   firstcharasc.i = Asc(Left(inputstr,1))
   
@@ -629,10 +629,9 @@ N\defines("2!") = "2 tuple_setelement "
 N\defines("3!") = "3 tuple_setelement "
 N\defines("4!") = "4 tuple_setelement "
 
-
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 629
-; FirstLine = 596
+; IDE Options = PureBasic 5.71 LTS (Linux - x64)
+; CursorPosition = 229
+; FirstLine = 225
 ; Folding = ------
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
