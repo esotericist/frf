@@ -376,7 +376,7 @@ EndProcedure
 
 
 Procedure interpret(N, inputline.s)
-  If Len(Trim(inputline))
+  If Len(Trim(inputline)) = 0
     ProcedureReturn
   EndIf
   AddLine(" > "+inputline)
@@ -420,9 +420,9 @@ Procedure interpret(N, inputline.s)
   *ThisProcess\prevtime = *ThisProcess\runtime
 EndProcedure
 
-; IDE Options = PureBasic 5.71 LTS (Linux - x64)
-; CursorPosition = 378
-; FirstLine = 374
+; IDE Options = PureBasic 5.71 LTS (Windows - x64)
+; CursorPosition = 380
+; FirstLine = 365
 ; Folding = ----
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
