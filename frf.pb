@@ -255,8 +255,30 @@ EndProcedure
 
 
 Procedure AddLine(outputstr.s)
+  Define EditorGadgetID.i = 0
   If Len(outputstr) > 0
     AddGadgetItem(0, -1, outputstr)
+
+    CompilerSelect #PB_Compiler_OS
+      CompilerCase #PB_OS_Linux
+
+      Protected EndMark.I
+      Protected TextBuffer.I
+      Protected EndIter.GtkTextIter
+
+      TextBuffer = gtk_text_view_get_buffer_(GadgetID(EditorGadgetID))
+      gtk_text_buffer_get_end_iter_(TextBuffer, @EndIter)
+      EndMark = gtk_text_buffer_create_mark_(TextBuffer, "end_mark", @EndIter, #False)
+      gtk_text_view_scroll_mark_onscreen_(GadgetID(EditorGadgetID), EndMark)
+    CompilerCase #PB_OS_MacOS
+        Protected Range.NSRange
+  
+        Range.NSRange\location = Len(GetGadgetText(EditorGadgetID))
+        CocoaMessage(0, GadgetID(EditorGadgetID), "scrollRangeToVisible:@", @Range)
+      CompilerCase #PB_OS_Windows
+        SendMessage_(GadgetID(EditorGadgetID), #EM_SETSEL, -1, -1)
+    CompilerEndSelect
+  
   EndIf
   newtext = 1
 EndProcedure
@@ -373,8 +395,8 @@ registerprim(clear,@p_clear())
 
 Return
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 65
-; FirstLine = 31
+; CursorPosition = 270
+; FirstLine = 251
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
