@@ -10,7 +10,8 @@
     begin
       messages if
         receive
-        1 tuple_getelement .
+        tuple_explode pop 
+        "received: \"" swap strcat "\" from " strcat swap intostr strcat .
         break
       then
     repeat
