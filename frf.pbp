@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.71 LTS (Windows - x64)">
+<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.71 LTS (Linux - x64)">
   <section name="config">
     <options closefiles="1" openmode="0" name="frf"/>
   </section>
   <section name="data">
     <explorer view="" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2020-01-08 00:47" user="eso" host="DESKTOP-GF89BI0"/>
+    <lastopen date="2020-01-08 02:02" user="eso" host="nuvi"/>
   </section>
   <section name="files">
     <file name="atoms.pb">
@@ -24,7 +24,7 @@
     </file>
     <file name="frf.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="d3ddcf429081b3d897eab7b3d984720a"/>
+      <fingerprint md5="ce916e2e5cde1d2e64d95582c5f45265"/>
     </file>
     <file name="mem.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
@@ -44,11 +44,11 @@
     </file>
     <file name="structures.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="c3491dd1ce42af3d8aa56079acdb58b3"/>
+      <fingerprint md5="31f95e0f968d8c4624fed8b4772e7bbe"/>
     </file>
     <file name="vm.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="363622cbf5fdc3ea597340c0c8ad0043"/>
+      <fingerprint md5="cf7ddbf5a0cacfc9852305d445cb18f4"/>
     </file>
   </section>
   <section name="targets">

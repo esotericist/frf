@@ -119,8 +119,9 @@ registerprim(tuple_make,@p_tuple_make())
 
 
 
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 18
+; IDE Options = PureBasic 5.71 LTS (Windows - x64)
+; CursorPosition = 65
+; FirstLine = 41
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

@@ -373,8 +373,8 @@ registerprim(clear,@p_clear())
 
 Return
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 154
-; FirstLine = 127
+; CursorPosition = 122
+; FirstLine = 103
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
