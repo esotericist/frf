@@ -18,6 +18,14 @@ i have no idea on if the linux builds will work on arbitrary linux systems. gtk2
 
 eventually i'll start posting releases properly, but as i see it not much point in that until i have a proper environment
 
+## test programs
+
+`factor.frf` is a simple math thingy to get all the prime factors of a provided value.
+
+`ipctest.frf` is an attempt at validating the function of inter-process communication in frf's internal process model.
+
+`replace.frf` was something that i slapped together to edit some ebooks years ago that did not load in my then-preferred ebook reading software. it's honestly not worth much for looking at, although it does demonstrate string manipulation and file handling.
+
 ## documentation
 
 in the archival branches, documentation is clearly some kind of attempt at graphing the design as of 2012, i have no idea on how accurate it is at this point.
