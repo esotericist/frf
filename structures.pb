@@ -8,7 +8,7 @@ Procedure.i struct_getelement(N, tupleID.i, element.i)
   Define *tuple.datatuple, resultID.i
   *tuple=tupleID & ~3
   If element > *tuple\length
-    AddLine("Error: element out of bounds.")
+    AddLine(0, "Error: element out of bounds.")
     ProcedureReturn 0
   EndIf
   resultID = *tuple\content\q[element]
@@ -20,7 +20,7 @@ Procedure.i struct_setelement(N, tupleID, element.i, input.i)
   *tuple = tupleID & ~3
   
   If element > *tuple\length - 1
-    AddLine("Error: element out of bounds.")
+    AddLine(0, "Error: element out of bounds.")
     ProcedureReturn 0
   EndIf
   If *tuple\refcount > 0
@@ -51,7 +51,7 @@ Procedure p_tuple_getelement(P)
   If resultID
     push(P, resultID)
   Else
-    AddLine("Error: element out of bounds.")
+    AddLine(0,"Error: element out of bounds.")
     resetP(P, _error)
     ProcedureReturn
   EndIf
@@ -84,7 +84,7 @@ Procedure p_tuple_setelement(P)  ; data, tuple, index
   If resultID
     push(P,resultID)
   Else
-    AddLine("Error: element out of bounds.")
+    AddLine(0, "Error: element out of bounds.")
     resetP(P, _error)
     ProcedureReturn
   EndIf
@@ -97,7 +97,7 @@ Procedure p_tuple_make(P)
   popint(tuplesize)
   
   If tuplesize < 1
-    addline("Error: tuple_make expects a positive integer.")
+    addline(0, "Error: tuple_make expects a positive integer.")
     ResetP(P, _error)
     ProcedureReturn
   EndIf
@@ -120,8 +120,8 @@ registerprim(tuple_make,@p_tuple_make())
 
 
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 65
-; FirstLine = 41
+; CursorPosition = 99
+; FirstLine = 75
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

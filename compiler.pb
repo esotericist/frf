@@ -120,7 +120,7 @@ Procedure updatecells(P, firstcell.i, lastcell.i, keyop.i, targetcell.i)
 EndProcedure
 
 Procedure unexpectedprim(P, foundatom, previousatom)
-  addline("Error: unexpected '"+AtomToString(foundatom)+"' after '"+AtomToString(previousatom)+"'.")
+  addline(0, "Error: unexpected '"+AtomToString(foundatom)+"' after '"+AtomToString(previousatom)+"'.")
 EndProcedure
 
 
@@ -261,7 +261,7 @@ Procedure tokenize(P,inputstr.s)
         appendinstruction(P, @p_call())
         appendinstruction(P, *op)
       Else
-        AddLine("Error: unknown token '"+inputstr+"'.")
+        AddLine(0, "Error: unknown token '"+inputstr+"'.")
         ResetP(P, _error)
       EndIf
     EndIf
@@ -352,146 +352,146 @@ EndMacro
 
 Procedure.s parsedirective(P, inputstr.s)
   startparsing
-Case " "
-  inputstr = compilerdirective(P, workingstring, inputstr)
-  workingstring = ""
-  pmode = pmode & ~16
-  ProcedureReturn
+    Case " "
+      inputstr = compilerdirective(P, workingstring, inputstr)
+      workingstring = ""
+      pmode = pmode & ~16
+      ProcedureReturn
   StopParsing
 EndProcedure
 
 
 Procedure.s parseatom(P, inputstr.s)
   StartParsing
-  Case "'"  ; Single Quote
-    compileatom(P, workingstring)
-    workingstring = ""
-    pmode = pmode & ~32
-    ProcedureReturn inputstr
+    Case "'"  ; Single Quote
+      compileatom(P, workingstring)
+      workingstring = ""
+      pmode = pmode & ~32
+      ProcedureReturn inputstr
   StopParsing
 EndProcedure
 
 
 Procedure.s parsestring(P, inputstr.s)
   StartParsing
-  Case "r", "R"
-    If (pmode & 8) = 8
-      pmode = pmode & ~8
-      nextchar = #CR$
-      continueparsing
-    Else
-      continueparsing
-    EndIf
-  Case "\"
-    If (pmode & 8) = 8
-      pmode = pmode & ~8
-      continueparsing
-    Else
-      nextchar = ""
-      pmode = pmode | 8
-    EndIf
-  Case #DQUOTE$  ; Quotation mark
-    If (pmode & 8) = 8
-      pmode = pmode & ~8
-      continueparsing
-      nextchar = ""
-    Else
-      compilestring(P, workingstring)
-      workingstring = ""
-      pmode = pmode & ~4
-      ProcedureReturn inputstr
-    EndIf
+    Case "r", "R"
+      If (pmode & 8) = 8
+        pmode = pmode & ~8
+        nextchar = #CR$
+        continueparsing
+      Else
+        continueparsing
+      EndIf
+    Case "\"
+      If (pmode & 8) = 8
+        pmode = pmode & ~8
+        continueparsing
+      Else
+        nextchar = ""
+        pmode = pmode | 8
+      EndIf
+    Case #DQUOTE$  ; Quotation mark
+      If (pmode & 8) = 8
+        pmode = pmode & ~8
+        continueparsing
+        nextchar = ""
+      Else
+        compilestring(P, workingstring)
+        workingstring = ""
+        pmode = pmode & ~4
+        ProcedureReturn inputstr
+      EndIf
   StopParsing
 EndProcedure
 
 Procedure.s parseimmed(P, inputstr.s)
   StartParsing
-  Case " "
-    If Len(workingstring) > 0
-      checktoken(workingstring)
-    EndIf
-    workingstring.s = ""
-    If *ThisProcess\errorstate
-      ProcedureReturn
-    EndIf
-  Case "$"
-    If Len(workingstring) = 0
-      pmode = pmode | 16
-      inputstr = nextchar + inputstr
+    Case " "
+      If Len(workingstring) > 0
+        checktoken(workingstring)
+      EndIf
+      workingstring.s = ""
+      If *ThisProcess\errorstate
+        ProcedureReturn
+      EndIf
+    Case "$"
+      If Len(workingstring) = 0
+        pmode = pmode | 16
+        inputstr = nextchar + inputstr
+        ProcedureReturn inputstr
+      Else
+        continueparsing
+      EndIf
+    Case #DQUOTE$ ; quotation mark
+      pmode = pmode | 4
       ProcedureReturn inputstr
-    Else
-      continueparsing
-    EndIf
-  Case #DQUOTE$ ; quotation mark
-    pmode = pmode | 4
-    ProcedureReturn inputstr
-  Case "'" ; single quotes
-    pmode = pmode | 32
-    ProcedureReturn inputstr
-  Case "("
-    pmode = pmode | 1
-    If Len(workingstring) > 0
-      checktoken(workingstring)
-    EndIf
-    workingstring.s = ""
-    ProcedureReturn inputstr
-  Case ":"
-    pmode = pmode | 2
-    ProcedureReturn inputstr
+    Case "'" ; single quotes
+      pmode = pmode | 32
+      ProcedureReturn inputstr
+    Case "("
+      pmode = pmode | 1
+      If Len(workingstring) > 0
+        checktoken(workingstring)
+      EndIf
+      workingstring.s = ""
+      ProcedureReturn inputstr
+    Case ":"
+      pmode = pmode | 2
+      ProcedureReturn inputstr
   StopParsing
 EndProcedure
 
 Procedure.s parsecomment(P, inputstr.s)
   StartParsing
-  Case ")"
-    pmode = pmode & ~1
-    ProcedureReturn inputstr
+    Case ")"
+      pmode = pmode & ~1
+      ProcedureReturn inputstr
   StopParsing
 EndProcedure
 
 Procedure.s parsecompile(P, inputstr.s)
   StartParsing
-  Case " "
-    If Len(workingstring) > 0
-      checktoken(workingstring)
-    EndIf
-    workingstring.s = ""
-    If *ThisProcess\errorstate
-      ProcedureReturn
-    EndIf
-  Case #DQUOTE$ ; quotation mark
-    pmode = pmode | 4
-    ProcedureReturn inputstr
-  Case "'" ; single quotes
-    pmode = pmode | 32
-    ProcedureReturn inputstr
-  Case "("
-    If Len(workingstring) > 0
-      checktoken(workingstring)
-    EndIf
-    workingstring.s = ""
-    pmode = pmode | 1
-    ProcedureReturn inputstr
-  Case ";"
-    If Len(workingstring) > 0
-      AddLine("Error: unknown token '"+workingstring+";'.")
-      ResetP(P, _error)
+    Case " "
+      If Len(workingstring) > 0
+        checktoken(workingstring)
+      EndIf
+      workingstring.s = ""
+      If *ThisProcess\errorstate
+        ProcedureReturn
+      EndIf
+    Case #DQUOTE$ ; quotation mark
+      pmode = pmode | 4
       ProcedureReturn inputstr
-    EndIf
-    tokenize(P, "exit")
-    If (flowcontroltop > 0)
-      AddLine("Error: Unexpected end of word.")
-      flowcontroltop = 0
-      ResetP(P, _error)
-      ProcedureReturn
-    Else
-      addline("Word added: '"+AtomToString(cword\nameatom)+"' of length "+Str(cword\instructioncount)+".")
-      pmode = pmode & ~2
-      popstate(P)
-    EndIf
-    ProcedureReturn inputstr
+    Case "'" ; single quotes
+      pmode = pmode | 32
+      ProcedureReturn inputstr
+    Case "("
+      If Len(workingstring) > 0
+        checktoken(workingstring)
+      EndIf
+      workingstring.s = ""
+      pmode = pmode | 1
+      ProcedureReturn inputstr
+    Case ";"
+      If Len(workingstring) > 0
+        AddLine(0, "Error: unknown token '"+workingstring+";'.")
+        ResetP(P, _error)
+        ProcedureReturn inputstr
+      EndIf
+      tokenize(P, "exit")
+      If (flowcontroltop > 0)
+        AddLine(0, "Error: Unexpected end of word.")
+        flowcontroltop = 0
+        ResetP(P, _error)
+        ProcedureReturn
+      Else
+        addline(0, "Word added: '"+AtomToString(cword\nameatom)+"' of length "+Str(cword\instructioncount)+".")
+        pmode = pmode & ~2
+        popstate(P)
+      EndIf
+      ProcedureReturn inputstr
   StopParsing
- EndProcedure
+EndProcedure
 
  
  
@@ -499,7 +499,7 @@ Procedure newword(P, inputstr.s)
   Define wordatom.i
   Select inputstr
     Case ":", ";", "@", "!", "var"
-      AddLine("Error: invalid name.")
+      AddLine(0, "Error: invalid name.")
       pmode = 0
       ResetP(P, _error)
       ProcedureReturn
@@ -512,11 +512,11 @@ Procedure newword(P, inputstr.s)
       cword = atomtoword(P\Node, wordatom)
       cword\nameatom = wordatom
       cword\instructioncount = 0
-      AddLine("Recompiling word '"+inputstr+"'.")
+      AddLine(0, "Recompiling word '"+inputstr+"'.")
     Else
       pushstate(P)
       cword = newcodeword(P\Node, 1024, wordatom)
-      AddLine("Compiling new word '"+inputstr+"'.")
+      AddLine(0, "Compiling new word '"+inputstr+"'.")
     EndIf
   EndIf
 EndProcedure
@@ -584,7 +584,7 @@ Procedure loadfile(P, filename.s)
     Wend
     CloseFile(filenum)
   Else
-    addline("Error: '"+filename+"' could not be accessed.")
+    addline(0, "Error: '"+filename+"' could not be accessed.")
     ResetP(P, _error)
   EndIf
 EndProcedure
@@ -629,9 +629,9 @@ N\defines("2!") = "2 tuple_setelement "
 N\defines("3!") = "3 tuple_setelement "
 N\defines("4!") = "4 tuple_setelement "
 
-; IDE Options = PureBasic 5.71 LTS (Linux - x64)
-; CursorPosition = 229
-; FirstLine = 225
+; IDE Options = PureBasic 5.71 LTS (Windows - x64)
+; CursorPosition = 514
+; FirstLine = 510
 ; Folding = ------
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

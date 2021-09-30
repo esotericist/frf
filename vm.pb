@@ -86,7 +86,7 @@ Procedure p_send(P)
   If processexists(P\Node, targetPID)
     sendmessage(P\node, P\pid, targetPID, messageID)
   Else
-    AddLine("Error: invalid process ID")
+    AddLine(0, "Error: invalid process ID")
     ResetP(P, _error)
     ProcedureReturn
   EndIf
@@ -156,7 +156,7 @@ EndProcedure
 Procedure ResetP(P, reasonatom.i)
   ;Define *object.dataobject, *test.datastack
   If pmode & 2 And cword\nameatom > 0
-    AddLine("Freeing memory for word: "+AtomToString(cword\nameatom))
+    AddLine(0, "Freeing memory for word: "+AtomToString(cword\nameatom))
     DeleteMapElement(P\Node\atomtowordtable(),Str(cword\nameatom))
     DeleteMapElement(P\Node\wordtoatomtable(),Str(cword))
     cword\nameatom = 0
@@ -217,7 +217,7 @@ Procedure pushstate(P)
     ctop + 1
     *ThisProcess\context = newcontext(P)
   Else
-    AddLine("Error: Callstack overflow.")
+    AddLine(0, "Error: Callstack overflow.")
     ResetP(P, _error)
   EndIf
 EndProcedure
@@ -283,7 +283,7 @@ Procedure executetimeslice(P, timemax.i)
         Default
           debugstring+AtomToString(primtoatom(P\Node,thisop))
       EndSelect
-      AddLine(debugstring)
+      AddLine(0, debugstring)
     EndIf
     q + 1
     *ThisProcess\currentop + 1
@@ -336,7 +336,7 @@ Procedure procreport(P)
   Else
     resultstring + " OK"
   EndIf
-  AddLine(resultstring)
+  AddLine(0, resultstring)
 EndProcedure
 
 Procedure scheduler(N)
@@ -382,7 +382,7 @@ Procedure interpret(N, inputline.s)
   If Len(Trim(inputline)) = 0
     ProcedureReturn
   EndIf
-  AddLine(" > "+inputline)
+  AddLine(0, " > "+inputline)
   DisableGadget(1,1)
   If N\interpreterprocess = 0
     Define P
@@ -414,7 +414,7 @@ Procedure interpret(N, inputline.s)
   parseline(P,inputline)
   ;  appendinstruction(P, @p_exit())
   If (flowcontroltop > 0) And Not (pmode & 2)
-    AddLine("Error: Unexpected end of stream.")
+    AddLine(0, "Error: Unexpected end of stream.")
     flowcontroltop = 0
     ResetP(P, _error)
   EndIf
@@ -424,8 +424,8 @@ Procedure interpret(N, inputline.s)
 EndProcedure
 
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 234
-; FirstLine = 230
+; CursorPosition = 88
+; FirstLine = 85
 ; Folding = ----
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

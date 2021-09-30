@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.71 LTS (Windows - x64)">
+<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.71 LTS (Linux - x64)">
   <section name="config">
     <options closefiles="1" openmode="0" name="frf"/>
   </section>
   <section name="data">
     <explorer view="" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2020-01-08 02:36" user="eso" host="DESKTOP-GF89BI0"/>
+    <lastopen date="2020-11-21 22:03" user="eso" host="nuvi"/>
   </section>
   <section name="files">
     <file name="atoms.pb">
@@ -16,7 +16,7 @@
     </file>
     <file name="compiler.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="22b8ce0e6d116faebc6a365c0cc097d4"/>
+      <fingerprint md5="550824e68de76178c211d312e0ebeeea"/>
     </file>
     <file name="defines.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
@@ -24,7 +24,7 @@
     </file>
     <file name="frf.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="6802b141d5006ffeed8309bdd208401a"/>
+      <fingerprint md5="ff5dc00cbf4fc8fb3b9d364703f60c63"/>
     </file>
     <file name="mem.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
@@ -32,7 +32,7 @@
     </file>
     <file name="prims.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="122787bc84be0590468c58bda39e4e6c"/>
+      <fingerprint md5="782429db86dafa6c70490f9529ff2cf8"/>
     </file>
     <file name="propgrid.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="+"/>
@@ -44,11 +44,11 @@
     </file>
     <file name="structures.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="31f95e0f968d8c4624fed8b4772e7bbe"/>
+      <fingerprint md5="8bd59991a657763ee2e84a320942c0ec"/>
     </file>
     <file name="vm.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="cf7ddbf5a0cacfc9852305d445cb18f4"/>
+      <fingerprint md5="28fc4627ef9147e205fa0d773c4fc58a"/>
     </file>
   </section>
   <section name="targets">

@@ -141,13 +141,13 @@ Structure Codeset
 EndStructure
 
 
-Structure module
+Structure Module
   nameatom.i
   
   refcount.i         ; It's possible for a new version of a module to be compiled
   superceded.i       ; mid-flight. These fields help track that.
   
-  List requires.module()  ; a list of module pointers that are needed by this module.
+  List requires.Module()  ; a list of module pointers that are needed by this module.
   Map defines.s(512) ; this-module-only defines
   Map wordlist.codeset(512) ; all the words this module knows
   *var.variableset          ; all the variables this module knows
@@ -172,7 +172,7 @@ Structure CompileState
   parsemode.i
   compilelevel.i
   compilestack.compileitem[1024]
-  *module.module
+  *module.Module
   List modulevariables.s()
   *codeword.Codeset
   List wordvariables.s()
@@ -236,7 +236,7 @@ Structure ProcessState
   debugmode.i       ; 0 for off, 1 for per-instruction debug output
   instructions.i    ; The number of instructions this process has executed this timeslice.
   opmax.i           ; The maximum number of instructions this process my execute in one timeslice.
-  runtime.i         ; Time in ms this process has executed so far in its life.
+  Runtime.i         ; Time in ms this process has executed so far in its life.
   prevtime.i        ; Time in ms this process had executed prior to its current task. (only meaningful for interpreted processes)
 
   *d.datastack
@@ -380,8 +380,7 @@ CompilerElse
     ElapsedMilliseconds()                       ; Once I figure out how to do high res timers on both platforms, I'll move to that. Then again, ms precision may be fine.
   EndMacro
 CompilerEndIf
-
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
+; IDE Options = PureBasic 5.71 LTS (Linux - x64)
 ; CursorPosition = 150
 ; FirstLine = 138
 ; Folding = ---

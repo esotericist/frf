@@ -895,13 +895,12 @@ EndProcedure
 registerprim(setmaxops, @p_setmaxops())
 
 Procedure p_stacktrace(P) ; ( -- )
-  AddLine("Stack: ( "+stacktrace(P)+" )")
+  AddLine(0, "Stack: ( "+stacktrace(P)+" )")
 EndProcedure
 registerprim(stacktrace, @p_stacktrace())
-
-; IDE Options = PureBasic 4.70 Beta 1 (Windows - x64)
-; CursorPosition = 846
-; FirstLine = 820
+; IDE Options = PureBasic 5.71 LTS (Linux - x64)
+; CursorPosition = 881
+; FirstLine = 872
 ; Folding = ----------
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\

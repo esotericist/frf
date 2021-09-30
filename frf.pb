@@ -5,7 +5,7 @@
 EnableExplicit
 
 ;- Declares, includes, and initialization
-Declare AddLine(inputstr.s)
+Declare AddLine(EditorGadgetID.i, inputstr.s)
 Declare eventcheck(N,statusnote.s)
 Declare WindowResize()
 Declare populatenodestateview(N)
@@ -39,9 +39,9 @@ exit.i = 0
 
 Gosub SetupWindow
 
-AddLine("frf shell by eso.")
-addline(" ")
-AddLine(" ready.")
+AddLine(0, "frf shell by eso.")
+addline(0, " ")
+AddLine(0, " ready.")
 
 
 Define title.s, activity.i
@@ -84,7 +84,7 @@ Procedure replloadfile(N, filename.s)
     Wend
     CloseFile(filenum)
   Else
-    addline("Error: '"+filename+"' could not be accessed.")
+    addline(0, "Error: '"+filename+"' could not be accessed.")
   EndIf
 EndProcedure
 
@@ -113,7 +113,7 @@ Procedure eventcheck(N, statusnote.s)
   If messages > 0
     For i = 1 To messages
       messageID= recvmessage(N, 0)
-      AddLine(formatobject(N, messageID))
+      AddLine(0, formatobject(N, messageID))
     Next i
   EndIf
   
@@ -142,7 +142,7 @@ Procedure eventcheck(N, statusnote.s)
           Case 1
             Define RequestedFile.s
             RequestedFile = OpenFileRequester("Load frf source:",GetCurrentDirectory(),"frf source|*.frf",0)
-            AddLine("Loading from source file: " + RequestedFile )
+            AddLine(0, "Loading from source file: " + RequestedFile )
             replloadfile(N, RequestedFile)
           Case 2
             exit = 1
@@ -255,11 +255,12 @@ Procedure WindowResize()
 EndProcedure
 
 
-Procedure AddLine(outputstr.s)
-  Define EditorGadgetID.i = 0
+Procedure AddLine(EditorGadgetID.i, outputstr.s)
   If Len(outputstr) > 0
     AddGadgetItem(0, -1, outputstr)
-
+    
+    ; platform specific code for moving the editor to the bottom line:
+    ; from: https://www.purebasic.fr/english/viewtopic.php?p=538446#p538446
     CompilerSelect #PB_Compiler_OS
       CompilerCase #PB_OS_Linux
 
@@ -384,7 +385,7 @@ Procedure p_dot(P)
     outstring = "[From process "+Str(*ThisProcess\pid)+": "+outstring+" ]"
   EndIf
   
-  addline(outstring)
+  addline(0, outstring)
 EndProcedure
 registerprimunprintable(".", @p_dot())
 
@@ -396,8 +397,7 @@ registerprim(clear,@p_clear())
 
 Return
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 252
-; FirstLine = 215
+; CursorPosition = 7
 ; Folding = --
 ; EnableXP
 ; CurrentDirectory = C:\Users\void\Dropbox\
