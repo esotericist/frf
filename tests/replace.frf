@@ -1,0 +1,47 @@
+
+
+: replacepair ( inputstring firsttarget secondtarget firstreplacement secondreplacement -- resultstring replacedpairs)
+  0
+  begin
+    6 pick 6 pick instr dup 
+    if
+      7 rotate swap 1 - strcut 7 pick strlen strcut swap pop 5 pick swap strcat
+      dup 7 pick instr dup
+      if
+        1 - strcut 7 pick strlen strcut swap pop 5 pick swap strcat strcat strcat  -6 rotate
+        1 +
+       else
+        pop
+        break
+       then
+     else
+      pop -5 rotate 4 popn
+      break
+     then
+   repeat
+ ;
+
+: fileloop ( -- )
+  1 
+  begin
+    dup intostr dup strlen 2 < if "0" swap strcat then
+    "ch" swap strcat ".html" strcat dup "File: " swap strcat .
+    0 "" freadto pop 
+    "<span class=\"ITALIC\">" "</span>" "<i>" "</i>" replacepair intostr " italic tags replaced." strcat . 
+    "<span class=\"SC\">" "</span>" "<b>" "</b>" replacepair intostr " SC tags replaced." strcat . 
+    over intostr dup strlen 2 < if "0" swap strcat then
+    "../ch" swap strcat ".html" strcat 
+    swap 0 fwrite pop
+    1 +
+  dup 28 > until pop
+ ;
+
+: editfile ( s -- )
+  dup 0 "" freadto pop
+  "<span class=\"ITALIC\">" "</span>" "<i>" "</i>" replacepair intostr " italic tags replaced." strcat .
+    "<span class=\"SC\">" "</span>" "<b>" "</b>" replacepair intostr " SC tags replaced." strcat . 
+  "<span class=\"italic\">" "</span>" "<i>" "</i>" replacepair intostr " italic tags replaced." strcat .
+    "<span class=\"bold\">" "</span>" "<b>" "</b>" replacepair intostr " SC tags replaced." strcat . 
+  swap "2" strcat 0 fwrite pop
+
+;

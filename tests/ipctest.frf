@@ -1,0 +1,19 @@
+: ipctest ( -- )
+  pid
+  fork
+  dup not if
+    pop dup
+    "hello to " swap intostr strcat ", from " strcat pid intostr strcat send
+    exit
+  else
+    pop pop
+    begin
+      messages if
+        receive
+        tuple_explode pop 
+        "received: \"" swap strcat "\" from " strcat swap intostr strcat .
+        break
+      then
+    repeat
+  then
+;

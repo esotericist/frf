@@ -1,0 +1,6 @@
+: infloop ( -- )
+  fork
+  if exit then
+  begin
+  repeat
+;
