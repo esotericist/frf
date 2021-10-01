@@ -1,5 +1,6 @@
 #include <stdbool.h>
-
+#include "sglib.h"
+#include "sds.h"
 struct node_state {
     /**
      * int nextPID
@@ -48,5 +49,3 @@ struct code_set {
      */
 
 };
-
-#define str_eq( a, b ) ( sdscmp( (a), (b) ) == 0)
