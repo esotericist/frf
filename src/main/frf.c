@@ -5,6 +5,7 @@
 #include "sds.h"
 #include "frf.h"
 #include "datatypes.h"
+#include "atoms.h"
 
 
 
@@ -265,6 +266,9 @@ int main(int argc, char **argv) {
     GC_INIT();
     initcommonstring();
 
+    atoms_init();
+
+
     pmode.flags = 0;
     
     /*
@@ -274,11 +278,38 @@ int main(int argc, char **argv) {
     printf( "%s\n%s\n%s == %s : %i\n", leftstr, startstr, startstr, "9", str_eq ( startstr,  sdsnew( "9" ) ) );
     */
 
-     sds input = readfile();
+     // sds input = readfile();
 
-    // parse_line( input );
 
-     // printf( "%s", input );
+    
+
+     struct sglib_hashed_sListType_iterator it;
+     struct slist *nn, *ll;
+
+     sListType *table[slist_hash_size];
+
+     sglib_hashed_sListType_init( table );
+
+     nn = GC_malloc( sizeof(struct slist ) );
+     nn->s = sdsnew( "asdf" );
+
+    sglib_hashed_sListType_add( table, nn );
+
+    for( ll=sglib_hashed_sListType_it_init(&it, table);ll!=NULL; ll=sglib_hashed_sListType_it_next(&it)) {
+        printf("%s, %zu\n", ll->s, ll->data );
+    }
+
+     // struct sglib_hashed_slist_iterator it;
+
+     size_t i = newatom( sdsnew("asdf"));
+     newatom( sdsnew( "1234" ));
+     newatom( sdsnew( "abcd" ) );
+     printf( "%zu, %s\n", i,  atomtostring( i ) );
+     printf( "%i, %s\n", 3, atomtostring( 3));
+     i = verifyatom( sdsnew ( "1234" ) );
+     printf( "%zu, %s\n", i,  atomtostring( i ) );
+
+
 
      return 0;
 }

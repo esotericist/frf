@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include "sglib.h"
 #include "sds.h"
 struct node_state {
