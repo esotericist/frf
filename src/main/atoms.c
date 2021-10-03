@@ -1,4 +1,5 @@
 #include "atoms.h"
+#include <stdlib.h>
 
 size_t atomcount = 0;
 
@@ -12,7 +13,6 @@ size_t atomcount = 0;
 
 sListType *atom_table[slist_hash_size];
 sds atom_strings[slist_hash_size];
-
 
 // in normal usage, atoms-as-datatype are restricted to alphanumeric (lowercase only), period,
 // slash, and underscore. all other characters are dropped. string should be converted to
@@ -84,9 +84,22 @@ sds atomtostring( size_t atom ) {
     return atom_strings[ atom ];
 }
 
-// sets up baseline atom definitions we know we need
+
+// used as part of a registration mechanism so i can specify atoms in .c files before functions
+// which need those atoms defined.
+// see atoms.h for more details on pre-registration
+void preregisteratom( size_t *var,  char *s) {
+    preatoms = realloc( preatoms, sizeof( struct preatom) * (numpreatoms + 1));
+    preatoms[numpreatoms].thevar = var;
+    preatoms[numpreatoms].atom = s;
+    numpreatoms++;
+}
+
+// sets up baseline atom definitions we know we need, including pre-registered atoms
 void atoms_init() {
     stringtoatom( sdsempty() );
-    
-
+    for(int i = 0; i < numpreatoms ; i++ ) {
+        *(preatoms[i].thevar) = newatom( sdsnew( preatoms[i].atom ) );
+    }
+    free(preatoms);
 }

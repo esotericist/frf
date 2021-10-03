@@ -261,6 +261,8 @@ sds readfile() {
      return to_return;
 }
 
+atom(foo)
+atom(bar)
 
 int main(int argc, char **argv) {
     GC_INIT();
@@ -309,7 +311,7 @@ int main(int argc, char **argv) {
      i = verifyatom( sdsnew ( "1234" ) );
      printf( "%zu, %s\n", i,  atomtostring( i ) );
 
-
+    printf( "%s, %s ", atomtostring( a_foo ), atomtostring( a_bar ) );
 
      return 0;
 }
