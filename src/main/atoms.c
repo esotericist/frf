@@ -102,4 +102,13 @@ void atoms_init() {
         *(preatoms[i].thevar) = newatom( sdsnew( preatoms[i].atom ) );
     }
     free(preatoms);
+    a__dsign = stringtoatom( sdsnew( "$" ) );
+    a__dquote = stringtoatom( sdsnew( "\"" ) );
+    a__squote = stringtoatom( sdsnew( "'" ) );
+    a__backslash = stringtoatom( sdsnew( "\\" ) );
+    a__colon = stringtoatom( sdsnew( ":" ) );
+    a__semicolon = stringtoatom( sdsnew( ";" ) );
+    a__parenl = stringtoatom( sdsnew( "(" ) );
+    a__parenr = stringtoatom( sdsnew( ")" ) );
+    a__space = stringtoatom( sdsnew( " " ) );
 }

@@ -3,36 +3,12 @@
 #include "compile.h"
 #include "prims.h"
 
-struct {
-    sds dsign;
-    sds dquote;
-    sds squote;
-    sds backslash;
-    sds colon;
-    sds semicolon;
-    sds parenl;
-    sds parenr;
-    sds space;
-} commonstring;
-
-void initcommonstring() {
-    commonstring.dsign = sdsnew( "$" );
-    commonstring.dquote = sdsnew( "\"" );
-    commonstring.squote = sdsnew( "'" );
-    commonstring.backslash = sdsnew( "\\" );
-    commonstring.colon = sdsnew( ":" );
-    commonstring.semicolon = sdsnew( ";" );
-    commonstring.parenl = sdsnew ("(");
-    commonstring.parenr = sdsnew (")");
-    commonstring.space = sdsnew( " ");
-}
-
 int errorstate = 0;
 
-#define pmode P.parsemode
+#define pmode P->parsemode
  
 void checktoken( sds input) {
-    printf( "%s  ", sdstrim( input, commonstring.space ) );
+    printf( "%s  ", sdstrim( input, sdsnew( " " ) ) );
 }
 
 
@@ -63,22 +39,24 @@ sds parse_whozit( sds inputstr ) {
     return inputstr;
 }
 
-sds parse_string(struct process_state P,  sds inputstr ) {
-    sds str_little_r = sdsnew ("r" );
-    sds str_big_r = sdsnew( "R" );
+sds parse_string(struct process_state *P,  sds inputstr ) {
+    size_t a__little_r = stringtoatom( sdsnew( "r" ));
+    size_t a__big_r = stringtoatom( sdsnew( "R" ));
 
     sds workingstring = sdsempty();
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
         nextchar = split_string( inputstr, 1 );
-        if( (str_eq( nextchar, str_little_r ) || str_eq( nextchar, str_big_r ) ) ) {
+        size_t nextchar_a = verifyatom( nextchar );
+
+        if( (nextchar_a == a__little_r ) || (nextchar_a == a__big_r ) ) {
             if( pmode.escape ) {
                 pmode.escape = false;
                 nextchar = "\n";
             }
             continue_str;
-        } else if ( str_eq( nextchar, commonstring.backslash ) ) {
+        } else if ( nextchar_a == a__backslash ) {
             if( pmode.escape ) {
                 pmode.escape = false;
                 continue_str;
@@ -86,7 +64,7 @@ sds parse_string(struct process_state P,  sds inputstr ) {
                 nextchar = sdsempty();
                 pmode.escape = true;
             }
-        } else if ( str_eq( nextchar, commonstring.dquote ) ) {
+        } else if ( nextchar_a == a__dquote ) {
             if( pmode.escape ) {
                 pmode.escape = false;
                 continue_str;
@@ -106,39 +84,40 @@ sds parse_string(struct process_state P,  sds inputstr ) {
 }
 
 
-sds parse_immed(struct process_state P,  sds inputstr ) {
+sds parse_immed(struct process_state *P,  sds inputstr ) {
     sds workingstring = sdsempty();
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
         nextchar = split_string( inputstr, 1 );
-        if( str_eq( nextchar, commonstring.space ) ) {
+        size_t nextchar_a = verifyatom( nextchar );
+        if( nextchar_a == a__space ) {
             if( sdslen( workingstring) > 0 ) {
                 checktoken(workingstring);
             }
             workingstring = sdsempty();
             
-        } else if( str_eq( nextchar, commonstring.dsign ) ) {
+        } else if( nextchar_a == a__dsign ) {
             if( sdslen( workingstring) == 0 ) {
                 pmode.directive = true;
                 return sdscat( nextchar, inputstr );
             } else {
                 continue_str;
             }
-        } else if( str_eq( nextchar, commonstring.dquote ) ) {
+        } else if( nextchar_a == a__dquote ) {
             pmode.string = true;
             return inputstr;
-        } else if( str_eq(nextchar, commonstring.squote ) ) {
+        } else if( nextchar_a == a__squote ) {
             pmode.atom = true;
             return inputstr;
-        } else if( str_eq(nextchar, commonstring.parenl ) ) {
+        } else if( nextchar_a == a__parenl ) {
             if( sdslen(workingstring) > 0 ) {
                 checktoken(workingstring);
             }
             workingstring = sdsempty();
             pmode.comment = true;
             return inputstr;
-        } else if( str_eq(nextchar, commonstring.colon ) ) {
+        } else if( nextchar_a == a__colon ) {
             pmode.compile = true;
             return inputstr;
         } else {
@@ -148,32 +127,33 @@ sds parse_immed(struct process_state P,  sds inputstr ) {
     return inputstr;
 }
 
-sds parse_compile(struct process_state P,  sds inputstr ) {
+sds parse_compile(struct process_state *P,  sds inputstr ) {
     sds workingstring = sdsempty();
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
         nextchar = split_string( inputstr, 1 );
-        if( str_eq( nextchar, commonstring.space )  ) {
+        size_t nextchar_a = verifyatom( nextchar );
+        if( nextchar_a == a__space ) {
             if( sdslen( workingstring) > 0 ) {
                 checktoken(workingstring);
             }
             workingstring = sdsempty();
             
-        } else if( str_eq( nextchar, commonstring.dquote )  ) {
+        } else if( nextchar_a == a__dquote ) {
             pmode.string = true;
             return inputstr;
-        } else if( str_eq(nextchar, commonstring.squote )  ) {
+        } else if( nextchar_a == a__squote ) {
             pmode.atom = true;
             return inputstr;
-        } else if( str_eq(nextchar, commonstring.parenl )  ) {
+        } else if( nextchar_a == a__parenl ) {
             if( sdslen(workingstring) > 0 ) {
                 checktoken(workingstring);
             }
             workingstring = sdsempty();
             pmode.comment = true;
             return inputstr;
-        } else if( str_eq(nextchar, commonstring.semicolon )  ) {
+        } else if( nextchar_a == a__semicolon ) {
             // word finalization
         } else {
             workingstring = sdscat( workingstring, nextchar );
@@ -182,13 +162,14 @@ sds parse_compile(struct process_state P,  sds inputstr ) {
     return inputstr;
 }
 
-sds parse_comment(struct process_state P,  sds inputstr ) {
+sds parse_comment(struct process_state *P,  sds inputstr ) {
     sds workingstring = sdsempty();
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
         nextchar = split_string( inputstr, 1 );
-        if( str_eq( nextchar, commonstring.parenr ) ) {
+        size_t nextchar_a = verifyatom( nextchar );
+        if( nextchar_a == a__parenr ) {
             pmode.comment = false;
             return inputstr;
         } else {
@@ -199,8 +180,9 @@ sds parse_comment(struct process_state P,  sds inputstr ) {
 }
 
 
-void parse_line( struct process_state P, sds input ) {
-    sds workingstring = sdscat( sdstrim( input, commonstring.space ), commonstring.space );
+void parse_line( struct process_state *P, sds input ) {
+    sds s_space = sdsnew( " " );
+    sds workingstring = sdscat( sdstrim( input, s_space ), s_space );
     while( sdslen( workingstring) > 0 /* and errorstate == 0 */ ) {
         if( pmode.comment ) {
             workingstring = parse_comment( P, workingstring );

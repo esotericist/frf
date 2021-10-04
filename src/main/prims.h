@@ -17,10 +17,10 @@ void finalizeprims();
 
 
 #define prim(x) \
-void p_##x ( struct process_state P );\
+void p_##x ( struct process_state *P );\
 static inline void __attribute__ ((constructor)) p_##x##_() { \
         preregisterprim( &p_##x, (#x)); \
 }\
-void p_##x ( struct process_state P )
+void p_##x ( struct process_state *P )
 
 #endif

@@ -10,7 +10,7 @@
 #include "prims.h"
 
 
-sds readfile( struct process_state P ) {
+sds readfile( struct process_state *P ) {
     sds to_return = sdsempty();
 
      char buffer[BUFSIZ];
@@ -36,14 +36,12 @@ atom(bar)
 
 int main(int argc, char **argv) {
     GC_INIT();
-    initcommonstring();
-
     atoms_init();
     finalizeprims();
 
-    struct process_state p;
+    struct process_state *p = GC_malloc( sizeof( struct process_state ) );
 
-    p.parsemode.flags = 0;
+    p->parsemode.flags = 0;
     sds input = readfile( p );
     
     /*

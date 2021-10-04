@@ -8,6 +8,13 @@ size_t newatom( sds str );
 sds atomtostring( size_t atom );
 void atoms_init();
 
+
+// some pre-defined atoms we might need in c that can't be pre-registered
+// using the pre-registration stuff below.
+// initialized in atoms_init() along with pre-registered things
+size_t a__dsign, a__dquote, a__squote, a__backslash, a__colon, a__semicolon;
+size_t a__parenl, a__parenr, a__space;
+
 // atom pre-registration bits.
 // the principle at work here is one can use the atom() macro to specify an atom in
 // a given c file, in order to produce a variable that contains the numeric value
