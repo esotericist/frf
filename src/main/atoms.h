@@ -1,5 +1,5 @@
 #ifndef ATOMS_H_
-#define ATOMS_H
+#define ATOMS_H_
 #include "datatypes.h"
 
 size_t verifyatom( sds str );
