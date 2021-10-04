@@ -55,9 +55,9 @@ size_t verifyatom( sds str ) {
 }
 
 // ensure a string exists as an atom. use with care: this does not perform any validation.
-// normally you want to use stringtoatom() to ensure the atom meets our specifications;
+// normally you want to use newatom() to ensure the atom meets our specifications;
 // in particular case insensitive contexts (primary atom uses) need to be converted to lowercase.
-size_t newatom( sds str ) {
+size_t stringtoatom( sds str ) {
     int i = verifyatom( str );
     if( i ) {
         return i;
@@ -74,10 +74,10 @@ size_t newatom( sds str ) {
 // registers a string as an atom if it isn't already registered, returns existing value if it already is.
 // leading/trailing spaces are stripped, and string is converted to lowercase because standard atoms
 // are intended to be effectively case insensitive (but always displayed as lowercase when printed).
-size_t stringtoatom( sds str ) {
+size_t newatom( sds str ) {
     str = sdstrim(  str , " " );
     sdstolower( str ); 
-    return newatom( sanitizeatomstring( str ) ) ;
+    return stringtoatom( sanitizeatomstring( str ) ) ;
 }
 
 sds atomtostring( size_t atom ) {
