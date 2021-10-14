@@ -31,7 +31,7 @@ sds sanitizeatomstring( sds str ) {
             case '0' ... '9':
             case '_':
             case 'a' ... 'z': {
-                sdscat(outstr, sdsnewlen( &c, 1 ) );
+                outstr = sdscatlen(outstr, &c, 1 );
                 continue;
             }
         }
