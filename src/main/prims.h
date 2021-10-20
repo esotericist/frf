@@ -4,6 +4,10 @@
 #include "atoms.h"
 
 
+
+void push_int(struct process_state *P, uint64_t i );
+int64_t pop_int(struct process_state *P );
+
 struct preprim {
     void *thefunc;
     char *prim;
@@ -12,8 +16,9 @@ struct preprim {
 struct preprim *preprims; size_t numpreprims;
 
 void preregisterprim( void *thefunc, char *str );
-void finalizeprims();
-
+void finalizeprims( struct node_state *N );
+void * fetchprim( struct node_state *N, size_t atom );
+sds dump_stack( struct process_state *P );
 
 
 #define prim(x) \

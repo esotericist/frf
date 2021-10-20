@@ -34,21 +34,91 @@ sds readfile( struct process_state *P ) {
 atom(foo)
 atom(bar)
 
+atom(push_int)
+atom(pop_int)
+
+typedef void (*call_prim)(struct process_state *p);
+
+void append_cp( struct process_state *P, size_t v ) {
+    P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
+}
+
+
 int main(int argc, char **argv) {
     GC_INIT();
     atoms_init();
-    finalizeprims();
 
-    struct process_state *p = GC_malloc( sizeof( struct process_state ) );
+    struct node_state *N = newnode();
 
-    p->parsemode.flags = 0;
-    sds input = readfile( p );
-    
+    finalizeprims( N );
+
+    struct process_state *P = newprocess( N );
+
+    P->current_codestream = newcodeset(N, 1024, 0 );
+    uintptr_t push_i = (uintptr_t)(void *) fetchprim( N, a_push_int );
+    uintptr_t pop_i = (uintptr_t)(void *) fetchprim( N, a_pop_int );
+    append_cp( P, push_i );
+    append_cp( P, 25 );
+    append_cp( P, push_i );
+    append_cp( P, -3 );
+    append_cp( P, push_i );
+    append_cp( P, 15 );
+    append_cp( P, push_i );
+    append_cp( P, 0 );
+    append_cp( P, pop_i );
+    append_cp( P, pop_i );
+    append_cp( P, pop_i );
+    append_cp( P, pop_i );
+
     /*
-    sds startstr = sdsnew( "123456789");
-    sds leftstr = split_string( startstr, -1 );
+    P->current_codestream->codestream[0].p_val = fetchprim( N, a_push_int ) ;
+    P->current_codestream->codestream[1].u_val = 32;
+    P->current_codestream->codestream[2].p_val = fetchprim( N, a_push_int ) ;
+    P->current_codestream->codestream[3].u_val = -10;
+    P->current_codestream->codestream[4].p_val = fetchprim( N, a_push_int ) ;
+    P->current_codestream->codestream[5].u_val = 7;
+    P->current_codestream->length=6;
+    */
 
-    printf( "%s\n%s\n%s == %s : %i\n", leftstr, startstr, startstr, "9", str_eq ( startstr,  sdsnew( "9" ) ) );
+    P->currentop = 0;
+    printf(" stack: ");
+    while( true ) {
+        size_t pos = P->currentop++;
+        call_prim ptr = (void *)(uintptr_t)P->current_codestream->codestream[pos].p_val;
+        ptr( P );
+        iListType *tmp = alloc_ilist();
+        tmp->first.p_val = (uintptr_t)ptr;
+        sds primname = atomtostring( sglib_hashed_iListType_find_member( N->primtoatomtable, tmp )->second.a_val );
+        printf("%s\n %s >", primname, dump_stack( P ) );
+        // print_stack( P );
+        if ( P->currentop >= P->current_codestream->instructioncount ) {
+            break;
+        }
+    }
+
+    printf("\n");
+    // print_stack( P );
+
+
+    // struct process_state *p = GC_malloc( sizeof( struct process_state ) );
+    /*
+    push_int(P, 5 );
+    push_int(P, -6 );
+    push_int(P, 7 );
+
+    
+
+    printf( "%ld, ", pop_int( P ) );
+    printf( "%ld, ", pop_int( P ) );
+    printf( "%ld, ", pop_int( P ) );
+
+    printf( "\n");
+    */
+
+    P->parsemode.flags = 0;
+    /*
+    sds input = readfile( p );
+    sdstolower ( input );
     */
 
 

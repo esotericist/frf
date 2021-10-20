@@ -45,4 +45,17 @@ static inline void __attribute__ ((constructor)) a_##x##_() { \
         preregisteratom( &a_##x, (#x)); \
 }
 
+
+atom(type_empty)
+atom(type_object)
+atom(type_atom)
+atom(type_prim)
+atom(type_integer)
+atom(type_float)
+atom(type_string)
+atom(type_tuple)
+atom(type_stackmark)
+atom(type_variable)
+atom(type_unknown)
+
 #endif
