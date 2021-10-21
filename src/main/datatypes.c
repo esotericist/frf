@@ -68,9 +68,6 @@ struct code_set* newcodeset ( struct node_state *N, size_t size, size_t wordatom
 
 
 void append_cp( struct process_state *P, size_t v ) {
-    if( v == 0 ) {
-        return;
-    }
     if( P->current_codestream->instructioncount > P->current_codestream->length - 10) {
         size_t size = P->current_codestream->length + 1024;
         P->current_codestream = GC_realloc( P->current_codestream , sizeof( struct code_set ) + sizeof ( struct code_point ) * (size) );
