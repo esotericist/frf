@@ -178,8 +178,6 @@ sds parse_immed(struct process_state *P,  sds inputstr ) {
             continue_str;
         }
     }
-    int len = sdslen(inputstr);
-    printf("%i, %s\n", len, inputstr );
     return inputstr;
 }
 
@@ -261,6 +259,4 @@ void parse_line( struct process_state *P, sds input ) {
             workingstring = parse_immed( P, workingstring );
         }
     }
-    int len = sdslen(input);
-    printf("%i, %s\n", len, input );
 }
