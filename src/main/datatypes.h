@@ -169,7 +169,7 @@ struct process_state {
      */    
 };
 
-inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
+static inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
 struct node_state* newnode();
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
