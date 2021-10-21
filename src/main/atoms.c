@@ -111,4 +111,8 @@ void atoms_init() {
     a__parenl = stringtoatom( sdsnew( "(" ) );
     a__parenr = stringtoatom( sdsnew( ")" ) );
     a__space = stringtoatom( sdsnew( " " ) );
+    a__plus = stringtoatom(sdsnew("+"));
+    a__percent = stringtoatom(sdsnew("%"));
+    a__minus = stringtoatom(sdsnew("-"));
+    a__newline = stringtoatom(sdsnew("\n"));
 }

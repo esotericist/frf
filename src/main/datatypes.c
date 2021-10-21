@@ -66,6 +66,20 @@ struct code_set* newcodeset ( struct node_state *N, size_t size, size_t wordatom
     return new_cs;
 }
 
+
+void append_cp( struct process_state *P, size_t v ) {
+    if( v == 0 ) {
+        return;
+    }
+    if( P->current_codestream->instructioncount > P->current_codestream->length - 10) {
+        size_t size = P->current_codestream->length + 1024;
+        P->current_codestream = GC_realloc( P->current_codestream , sizeof( struct code_set ) + sizeof ( struct code_point ) * (size) );
+        P->current_codestream->length = size;
+    }
+
+    P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
+}
+
 struct process_state* newprocess( struct node_state *N ) {
     struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );
     // more init stuff goes here
@@ -73,6 +87,7 @@ struct process_state* newprocess( struct node_state *N ) {
     new_P->d = GC_malloc( sizeof( struct datastack ) + sizeof ( struct datapoint ) * (max) );
     new_P->d->max = max;
     new_P->parsemode.flags = 0;
+    new_P->node = N;
     
     return new_P;
 }

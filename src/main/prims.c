@@ -9,10 +9,13 @@ void preregisterprim( void *thefunc,  char *s) {
     numpreprims++;
 }
 
+extern sListType *atom_table[slist_hash_size];
+
 void finalizeprims( struct node_state *N ) {
     for(int i = 0; i < numpreprims ; i++ ) {
         uintptr_t new_prim_ptr = (uintptr_t)(void*) preprims[i].thefunc;
-        size_t new_atom_val = newatom( sdsnew( preprims[i].prim ) );
+        sds primname = sdstrim ( sdsnew( preprims[i].prim ), " " );
+        size_t new_atom_val = stringtoatom( primname );
         iListType *new_prim_entry  = alloc_ilist();
         iListType *new_atom_entry = alloc_ilist();
         new_prim_entry->first.p_val = new_prim_ptr;
@@ -35,6 +38,9 @@ void * fetchprim( struct node_state *N, size_t atom ) {
 }
 
 size_t checktype( struct datapoint *dp ) {
+    if( dp->u_val == 0 ) {
+        return a_type_invalid;
+    }
     if( ( dp->u_val & 3 ) == 0) {
         struct dataobject* dobj = (struct dataobject * ) dp->p_val;
         if( dobj->typeatom ) {
@@ -52,6 +58,9 @@ size_t checktype( struct datapoint *dp ) {
 
     return a_type_unknown;
 }
+
+#pragma GCC push_options
+#pragma GCC optimize ("align-functions=16")
 
 
 int64_t dp_get_int( struct datapoint *dp ) {
@@ -122,4 +131,62 @@ prim(push_int) {
 
 prim(pop_int) {
     printf( "%ld, ", pop_int(P) );
+}
+
+prim(dup) {
+    P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 1].u_val;
+    P->d->top++;
+}
+
+prim(pop) {
+    P->d->stack[ --P->d->top ].u_val = 0;
+}
+
+prim(popn) {
+    size_t count = pop_int ( P );
+    if( count >= 0 ) {
+        for( size_t i = 0; i < count ; i ++ ) {
+            pop_int( P );
+        }
+    }
+}
+
+// unconditional jump primarily used by the compiler
+// pulls its address from the top of the stack
+prim(jmp) {
+    P->currentop = pop_int( P );
+}
+
+// ( i1 i2 -- )
+// i1 is target, i2 is logical value to decide whether to jump 
+prim(cjmp) {
+    if( pop_int( P ) ) {
+        P->currentop = pop_int( P );
+    } else {
+        pop_int( P );
+    }
+}
+
+prim2( add, + ) {
+    push_int( P, pop_int( P) + pop_int (P) );
+}
+
+prim2( minus, - ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first - second );
+}
+
+prim2( mult, * ) {
+    push_int( P, pop_int( P) * pop_int (P) );
+}
+
+prim2( div, / ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first / second );
+}
+
+prim(depth) {
+    push_int( P, P->d->top );
 }

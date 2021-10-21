@@ -16,12 +16,10 @@ sds readfile( struct process_state *P ) {
      char buffer[BUFSIZ];
 
      FILE *thefile;
-     thefile = fopen( "/home/eso/devwork/frf/tests/ipctest.frf", "r" );
+     thefile = fopen( "/home/eso/devwork/frf/tests/prototype.frf", "r" );
 
      while( fgets( buffer, BUFSIZ, thefile ) != NULL ) {
-         // to_return = sdscat( to_return, buffer );
          to_return = sdsnew( buffer );
-         // printf( "%s\n", to_return );
          parse_line( P, to_return);
 
      }
@@ -34,15 +32,10 @@ sds readfile( struct process_state *P ) {
 atom(foo)
 atom(bar)
 
-atom(push_int)
-atom(pop_int)
-
 typedef void (*call_prim)(struct process_state *p);
 
-void append_cp( struct process_state *P, size_t v ) {
-    P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
-}
-
+extern sds numstring;
+extern sds opstring;
 
 int main(int argc, char **argv) {
     GC_INIT();
@@ -52,9 +45,18 @@ int main(int argc, char **argv) {
 
     finalizeprims( N );
 
+    numstring = sdsnew( "0123456789" );
+    opstring = sdsnew( "-$%" );
+
     struct process_state *P = newprocess( N );
 
     P->current_codestream = newcodeset(N, 1024, 0 );
+
+    P->parsemode.flags = 0;
+    sds input = readfile( P );
+    // sdstolower ( input );
+
+    /*
     uintptr_t push_i = (uintptr_t)(void *) fetchprim( N, a_push_int );
     uintptr_t pop_i = (uintptr_t)(void *) fetchprim( N, a_pop_int );
     append_cp( P, push_i );
@@ -69,7 +71,7 @@ int main(int argc, char **argv) {
     append_cp( P, pop_i );
     append_cp( P, pop_i );
     append_cp( P, pop_i );
-
+    */
     /*
     P->current_codestream->codestream[0].p_val = fetchprim( N, a_push_int ) ;
     P->current_codestream->codestream[1].u_val = 32;
@@ -82,14 +84,17 @@ int main(int argc, char **argv) {
 
     P->currentop = 0;
     printf(" stack: ");
-    while( true ) {
+    while( P->current_codestream->instructioncount > 0 ) {
         size_t pos = P->currentop++;
-        call_prim ptr = (void *)(uintptr_t)P->current_codestream->codestream[pos].p_val;
-        ptr( P );
-        iListType *tmp = alloc_ilist();
-        tmp->first.p_val = (uintptr_t)ptr;
-        sds primname = atomtostring( sglib_hashed_iListType_find_member( N->primtoatomtable, tmp )->second.a_val );
-        printf("%s\n %s >", primname, dump_stack( P ) );
+        size_t check_op = P->current_codestream->codestream[pos].u_val;
+        if( check_op & 3 ) {
+            call_prim ptr = (void *)(uintptr_t) ( check_op & ~(3) );
+            ptr( P );
+            iListType *tmp = alloc_ilist();
+            tmp->first.p_val = (uintptr_t)ptr;
+            sds primname = atomtostring( sglib_hashed_iListType_find_member( N->primtoatomtable, tmp )->second.a_val );
+            printf("%s\n %s > ", primname, dump_stack( P ) );
+        }
         // print_stack( P );
         if ( P->currentop >= P->current_codestream->instructioncount ) {
             break;
@@ -114,13 +119,6 @@ int main(int argc, char **argv) {
 
     printf( "\n");
     */
-
-    P->parsemode.flags = 0;
-    /*
-    sds input = readfile( p );
-    sdstolower ( input );
-    */
-
 
 
     

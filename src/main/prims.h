@@ -28,4 +28,11 @@ static inline void __attribute__ ((constructor)) p_##x##_() { \
 }\
 void p_##x ( struct process_state *P )
 
+#define prim2(x, y) \
+void p_##x ( struct process_state *P );\
+static inline void __attribute__ ((constructor)) p_##x##_() { \
+        preregisterprim( &p_##x, (#y)); \
+}\
+void p_##x ( struct process_state *P )
+
 #endif

@@ -116,8 +116,6 @@ struct code_set {
 
 };
 
-struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
-
 struct datapoint {
     union {
         size_t u_val;
@@ -164,6 +162,8 @@ struct process_state {
      */    
 };
 
+struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
+void append_cp( struct process_state *P, size_t v );
 struct process_state* newprocess( struct node_state *N );
 
 

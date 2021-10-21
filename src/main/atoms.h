@@ -13,7 +13,7 @@ void atoms_init();
 // using the pre-registration stuff below.
 // initialized in atoms_init() along with pre-registered things
 size_t a__dsign, a__dquote, a__squote, a__backslash, a__colon, a__semicolon;
-size_t a__parenl, a__parenr, a__space;
+size_t a__parenl, a__parenr, a__space, a__plus, a__percent, a__minus, a__newline;
 
 // atom pre-registration bits.
 // the principle at work here is one can use the atom() macro to specify an atom in
@@ -57,5 +57,6 @@ atom(type_tuple)
 atom(type_stackmark)
 atom(type_variable)
 atom(type_unknown)
+atom(type_invalid)
 
 #endif
