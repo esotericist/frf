@@ -17,7 +17,7 @@ size_t strcount( sds key, sds searched ) {
     if( keylen > searchedlen) {
         return 0;
     }
-    for( size_t i = 0; i < (searchedlen - keylen ) ; i++ ) {
+    for( size_t i = 0; i < (searchedlen - keylen + 1) ; i++ ) {
         if( memcmp( key, searched + i, keylen ) == 0 ) {
             count++;
         }
@@ -25,10 +25,168 @@ size_t strcount( sds key, sds searched ) {
     return count;
 } 
 
+uintptr_t tag_prim (void *v) {
+    return ( (uintptr_t)(void *) v ) | 3;
+}
+
+void append_prim( struct process_state *P, size_t v ) {
+    void * ptr = fetchprim( P->node, v );
+    append_cp( P, tag_prim( ptr ) );
+}
+
+
+atom(if)
+atom(else)  
+atom(then)
+atom(begin)
+atom(until)
+atom(repeat)
+atom(continue)
+atom(break)
+atom(while)
+atom(jmp)
+atom(cjmp)
+
+
+#define flowtopatom     P->flowcontrolstack[P->flowcontroltop].flowatom
+#define flowtopcell     P->flowcontrolstack[P->flowcontroltop].celltarget
+
+bool searchflowstack( struct process_state *P, size_t searchatom ) {
+    for(size_t i = P->flowcontroltop ; i > 0 ; i-- ) {
+        if ( P->flowcontrolstack[i].flowatom == searchatom ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void addflowframe(struct process_state *P, size_t thisatom ) {
+    P->flowcontroltop++;
+    P->flowcontrolstack[P->flowcontroltop].flowatom = thisatom;
+    P->flowcontrolstack[P->flowcontroltop].celltarget = P->current_codestream->instructioncount;
+}
+
+void popflowtop(struct process_state *P ) {
+    P->flowcontrolstack[P->flowcontroltop].flowatom = 0;
+    P->flowcontrolstack[P->flowcontroltop].celltarget = 0;
+    P->flowcontroltop--;
+}
+
+void dropflowframe(struct process_state *P, size_t stackitem ) {
+    for ( size_t i = stackitem ; i < P->flowcontroltop ; i++ ) {
+        P->flowcontrolstack[P->flowcontroltop].flowatom = P->flowcontrolstack[P->flowcontroltop + 1].flowatom;
+        P->flowcontrolstack[P->flowcontroltop].celltarget = P->flowcontrolstack[P->flowcontroltop + 1].celltarget;
+    }
+    P->flowcontroltop--;
+}
+
+/* P, firstcell.i, lastcell.i, keyop.i, targetcell.i */ 
+void updatecells(struct process_state *P, size_t firstcell, size_t lastcell, uintptr_t keyop, size_t targetcell ) {
+    for ( size_t i = firstcell ; i < lastcell ; i++ ) {
+        if( P->current_codestream->codestream[i].u_val == keyop && P->current_codestream->codestream[i+1].u_val ==  keyop ) {
+            P->current_codestream->codestream[i+1].u_val = targetcell;
+        }
+    }
+}
+
+void unexpectedprim( struct process_state *P, size_t foundatom, size_t previousatom ) {
+    printf( "error: unexpected %s after %s\n", atomtostring( foundatom ), atomtostring( previousatom )  );
+}
+
+bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
+    size_t pos_if, pos_then, pos_else, loopstart, loopend;
+    if( maybeop == a_if ) {
+        addflowframe(P, a_if );
+        append_cp(P, 0);
+        append_cp(P, 0);
+    } else if ( maybeop == a_else ) {
+        if( flowtopatom == a_if ) {
+            addflowframe(P, a_else );
+            append_cp(P, 0);
+            append_cp(P, 0);
+        } else {
+            unexpectedprim( P, maybeop, flowtopatom );
+        }
+    } else if ( maybeop == a_then ) {
+        if( flowtopatom == a_if ) {
+            pos_if = flowtopcell;
+            pos_then = P->current_codestream->instructioncount;
+            popflowtop( P );
+            void * ptr = fetchprim( P->node, a_cjmp );
+            P->current_codestream->codestream[pos_if].u_val = tag_prim( ptr ) ;
+            P->current_codestream->codestream[pos_if+1].u_val = pos_then;
+        } else if( flowtopatom == a_else ) {
+            pos_else = flowtopcell;
+            popflowtop ( P );
+            pos_if = flowtopcell;
+            popflowtop ( P );
+            pos_then = P->current_codestream->instructioncount;
+            P->current_codestream->codestream[pos_if].u_val = tag_prim( fetchprim( P->node, a_cjmp ) );
+            P->current_codestream->codestream[pos_if+1].u_val = pos_else+2;
+            P->current_codestream->codestream[pos_else].u_val = tag_prim( fetchprim( P->node, a_jmp ) );
+            P->current_codestream->codestream[pos_else+1].u_val = pos_then;
+        } else {
+            unexpectedprim( P, maybeop, flowtopatom );
+        }
+    } else if ( maybeop == a_begin ) {
+        addflowframe( P, a_begin );
+    } else if ( maybeop == a_until ) {
+        if( flowtopatom == a_begin ) {
+            loopstart = flowtopcell;
+            loopend = P->current_codestream->instructioncount;
+            popflowtop( P );
+            append_prim( P, a_cjmp );
+            append_cp( P, loopstart );
+            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_continue )  ), loopstart);
+            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_break )  ), loopend+2);
+            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_while )  ), loopend+2);
+         } else {
+            unexpectedprim( P, maybeop, flowtopatom );
+        }
+    } else if ( maybeop == a_repeat ) {
+        if( flowtopatom == a_begin ) {
+            loopstart = flowtopcell;
+            loopend = P->current_codestream->instructioncount;
+            popflowtop( P );
+            append_prim( P, a_jmp );
+            append_cp( P, loopstart );
+            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_continue )  ), loopstart);
+            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_break )  ), loopend+2);
+            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_while )  ), loopend+2);
+         } else {
+            unexpectedprim( P, a_repeat, flowtopatom );
+        }
+    } else if ( maybeop == a_while ) {
+        if( searchflowstack(P, a_begin )) {
+            append_prim( P, a_while );
+            append_prim( P, a_while );
+        } else {
+            unexpectedprim( P, maybeop, flowtopatom );
+        }
+    } else if ( maybeop == a_continue ) {
+        if( searchflowstack(P, a_begin )) {
+            append_prim( P, a_continue );
+            append_prim( P, a_continue );
+        } else {
+            unexpectedprim( P, maybeop, flowtopatom );
+        }
+    } else if ( maybeop == a_break ) {
+        if( searchflowstack(P, a_begin )) {
+            append_prim( P, a_break );
+            append_prim( P, a_break );
+        } else {
+            unexpectedprim( P, maybeop, flowtopatom );
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+
 atom(push_int)
 atom(pop_int)
-
-
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -36,7 +194,6 @@ sds numstring;
 sds opstring;
 
 void tokenize( struct process_state *P, sds inputstr ) {
-    
 }
 
 typedef void (*call_prim)(struct process_state *p);
@@ -54,11 +211,15 @@ void checktoken( struct process_state *P, sds input) {
 
     sdstolower( input );
     size_t maybe_op = verifyatom( input );
-    if( maybe_op ) {
-        uintptr_t maybe_prim = (uintptr_t)(void *) fetchprim( P->node, maybe_op );
-        if( maybe_prim ) {
-            append_cp( P, ( maybe_prim | 3 ));
-            return;
+    if( checkflowcontrol(P, maybe_op) ) {
+        return;
+    } else {
+        if( maybe_op ) {
+            void * maybe_prim = fetchprim( P->node, maybe_op );
+            if( maybe_prim ) {
+                append_prim( P, maybe_op );
+                return;
+            }
         }
     }
 

@@ -1,6 +1,41 @@
-1 ( 11 1 cjmp) 2 3 -4 6
+(debugon
+9 dup 5 % 0 =
+over 3 % 0 = or
+)
+
+1 begin
+  dup 3 % 0 = if
+    -1 .
+  then
+  dup 5 % 0 = if
+    -2 .
+  then
+    dup 3 % 0 = over 5 % 0 = or not if
+      dup .
+  then
+  1 + dup 100 >
+until
+
+
+
+(
+1 begin 
+    dup 3 = if
+        2 .
+        break
+    then
+    dup 5 = if
+        break
+    then
+    1 + dup 5 >
+until
+)
+(
+1  11 1 cjmp 2 3 -4 6
 depth popn
 1 1 +
 4 *
 3 -
 2 /
+0 if 2 then 3
+)

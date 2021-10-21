@@ -138,6 +138,23 @@ prim(dup) {
     P->d->top++;
 }
 
+prim(over) {
+    P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 2].u_val;
+    P->d->top++;
+}
+
+prim(depth) {
+    push_int( P, P->d->top );
+}
+
+prim(swap) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, second );
+    push_int( P, first );
+}
+
+
 prim(pop) {
     P->d->stack[ --P->d->top ].u_val = 0;
 }
@@ -152,18 +169,36 @@ prim(popn) {
 }
 
 // unconditional jump primarily used by the compiler
-// pulls its address from the top of the stack
+// pulls its address from the next cell
 prim(jmp) {
-    P->currentop = pop_int( P );
+    size_t pos = P->currentop++;
+    struct code_point *cp = &P->current_codestream->codestream[pos];
+    P->currentop = cp_get_int( cp );
 }
 
-// ( i1 i2 -- )
-// i1 is target, i2 is logical value to decide whether to jump 
+// conditional jump, primarly used by the compiler
+// uses the top entry of the stack for truth, pulls its address from the next cell
 prim(cjmp) {
-    if( pop_int( P ) ) {
-        P->currentop = pop_int( P );
+    size_t pos = P->currentop++;
+    if( !pop_int( P ) ) {
+     struct code_point *cp = &P->current_codestream->codestream[pos];
+        P->currentop = cp_get_int( cp );
+    }
+}
+
+prim(continue) {
+    P->currentop = cp_get_int(&P->current_codestream->codestream[P->currentop]);
+}
+
+prim(break) {
+    P->currentop = cp_get_int(&P->current_codestream->codestream[P->currentop]);
+}
+
+prim(while) {
+    if( pop_int (P) ) {
+        P->currentop++;
     } else {
-        pop_int( P );
+        P->currentop = P->current_codestream->codestream[P->currentop].u_val;
     }
 }
 
@@ -187,6 +222,72 @@ prim2( div, / ) {
     push_int( P, first / second );
 }
 
-prim(depth) {
-    push_int( P, P->d->top );
+prim2( modulo, % ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first % second );
+}
+
+prim2( isequalto, = ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first == second );
+}
+
+prim2( inotsequalto, != ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first == second );
+}
+
+prim2( isgreaterthan, > ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first > second );
+}
+
+prim2( islessthan, < ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first < second );
+}
+
+prim2( isgreaterorequal, >= ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first >= second );
+}
+
+prim2( islesserorequal, <= ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first <= second );
+}
+
+prim( not ) {
+    push_int( P,! pop_int( P) );    
+}
+
+prim( or ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first || second );
+}
+
+prim( and ) {
+    uint64_t second = pop_int ( P );
+    uint64_t first = pop_int ( P );
+    push_int( P, first && second );
+}
+
+prim(debugon) {
+    P->debugmode = true;
+}
+
+prim(debugoff) {
+    P->debugmode = false;
+}
+
+prim2( print, . ) {
+    printf("  %ld", pop_int( P ) );
 }

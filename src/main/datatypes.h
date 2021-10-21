@@ -66,7 +66,6 @@ struct dataobject {
         uintptr_t p_val;
     };
 };
-inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
 
 struct node_state {
 
@@ -94,7 +93,10 @@ struct node_state {
 
 };
 
-struct node_state* newnode();
+struct flowcontrolentry {
+    size_t flowatom;
+    size_t celltarget;
+};
 
 struct code_point {
     union {
@@ -150,6 +152,11 @@ struct process_state {
     size_t currentop;
     struct code_set *current_codestream;
 
+    struct flowcontrolentry flowcontrolstack[1024];
+    size_t flowcontroltop;
+
+    bool debugmode;
+
     /**
      * 
      * int errorstate
@@ -162,6 +169,8 @@ struct process_state {
      */    
 };
 
+inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
+struct node_state* newnode();
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
 struct process_state* newprocess( struct node_state *N );

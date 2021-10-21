@@ -83,17 +83,22 @@ int main(int argc, char **argv) {
     */
 
     P->currentop = 0;
-    printf(" stack: ");
     while( P->current_codestream->instructioncount > 0 ) {
         size_t pos = P->currentop++;
         size_t check_op = P->current_codestream->codestream[pos].u_val;
         if( check_op & 3 ) {
+            sds stackstate;
+            if( P->debugmode ) {
+                stackstate = dump_stack (P );
+            }
             call_prim ptr = (void *)(uintptr_t) ( check_op & ~(3) );
             ptr( P );
             iListType *tmp = alloc_ilist();
             tmp->first.p_val = (uintptr_t)ptr;
             sds primname = atomtostring( sglib_hashed_iListType_find_member( N->primtoatomtable, tmp )->second.a_val );
-            printf("%s\n %s > ", primname, dump_stack( P ) );
+            if( P->debugmode ) {
+                printf("%s > %s\n", stackstate, primname );
+            }        
         }
         // print_stack( P );
         if ( P->currentop >= P->current_codestream->instructioncount ) {
@@ -101,7 +106,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    printf("\n");
+    printf("\n%s\n", dump_stack( P) );
     // print_stack( P );
 
 
