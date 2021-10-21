@@ -10,7 +10,7 @@ over 3 % 0 = or
   dup 5 % 0 = if
     -2 .
   then
-    dup 3 % 0 = over 5 % 0 = or not if
+    dup 3 % 0 != over 5 % 0 != and if
       dup .
   then
   1 + dup 100 >

@@ -234,10 +234,10 @@ prim2( isequalto, = ) {
     push_int( P, first == second );
 }
 
-prim2( inotsequalto, != ) {
+prim2( isnotsequalto, != ) {
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
-    push_int( P, first == second );
+    push_int( P, first != second );
 }
 
 prim2( isgreaterthan, > ) {
