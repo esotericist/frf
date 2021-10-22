@@ -14,10 +14,11 @@ size_t atomcount = 0;
 sListType *atom_table[slist_hash_size];
 sds atom_strings[slist_hash_size];
 
-// in normal usage, atoms-as-datatype are restricted to alphanumeric (lowercase only), period,
+// in common usage, atoms-as-datatype are restricted to alphanumeric (lowercase only), period,
 // slash, and underscore. all other characters are dropped. string should be converted to
-// lowercase in most cases.
+// lowercase beforehand in most cases.
 // we technically can use atoms to hold arbitrary strings, but that's not typical behavior
+// outside of string literals, due to the risk of unbounded atom generation.
 sds sanitizeatomstring( sds str ) {
     int i;
     char c;
