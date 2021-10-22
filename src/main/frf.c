@@ -8,6 +8,7 @@
 #include "atoms.h"
 #include "compile.h"
 #include "prims.h"
+#include "stack.h"
 
 
 sds readfile( struct process_state *P ) {
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
         size_t pos = P->currentop++;
         size_t check_op = P->current_codestream->codestream[pos].u_val;
         if( check_op & 3 ) {
-            sds stackstate;
+            sds stackstate = sdsempty();
             if( P->debugmode ) {
                 stackstate = dump_stack (P );
             }

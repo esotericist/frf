@@ -2,21 +2,24 @@
 9 dup 5 % 0 =
 over 3 % 0 = or
 )
-
 1 begin
   dup 3 % 0 = if
-    -1 .
+    "fizz" .
+    dup 5 % 0 != if
+      " " .
+    then
   then
   dup 5 % 0 = if
-    -2 .
+    "buzz " .
   then
-    dup 3 % 0 != over 5 % 0 != and if
-      dup .
+  dup 3 % 0 != over 5 % 0 != and if
+    dup . " " .
+  then
+  dup 10 % 0 = if
+  "\n" .
   then
   1 + dup 100 >
 until
-
-
 
 (
 1 begin 

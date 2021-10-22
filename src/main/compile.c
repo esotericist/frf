@@ -187,6 +187,8 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
 
 atom(push_int)
 atom(pop_int)
+atom(push_string)
+atom(pop_string)
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -257,6 +259,7 @@ sds parse_whozit( sds inputstr ) {
 sds parse_string(struct process_state *P,  sds inputstr ) {
     size_t a__little_r = stringtoatom( sdsnew( "r" ));
     size_t a__big_r = stringtoatom( sdsnew( "R" ));
+    size_t a__little_n = stringtoatom( sdsnew( "n" ));
 
     sds workingstring = sdsempty();
     sds nextchar = sdsempty();
@@ -265,7 +268,7 @@ sds parse_string(struct process_state *P,  sds inputstr ) {
         nextchar = split_string( inputstr, 1 );
         size_t nextchar_a = verifyatom( nextchar );
 
-        if( (nextchar_a == a__little_r ) || (nextchar_a == a__big_r ) ) {
+        if( (nextchar_a == a__little_r ) || (nextchar_a == a__big_r ) || ( nextchar_a == a__little_n ) ) {
             if( pmode.escape ) {
                 pmode.escape = false;
                 nextchar = "\n";
@@ -285,8 +288,9 @@ sds parse_string(struct process_state *P,  sds inputstr ) {
                 continue_str;
                 nextchar = sdsempty();
             } else {
-                workingstring = sdscatfmt(sdsempty(),"\"%s\"", workingstring );
-                checktoken ( P, workingstring );
+                size_t stringatom = stringtoatom( workingstring );
+                append_prim( P, a_push_string );
+                append_cp(P, stringatom );
                 workingstring = sdsempty();
                 pmode.string = false;
                 return inputstr;
@@ -397,7 +401,7 @@ sds parse_comment(struct process_state *P,  sds inputstr ) {
 
 void parse_line( struct process_state *P, sds input ) {
     sds s_space = sdsnew( " " );
-    input = sdstrim( input, s_space );
+    input = sdstrim( sdstrim( input, s_space ), "\n" );
     sds workingstring = sdsdup(input);
     workingstring = sdscat( workingstring, s_space );
     while( sdslen( workingstring) > 0 /* and errorstate == 0 */ ) {
