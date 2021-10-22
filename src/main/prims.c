@@ -28,7 +28,6 @@ void finalizeprims( struct node_state *N ) {
         sglib_hashed_iListType_add( N->atomtoprimtable, new_atom_entry );
 
     }
-    free(preprims);
 }
 
 void * fetchprim( struct node_state *N, size_t atom ) {
@@ -49,6 +48,7 @@ prim(push_int) {
 }
 
 prim(pop_int) {
+    needstack(1)
     printf( "%ld, ", pop_int(P) );
 }
 
@@ -58,13 +58,17 @@ prim(push_string) {
 }
 
 prim(dup) {
-    P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 1].u_val;
-    P->d->top++;
+    needstack(1)
+    push_dp( P, & P->d->stack[P->d->top - 1] );
+    // P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 1].u_val;
+    // P->d->top++;
 }
 
 prim(over) {
-    P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 2].u_val;
-    P->d->top++;
+    needstack(2)
+    push_dp( P, & P->d->stack[P->d->top - 2] );
+    // P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 2].u_val;
+    // P->d->top++;
 }
 
 prim(depth) {
@@ -72,6 +76,7 @@ prim(depth) {
 }
 
 prim(swap) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, second );
@@ -80,11 +85,14 @@ prim(swap) {
 
 
 prim(pop) {
+    needstack(1)
     P->d->stack[ --P->d->top ].u_val = 0;
 }
 
 prim(popn) {
+    needstack(1)
     size_t count = pop_int ( P );
+    needstack(count)
     if( count >= 0 ) {
         for( size_t i = 0; i < count ; i ++ ) {
             pop_int( P );
@@ -103,6 +111,7 @@ prim(jmp) {
 // conditional jump, primarly used by the compiler
 // uses the top entry of the stack for truth, pulls its address from the next cell
 prim(cjmp) {
+    needstack(1)
     size_t pos = P->currentop++;
     if( !pop_int( P ) ) {
      struct code_point *cp = &P->current_codestream->codestream[pos];
@@ -127,78 +136,91 @@ prim(while) {
 }
 
 prim2( add, + ) {
-    push_int( P, pop_int( P) + pop_int (P) );
+    require_int uint64_t second = pop_int ( P );
+    require_int uint64_t first = pop_int ( P );
+    push_int( P, first + second );
 }
 
 prim2( minus, - ) {
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int uint64_t second = pop_int ( P );
+    require_int uint64_t first = pop_int ( P );
     push_int( P, first - second );
 }
 
 prim2( mult, * ) {
-    push_int( P, pop_int( P) * pop_int (P) );
+    require_int uint64_t second = pop_int ( P );
+    require_int uint64_t first = pop_int ( P );
+    push_int( P, first * second );
 }
 
 prim2( div, / ) {
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int uint64_t second = pop_int ( P );
+    require_int uint64_t first = pop_int ( P );
     push_int( P, first / second );
 }
 
 prim2( modulo, % ) {
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int uint64_t second = pop_int ( P );
+    require_int uint64_t first = pop_int ( P );
     push_int( P, first % second );
 }
 
 prim2( isequalto, = ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first == second );
 }
 
 prim2( isnotsequalto, != ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first != second );
 }
 
 prim2( isgreaterthan, > ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first > second );
 }
 
 prim2( islessthan, < ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first < second );
 }
 
 prim2( isgreaterorequal, >= ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first >= second );
 }
 
 prim2( islesserorequal, <= ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first <= second );
 }
 
 prim( not ) {
+    needstack(1)
     push_int( P,! pop_int( P) );    
 }
 
 prim( or ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first || second );
 }
 
 prim( and ) {
+    needstack(2)
     uint64_t second = pop_int ( P );
     uint64_t first = pop_int ( P );
     push_int( P, first && second );
@@ -217,12 +239,12 @@ prim(dumpstack) {
 }
 
 prim2( print, . ) {
-    struct datapoint *dp = &P->d->stack[ P->d->top - 1];
+    needstack(1)
+    struct datapoint *dp = pop_dp( P );
     size_t type = checktype( dp );
     if( type == a_type_string ) {
         printf("%s", dp_get_string( dp ) );
     } else {
         printf("%s", formatobject( P->node, &P->d->stack[ P->d->top -1 ] ) );
     }
-    pop_int( P );
 }

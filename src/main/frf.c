@@ -38,16 +38,44 @@ typedef void (*call_prim)(struct process_state *p);
 extern sds numstring;
 extern sds opstring;
 
+void executetimeslice( struct process_state *P, size_t steps ) {
+    size_t count = 0;
+    while( P->current_codestream->instructioncount > 0 ) {
+        size_t pos = P->currentop++;
+        size_t check_op = P->current_codestream->codestream[pos].u_val;
+        if( check_op == 0 || P->errorstate ) {
+            P->current_codestream = 0;
+            break;
+        }
+        if( check_op & 3 ) {
+            sds stackstate = sdsempty();
+            if( P->debugmode ) {
+                stackstate = dump_stack (P );
+            }
+            call_prim ptr = (void *)(uintptr_t) ( check_op & ~(3) );
+            ptr( P );
+            iListType *tmp = alloc_ilist();
+            tmp->first.p_val = (uintptr_t)ptr;
+            sds primname = atomtostring( sglib_hashed_iListType_find_member( P->node->primtoatomtable, tmp )->second.a_val );
+            if( P->debugmode ) {
+                printf("%s > %s\n", stackstate, primname );
+            }        
+        }
+        if( count++ >= steps ) {
+            break;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     GC_INIT();
     atoms_init();
+    numstring = sdsnew( "0123456789" );
+    opstring = sdsnew( "-$%" );
 
     struct node_state *N = newnode();
 
     finalizeprims( N );
-
-    numstring = sdsnew( "0123456789" );
-    opstring = sdsnew( "-$%" );
 
     struct process_state *P = newprocess( N );
 
@@ -59,27 +87,9 @@ int main(int argc, char **argv) {
 
 
     P->currentop = 0;
-    while( P->current_codestream->instructioncount > 0 ) {
-        size_t pos = P->currentop++;
-        size_t check_op = P->current_codestream->codestream[pos].u_val;
-        if( check_op & 3 ) {
-            sds stackstate = sdsempty();
-            if( P->debugmode ) {
-                stackstate = dump_stack (P );
-            }
-            call_prim ptr = (void *)(uintptr_t) ( check_op & ~(3) );
-            ptr( P );
-            iListType *tmp = alloc_ilist();
-            tmp->first.p_val = (uintptr_t)ptr;
-            sds primname = atomtostring( sglib_hashed_iListType_find_member( N->primtoatomtable, tmp )->second.a_val );
-            if( P->debugmode ) {
-                printf("%s > %s\n", stackstate, primname );
-            }        
-        }
-        // print_stack( P );
-        if ( P->currentop >= P->current_codestream->instructioncount ) {
-            break;
-        }
+    executetimeslice(P, 1000000);
+    if(P->errorstate) {
+        printf("error: %s\n", atomtostring (P->errorstate ));
     }
 
     printf("\n%s\n", dump_stack( P) );

@@ -155,6 +155,9 @@ struct process_state {
     struct flowcontrolentry flowcontrolstack[1024];
     size_t flowcontroltop;
 
+    size_t errorstate;
+    size_t executestate;
+
     bool debugmode;
 
     /**

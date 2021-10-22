@@ -12,9 +12,9 @@ size_t checktype( struct datapoint *dp ) {
         } else {
             return a_type_empty;
         }
-    } else if( ( dp->u_val & 3 ) == 1 ) {
+    } else if( dp_is_int(dp) ) {
         return a_type_integer;
-    } else if( ( dp->u_val & 3 ) == 2 ) {
+    } else if( dp_is_atom(dp) ) {
         return a_type_atom;
     } else if( ( dp->u_val & 3 ) == 3 ) {
         return a_type_prim;
@@ -66,8 +66,6 @@ sds formatobject( struct node_state *N , struct datapoint *dp ) {
     return workingstring;
 }
 
-
-
 int64_t cp_get_int( struct code_point *cp ) {
     return (int64_t) cp->u_val;
 }
@@ -118,34 +116,12 @@ void push_int(struct process_state *P, uint64_t i ) {
     P->d->top++;
 }
 
-int64_t pop_int( struct process_state *P ) {
-    P->d->top--;
-    int64_t i = dp_get_int( &P->d->stack[P->d->top] );
-    P->d->stack[P->d->top].u_val = 0;    
-    return i;
-}
-
-
 void push_atom( struct process_state *P, size_t a ) {
     dp_put_atom( &P->d->stack[P->d->top], a );
     P->d->top++;
 }
 
-size_t pop_atom( struct process_state *P ) {
-    P->d->top--;
-    size_t a = dp_get_atom( &P->d->stack[P->d->top] );
-    P->d->stack[P->d->top].u_val = 0;    
-    return a;
-}
-
 void push_string( struct process_state *P, sds s ) {
     dp_put_string( &P->d->stack[P->d->top], s );
     P->d->top++;
-}
-
-sds pop_string( struct process_state *P ) {
-    P->d->top--;
-    sds s = dp_get_string( &P->d->stack[P->d->top] );
-    P->d->stack[P->d->top].u_val = 0;    
-    return s;
 }
