@@ -136,74 +136,68 @@ prim(while) {
 }
 
 prim2( add, + ) {
-    require_int uint64_t second = pop_int ( P );
-    require_int uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first + second );
 }
 
 prim2( minus, - ) {
-    require_int uint64_t second = pop_int ( P );
-    require_int uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first - second );
 }
 
 prim2( mult, * ) {
-    require_int uint64_t second = pop_int ( P );
-    require_int uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first * second );
 }
 
 prim2( div, / ) {
-    require_int uint64_t second = pop_int ( P );
-    require_int uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first / second );
 }
 
 prim2( modulo, % ) {
-    require_int uint64_t second = pop_int ( P );
-    require_int uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first % second );
 }
 
 prim2( isequalto, = ) {
-    needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first == second );
 }
 
 prim2( isnotsequalto, != ) {
-    needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first != second );
 }
 
 prim2( isgreaterthan, > ) {
-    needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first > second );
 }
 
 prim2( islessthan, < ) {
-    needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first < second );
 }
 
 prim2( isgreaterorequal, >= ) {
-    needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first >= second );
 }
 
 prim2( islesserorequal, <= ) {
-    needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    require_int second = pop_int ( P );
+    require_int first = pop_int ( P );
     push_int( P, first <= second );
 }
 
@@ -214,15 +208,15 @@ prim( not ) {
 
 prim( or ) {
     needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    int64_t second = pop_int ( P );
+    int64_t first = pop_int ( P );
     push_int( P, first || second );
 }
 
 prim( and ) {
     needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
+    int64_t second = pop_int ( P );
+    int64_t first = pop_int ( P );
     push_int( P, first && second );
 }
 

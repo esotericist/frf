@@ -81,7 +81,7 @@ static inline int64_t pop_int( struct process_state *P ) {
 */
 }
 
-#define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) }
+#define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) } int64_t
 
 /*
 #define pop_int(x)     if( dp_is_int( topdp ) ) {\
