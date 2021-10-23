@@ -45,6 +45,8 @@ static inline void __attribute__ ((constructor)) a_##x##_() { \
         preregisteratom( &a_##x, (#x)); \
 }
 
+atom(true)
+atom(false)
 
 atom(type_empty)
 atom(type_object)

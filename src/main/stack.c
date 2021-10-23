@@ -1,6 +1,5 @@
 #include "stack.h"
 
-
 size_t checktype( struct datapoint *dp ) {
     if( dp->u_val == 0 ) {
         return a_type_invalid;
@@ -23,17 +22,30 @@ size_t checktype( struct datapoint *dp ) {
     return a_type_unknown;
 }
 
+bool checktrue( struct datapoint *dp ) {
+    if( dp_is_int( dp ) ) {
+        return dp_get_int( dp ) != 0;
+    }
+    if( dp_is_atom( dp ) ) {
+        return dp_get_atom ( dp ) == a_true;
+    }
+    if( dp_is_string( dp ) ) {
+        return sdslen( dp_get_string( dp ) ) > 0;
+    }
+    return false;
+}
+
 sds dump_stack( struct process_state *P ) {
     sds s = sdsnew( "stack: " );
-    if( P->d->top == 0 ) {
+    if( dcount == 0 ) {
         return s;
     }
-    for( size_t i = 0; i < P->d->top; i++ ) {
+    for( size_t i = 0; i < dcount; i++ ) {
         if( i > 0 ) {
             s = sdscat( s, ", " );
         }
 
-        s = sdscatsds( s, formatobject( P->node, &P->d->stack[i] ) );
+        s = sdscatsds( s, formatobject( P->node, &dstack[i] ) );
     }
     return s;
 }
@@ -107,21 +119,20 @@ void dp_put_string( struct datapoint *dp, sds s ) {
     dobj->s_val = s;
     dobj->typeatom = a_type_string;
     dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
-    
 }
 
-
 void push_int(struct process_state *P, uint64_t i ) {
-    dp_put_int( &P->d->stack[P->d->top], i );
-    P->d->top++;
+    dp_put_int( &dstack[dcount++], i );
 }
 
 void push_atom( struct process_state *P, size_t a ) {
-    dp_put_atom( &P->d->stack[P->d->top], a );
-    P->d->top++;
+    dp_put_atom( &dstack[dcount++], a );
 }
 
 void push_string( struct process_state *P, sds s ) {
-    dp_put_string( &P->d->stack[P->d->top], s );
-    P->d->top++;
+    dp_put_string( &dstack[dcount++], s );
+}
+
+void push_bool( struct process_state *P, bool t ) {
+    push_atom( P, t ? a_true : a_false );
 }

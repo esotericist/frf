@@ -59,14 +59,12 @@ prim(push_string) {
 
 prim(dup) {
     needstack(1)
-    push_dp( P, & P->d->stack[P->d->top - 1] );
-    // P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 1].u_val;
-    // P->d->top++;
+    push_dp( P, topdp );
 }
 
 prim(over) {
     needstack(2)
-    push_dp( P, & P->d->stack[P->d->top - 2] );
+    push_dp( P, & dstack[ dcount - 2] );
     // P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 2].u_val;
     // P->d->top++;
 }
@@ -77,25 +75,24 @@ prim(depth) {
 
 prim(swap) {
     needstack(2)
-    uint64_t second = pop_int ( P );
-    uint64_t first = pop_int ( P );
-    push_int( P, second );
-    push_int( P, first );
+    struct datapoint second = *(pop_dp ( P ) );
+    struct datapoint first = *(pop_dp ( P ) );
+    push_dp( P, &second );
+    push_dp( P, &first );
 }
-
 
 prim(pop) {
     needstack(1)
-    P->d->stack[ --P->d->top ].u_val = 0;
+    pop_dp( P );
 }
 
 prim(popn) {
     needstack(1)
-    size_t count = pop_int ( P );
+    require_int count = pop_int ( P );
     needstack(count)
     if( count >= 0 ) {
         for( size_t i = 0; i < count ; i ++ ) {
-            pop_int( P );
+            pop_dp( P );
         }
     }
 }
@@ -111,9 +108,9 @@ prim(jmp) {
 // conditional jump, primarly used by the compiler
 // uses the top entry of the stack for truth, pulls its address from the next cell
 prim(cjmp) {
-    needstack(1)
     size_t pos = P->currentop++;
-    if( !pop_int( P ) ) {
+    require_bool val = pop_bool( P );
+    if( !val ) {
      struct code_point *cp = &P->current_codestream->codestream[pos];
         P->currentop = cp_get_int( cp );
     }
@@ -128,7 +125,7 @@ prim(break) {
 }
 
 prim(while) {
-    if( pop_int (P) ) {
+    if( pop_bool (P) ) {
         P->currentop++;
     } else {
         P->currentop = P->current_codestream->codestream[P->currentop].u_val;
@@ -168,56 +165,54 @@ prim2( modulo, % ) {
 prim2( isequalto, = ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
-    push_int( P, first == second );
+    push_bool( P, first == second );
 }
 
 prim2( isnotsequalto, != ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
-    push_int( P, first != second );
+    push_bool( P, first != second );
 }
 
 prim2( isgreaterthan, > ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
-    push_int( P, first > second );
+    push_bool( P, first > second );
 }
 
 prim2( islessthan, < ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
-    push_int( P, first < second );
+    push_bool( P, first < second );
 }
 
 prim2( isgreaterorequal, >= ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
-    push_int( P, first >= second );
+    push_bool( P, first >= second );
 }
 
 prim2( islesserorequal, <= ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
-    push_int( P, first <= second );
+    push_bool( P, first <= second );
 }
 
 prim( not ) {
     needstack(1)
-    push_int( P,! pop_int( P) );    
+    push_bool( P, ! pop_bool( P) );    
 }
 
 prim( or ) {
-    needstack(2)
-    int64_t second = pop_int ( P );
-    int64_t first = pop_int ( P );
-    push_int( P, first || second );
+    require_bool second = pop_bool ( P );
+    require_bool first = pop_bool ( P );
+    push_bool( P, first || second );
 }
 
 prim( and ) {
-    needstack(2)
-    int64_t second = pop_int ( P );
-    int64_t first = pop_int ( P );
-    push_int( P, first && second );
+    require_bool second = pop_bool ( P );
+    require_bool first = pop_bool ( P );
+    push_bool( P, first && second );
 }
 
 prim(debugon) {

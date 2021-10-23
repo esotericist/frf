@@ -23,9 +23,13 @@ static inline bool dp_is_string( struct datapoint *dp ) {
     return  ( dp ) && ( ( dp->u_val & 3 ) == 0 ) && (  ((struct dataobject * ) dp)->typeatom == a_type_string ) ;
 }
 
-#define topdp &P->d->stack[P->d->top - 1]
+#define dstack P->d->stack
 #define dcount P->d->top
+#define topdp &dstack[dcount - 1]
 
+
+// returns the boolean quality of a datapoint
+bool checktrue ( struct datapoint *dp );
 // returns atom indicating data object type
 size_t checktype( struct datapoint *dp );
 // renders string suitable for printing for debug
@@ -46,65 +50,46 @@ void dp_put_string( struct datapoint *dp, sds s );
 
 atom(stack_underflow)
 
-#define needstack(x)     if(P->d->top < (x) ) { \
+#define needstack(x)     if( dcount < (x) ) { \
         stackfault (a_stack_underflow)\
     }
 
-//
-// adding things to or removing things from the stack
-//
 
 static inline void push_dp( struct process_state *P, struct datapoint *dp ) {
-    P->d->stack[P->d->top] = *dp;
-    P->d->top++;
+    dstack[dcount++] = *dp;
 }
-
 static inline struct datapoint* pop_dp(struct process_state *P ) {
-    return &P->d->stack[--P->d->top];
+    return &dstack[--dcount];
 }
 
 void push_int(struct process_state *P, uint64_t i );
 void push_atom( struct process_state *P, size_t a );
 void push_string( struct process_state *P, sds s );
+void push_bool( struct process_state *P, bool t );
 
 atom(expected_integer)
-
+atom(expected_atom)
+atom(expected_string)
 
 static inline int64_t pop_int( struct process_state *P ) {
     return dp_get_int( pop_dp( P ) );
-/*
-    if( dp_is_int( topdp ) ) {
-        return dp_get_int( pop_dp( P ) );
-    } else {
-        stackfault(a_expected_integer)
-    }
-*/
 }
-
 #define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) } int64_t
 
-/*
-#define pop_int(x)     if( dp_is_int( topdp ) ) {\
-        (x) =) dp_get_int( pop_dp( P ) );\
-    } else {\
-        stackfault(a_expected_integer)\
-    }
-*/
-
 static inline size_t pop_atom( struct process_state *P ) {
-    P->d->top--;
-    size_t a = dp_get_atom( &P->d->stack[P->d->top] );
-    P->d->stack[P->d->top].u_val = 0;    
-    return a;
+    return dp_get_atom( pop_dp ( P ) );
 }
-
+#define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) } size_t
 
 static inline sds pop_string( struct process_state *P ) {
-    P->d->top--;
-    sds s = dp_get_string( &P->d->stack[P->d->top] );
-    P->d->stack[P->d->top].u_val = 0;    
-    return s;
+    return dp_get_string( pop_dp ( P ) );
 }
+#define require_string needstack(1) if( !dp_is_string( topdp ) ) { stackfault( a_expected_string ) } sds
 
+static inline bool pop_bool(struct process_state *P ) {
+    return checktrue( pop_dp( P ));
+}
+#define require_bool needstack(1) bool
 
 #endif
+
