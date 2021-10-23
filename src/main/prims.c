@@ -83,8 +83,8 @@ prim(depth) {
 
 prim(swap) {
     needstack(2)
-    struct datapoint second = *(pop_dp ( P ) );
-    struct datapoint first = *(pop_dp ( P ) );
+    struct datapoint second = (pop_dp ( P ) );
+    struct datapoint first = (pop_dp ( P ) );
     push_dp( P, &second );
     push_dp( P, &first );
 }
@@ -283,11 +283,11 @@ prim(dumpstack) {
 
 prim2( print, . ) {
     needstack(1)
-    struct datapoint *dp = pop_dp( P );
-    size_t type = checktype( dp );
+    struct datapoint dp = pop_dp( P );
+    size_t type = checktype( &dp );
     if( type == a_type_string ) {
-        printf("%s", dp_get_string( dp ) );
+        printf("%s", dp_get_string( &dp ) );
     } else {
-        printf("%s", formatobject( P->node, dp ) );
+        printf("%s", formatobject( P->node, &dp ) );
     }
 }

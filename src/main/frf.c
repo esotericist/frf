@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 
 
     P->currentop = 0;
-    executetimeslice(P, 1000000);
+    executetimeslice(P, 10000000000000);
     if(P->errorstate) {
         printf("error: %s\n", atomtostring (P->errorstate ));
     }

@@ -58,8 +58,8 @@ atom(stack_underflow)
 static inline void push_dp( struct process_state *P, struct datapoint *dp ) {
     dstack[dcount++] = *dp;
 }
-static inline struct datapoint* pop_dp(struct process_state *P ) {
-    return &dstack[--dcount];
+static inline struct datapoint pop_dp(struct process_state *P ) {
+    return dstack[--dcount];
 }
 
 void push_int(struct process_state *P, uint64_t i );
@@ -73,22 +73,26 @@ atom(expected_atom)
 atom(expected_string)
 
 static inline int64_t pop_int( struct process_state *P ) {
-    return dp_get_int( pop_dp( P ) );
+    struct datapoint dp = pop_dp( P ); 
+    return dp_get_int( &dp );
 }
 #define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) } int64_t
 
 static inline size_t pop_atom( struct process_state *P ) {
-    return dp_get_atom( pop_dp ( P ) );
+    struct datapoint dp = pop_dp( P ); 
+    return dp_get_atom( &dp );
 }
 #define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) } size_t
 
 static inline sds pop_string( struct process_state *P ) {
-    return dp_get_string( pop_dp ( P ) );
+    struct datapoint dp = pop_dp( P ); 
+    return dp_get_string( &dp );
 }
 #define require_string needstack(1) if( !dp_is_string( topdp ) ) { stackfault( a_expected_string ) } sds
 
 static inline bool pop_bool(struct process_state *P ) {
-    return checktrue( pop_dp( P ));
+    struct datapoint dp = pop_dp( P ); 
+    return checktrue( &dp );
 }
 #define require_bool needstack(1) bool
 

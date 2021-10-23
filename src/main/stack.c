@@ -116,7 +116,7 @@ sds dp_get_string( struct datapoint *dp ) {
 
 void dp_put_string( struct datapoint *dp, sds s ) {
     struct dataobject *dobj = newdataobject();
-    dobj->s_val = s;
+    dobj->s_val = sdsdup(s);
     dobj->typeatom = a_type_string;
     dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
 }
