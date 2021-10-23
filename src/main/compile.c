@@ -186,9 +186,7 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
 
 
 atom(push_int)
-atom(pop_int)
 atom(push_string)
-atom(pop_string)
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -204,8 +202,6 @@ void checktoken( struct process_state *P, sds input) {
 
     sds c = sdsnewlen( input, 1 );
     if( strcount ( c, numstring ) || ( sdslen(input) >=2 && strcount( c, opstring ) ) ) {
-        // uintptr_t push_i = );
-        // uintptr_t pop_i = (uintptr_t)(void *) fetchprim( P->node, a_pop_int );
         append_cp( P, ( (uintptr_t)(void *) fetchprim( P->node, a_push_int  ) ) | 3 );
         append_cp( P, atoi( input ) );
         return;

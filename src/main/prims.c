@@ -47,11 +47,6 @@ prim(push_int) {
     push_int(P, cp_get_int( cp ) );
 }
 
-prim(pop_int) {
-    needstack(1)
-    printf( "%ld, ", pop_int(P) );
-}
-
 prim(push_string) {
     size_t pos = P->currentop++;
     push_string( P, cp_get_string( &P->current_codestream->codestream[pos] ) );
@@ -65,8 +60,6 @@ prim(dup) {
 prim(over) {
     needstack(2)
     push_dp( P, & dstack[ dcount - 2] );
-    // P->d->stack[P->d->top ].u_val = P->d->stack[P->d->top - 2].u_val;
-    // P->d->top++;
 }
 
 prim(depth) {
