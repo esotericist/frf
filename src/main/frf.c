@@ -38,7 +38,7 @@ typedef void (*call_prim)(struct process_state *p);
 extern sds numstring;
 extern sds opstring;
 
-void executetimeslice( struct process_state *P, size_t steps ) {
+size_t executetimeslice( struct process_state *P, size_t steps ) {
     size_t count = 0;
     while( P->current_codestream->instructioncount > 0 ) {
         size_t pos = P->currentop++;
@@ -65,6 +65,7 @@ void executetimeslice( struct process_state *P, size_t steps ) {
             break;
         }
     }
+    return count;
 }
 
 int main(int argc, char **argv) {
@@ -87,12 +88,12 @@ int main(int argc, char **argv) {
 
 
     P->currentop = 0;
-    executetimeslice(P, 10000000000000);
+    size_t ops = executetimeslice(P, 10000000000000);
     if(P->errorstate) {
         printf("error: %s\n", atomtostring (P->errorstate ));
     }
 
-    printf("\n%s\n", dump_stack( P) );
+    printf("\n%s\nops: %zu\n", dump_stack( P), ops );
 
      return 0;
 }
