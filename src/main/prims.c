@@ -47,11 +47,17 @@ prim(push_int) {
     push_int(P, cp_get_int( cp ) );
 }
 
+prim(push_atom) {
+    size_t pos = P->currentop++;
+    push_atom( P, cp_get_atom( &P->current_codestream->codestream[pos] ) );
+}
+
 prim(push_string) {
     size_t pos = P->currentop++;
     push_string( P, cp_get_string( &P->current_codestream->codestream[pos] ) );
 }
 
+// stack prims
 prim(dup) {
     needstack(1)
     push_dp( P, topdp );
@@ -90,6 +96,9 @@ prim(popn) {
     }
 }
 
+
+// flow control prims
+
 // unconditional jump primarily used by the compiler
 // pulls its address from the next cell
 prim(jmp) {
@@ -125,6 +134,7 @@ prim(while) {
     }
 }
 
+// math prims
 prim2( add, + ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
@@ -155,6 +165,7 @@ prim2( modulo, % ) {
     push_int( P, first % second );
 }
 
+// logic prims
 prim2( isequalto, = ) {
     require_int second = pop_int ( P );
     require_int first = pop_int ( P );
@@ -208,6 +219,7 @@ prim( and ) {
     push_bool( P, first && second );
 }
 
+// debugging
 prim(debugon) {
     P->debugmode = true;
 }

@@ -187,6 +187,7 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
 
 atom(push_int)
 atom(push_string)
+atom(push_atom)
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -237,14 +238,20 @@ sds split_string( sds inputstr, ssize_t index )
 
 #define continue_str workingstring = sdscat( workingstring, nextchar )
 
-sds parse_whozit( sds inputstr ) {
+sds parse_atom( struct process_state *P, sds inputstr ) {
     sds workingstring = sdsempty();
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
         nextchar = split_string( inputstr, 1 );
-        if( 1 ) {
-
+        size_t nextchar_a = verifyatom( nextchar );
+        if( nextchar_a == a__squote ) {
+            size_t stringatom = stringtoatom( workingstring );
+            append_prim( P, a_push_atom );
+            append_cp(P, stringatom );
+            workingstring = sdsempty();
+            pmode.atom = false;
+            return inputstr;
         } else {
             continue_str;
         }
@@ -405,7 +412,7 @@ void parse_line( struct process_state *P, sds input ) {
             workingstring = parse_comment( P, workingstring );
 
         } else if ( pmode.atom ) {
-            // workingstring = parse_atom( workingstring );
+            workingstring = parse_atom( P, workingstring );
         } else if ( pmode.directive ) {
             // workingstring = parse_directive( workingstring );
         } else if ( pmode.string ) {
