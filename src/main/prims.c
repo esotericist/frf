@@ -68,6 +68,15 @@ prim(over) {
     push_dp( P, & dstack[ dcount - 2] );
 }
 
+prim(pick) {
+    require_int count = pop_int(P);
+    if( count < 1) {
+        stackfault( a_expected_positive_integer )
+    }
+    needstack(count)
+    push_dp( P, &dstack[dcount - count] );
+}
+
 prim(depth) {
     push_int( P, P->d->top );
 }
@@ -78,6 +87,33 @@ prim(swap) {
     struct datapoint first = *(pop_dp ( P ) );
     push_dp( P, &second );
     push_dp( P, &first );
+}
+
+void rotate( struct process_state *P, int64_t count ) {
+    if( count < 0 ) {
+        count = - count;
+        needstack(count)
+        struct datapoint top = dstack[dcount -1 ];
+        for(size_t i = 0; i < count ; i++ ) {
+            dstack[dcount - i] = dstack[dcount - i - 1];
+        }
+        dstack[dcount - count] = top;
+    } else {
+        needstack(count)
+        struct datapoint bottom = dstack[dcount - count ];
+        for(size_t i = count - 1; i > 0 ; i-- ) {
+            dstack[dcount - i - 1 ] = dstack[dcount - i ];
+        }
+        dstack[dcount - 1] = bottom;
+    }
+}
+prim(rotate) {
+    require_int count = pop_int( P );
+    rotate( P, count);
+}
+
+prim(rot) {
+    rotate( P, 3 );
 }
 
 prim(pop) {
@@ -219,6 +255,19 @@ prim( and ) {
     push_bool( P, first && second );
 }
 
+// strings
+prim (intostr) {
+    require_int num = pop_int( P );
+    push_string( P, sdsfromlonglong( num )  );
+}
+
+prim (strcat) {
+    require_string second = pop_string(P);
+    require_string first = pop_string(P);
+    push_string( P, sdscatsds ( first, second ) );
+}
+
+
 // debugging
 prim(debugon) {
     P->debugmode = true;
@@ -239,6 +288,6 @@ prim2( print, . ) {
     if( type == a_type_string ) {
         printf("%s", dp_get_string( dp ) );
     } else {
-        printf("%s", formatobject( P->node, &P->d->stack[ P->d->top -1 ] ) );
+        printf("%s", formatobject( P->node, dp ) );
     }
 }

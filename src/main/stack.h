@@ -20,7 +20,7 @@ static inline bool dp_is_atom( struct datapoint *dp ) {
     return ( dp->u_val & 3 ) == 2 ;
 }
 static inline bool dp_is_string( struct datapoint *dp ) {
-    return  ( dp ) && ( ( dp->u_val & 3 ) == 0 ) && (  ((struct dataobject * ) dp)->typeatom == a_type_string ) ;
+    return ( dp ) && ( ( dp->u_val & 3 ) == 0 ) && (  ((struct dataobject * ) dp->p_val)->typeatom == a_type_string );
 }
 
 #define dstack P->d->stack
@@ -68,6 +68,7 @@ void push_string( struct process_state *P, sds s );
 void push_bool( struct process_state *P, bool t );
 
 atom(expected_integer)
+atom(expected_positive_integer)
 atom(expected_atom)
 atom(expected_string)
 

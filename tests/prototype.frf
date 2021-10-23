@@ -1,25 +1,24 @@
-(debugon
-9 dup 5 % 0 =
-over 3 % 0 = or
-)
-1 begin
+"" 1 begin
   dup 3 % 0 = if
-    "fizz" .
+    swap "fizz" strcat swap
     dup 5 % 0 != if
-      " " .
+      swap " " strcat  swap
+    else 
+      swap "buzz " strcat swap
+    then
+  else 
+    dup 5 % 0 = if
+      swap "buzz " strcat swap
+    else
+      dup intostr rot swap " " strcat strcat swap
     then
   then
-  dup 5 % 0 = if
-    "buzz " .
-  then
-  dup 3 % 0 != over 5 % 0 != and if
-    dup . " " .
-  then
   dup 10 % 0 = if
-  "\n" .
+    swap "\n" strcat swap
   then
   1 + dup 100 >
 until
+pop .
 
 (
 1 begin 
