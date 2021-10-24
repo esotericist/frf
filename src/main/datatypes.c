@@ -77,10 +77,10 @@ void append_cp( struct process_state *P, size_t v ) {
     P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
 }
 
-void newcstate( struct process_state *P ) {
+void newcompilestate( struct process_state *P ) {
 
-    P->cstate = GC_malloc( sizeof( struct compile_state ) );
-    P->cstate->parsemode.flags = 0;
+    P->compilestate = GC_malloc( sizeof( struct compile_state ) );
+    P->compilestate->parsemode.flags = 0;
 }
 struct process_state* newprocess( struct node_state *N ) {
     struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );

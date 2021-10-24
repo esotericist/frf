@@ -157,7 +157,7 @@ struct process_state {
     size_t currentop;
     struct code_set *current_codestream;
 
-    struct compile_state *cstate;
+    struct compile_state *compilestate;
 
     size_t errorstate;
     size_t executestate;
@@ -178,7 +178,7 @@ struct process_state {
 
 static inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
 struct node_state* newnode();
-void newcstate( struct process_state *P );
+void newcompilestate( struct process_state *P );
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
 struct process_state* newprocess( struct node_state *N );

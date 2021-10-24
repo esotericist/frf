@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     finalizeprims( N );
 
     struct process_state *P = newprocess( N );
-    newcstate( P );
+    newcompilestate( P );
     P->current_codestream = newcodeset(N, 1024, 0 );
 
     sds input = readfile( P );

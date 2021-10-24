@@ -8,7 +8,7 @@
 
 int errorstate = 0;
 
-#define pmode P->cstate->parsemode
+#define pmode P->compilestate->parsemode
 
 size_t strcount( sds key, sds searched ) {
     size_t keylen = sdslen(key);
@@ -48,8 +48,8 @@ atom(jmp)
 atom(cjmp)
 
 
-#define flowstack       P->cstate->flowcontrolstack
-#define flowtop         P->cstate->flowcontroltop       
+#define flowstack       P->compilestate->flowcontrolstack
+#define flowtop         P->compilestate->flowcontroltop       
 #define flowtopatom     flowstack[flowtop].flowatom
 #define flowtopcell     flowstack[flowtop].celltarget
 
