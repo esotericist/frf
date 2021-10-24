@@ -79,14 +79,13 @@ int main(int argc, char **argv) {
     finalizeprims( N );
 
     struct process_state *P = newprocess( N );
-
+    newcstate( P );
     P->current_codestream = newcodeset(N, 1024, 0 );
 
-    P->parsemode.flags = 0;
     sds input = readfile( P );
     sdstolower ( input );
 
-
+    
     P->currentop = 0;
     size_t ops = executetimeslice(P, 10000000000000);
     if(P->errorstate) {

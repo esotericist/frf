@@ -8,7 +8,7 @@
 
 int errorstate = 0;
 
-#define pmode P->parsemode
+#define pmode P->cstate->parsemode
 
 size_t strcount( sds key, sds searched ) {
     size_t keylen = sdslen(key);
@@ -48,12 +48,14 @@ atom(jmp)
 atom(cjmp)
 
 
-#define flowtopatom     P->flowcontrolstack[P->flowcontroltop].flowatom
-#define flowtopcell     P->flowcontrolstack[P->flowcontroltop].celltarget
+#define flowstack       P->cstate->flowcontrolstack
+#define flowtop         P->cstate->flowcontroltop       
+#define flowtopatom     flowstack[flowtop].flowatom
+#define flowtopcell     flowstack[flowtop].celltarget
 
 bool searchflowstack( struct process_state *P, size_t searchatom ) {
-    for(size_t i = P->flowcontroltop ; i > 0 ; i-- ) {
-        if ( P->flowcontrolstack[i].flowatom == searchatom ) {
+    for(size_t i = flowtop ; i > 0 ; i-- ) {
+        if ( flowstack[i].flowatom == searchatom ) {
             return true;
         }
     }
@@ -61,23 +63,23 @@ bool searchflowstack( struct process_state *P, size_t searchatom ) {
 }
 
 void addflowframe(struct process_state *P, size_t thisatom ) {
-    P->flowcontroltop++;
-    P->flowcontrolstack[P->flowcontroltop].flowatom = thisatom;
-    P->flowcontrolstack[P->flowcontroltop].celltarget = P->current_codestream->instructioncount;
+    flowtop++;
+    flowstack[flowtop].flowatom = thisatom;
+    flowstack[flowtop].celltarget = P->current_codestream->instructioncount;
 }
 
 void popflowtop(struct process_state *P ) {
-    P->flowcontrolstack[P->flowcontroltop].flowatom = 0;
-    P->flowcontrolstack[P->flowcontroltop].celltarget = 0;
-    P->flowcontroltop--;
+    flowstack[flowtop].flowatom = 0;
+    flowstack[flowtop].celltarget = 0;
+    flowtop--;
 }
 
 void dropflowframe(struct process_state *P, size_t stackitem ) {
-    for ( size_t i = stackitem ; i < P->flowcontroltop ; i++ ) {
-        P->flowcontrolstack[P->flowcontroltop].flowatom = P->flowcontrolstack[P->flowcontroltop + 1].flowatom;
-        P->flowcontrolstack[P->flowcontroltop].celltarget = P->flowcontrolstack[P->flowcontroltop + 1].celltarget;
+    for ( size_t i = stackitem ; i < flowtop ; i++ ) {
+        flowstack[flowtop].flowatom = flowstack[flowtop + 1].flowatom;
+        flowstack[flowtop].celltarget = flowstack[flowtop + 1].celltarget;
     }
-    P->flowcontroltop--;
+    flowtop--;
 }
 
 /* P, firstcell.i, lastcell.i, keyop.i, targetcell.i */ 

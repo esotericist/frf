@@ -93,11 +93,28 @@ struct node_state {
 
 };
 
+
 struct flowcontrolentry {
     size_t flowatom;
     size_t celltarget;
 };
 
+struct compile_state {
+    union {
+        struct {
+            bool comment : 1;
+            bool compile : 1;
+            bool string : 1;
+            bool escape : 1;
+            bool directive : 1;
+            bool atom : 1;
+        };
+        unsigned int flags;    
+    } parsemode;
+
+    struct flowcontrolentry flowcontrolstack[1024];
+    size_t flowcontroltop;
+};
 struct code_point {
     union {
         size_t u_val;
@@ -135,25 +152,12 @@ struct process_state {
     size_t pid;
 
     struct node_state *node;
-    union {
-        struct {
-            bool comment : 1;
-            bool compile : 1;
-            bool string : 1;
-            bool escape : 1;
-            bool directive : 1;
-            bool atom : 1;
-        };
-        unsigned int flags;    
-    } parsemode;
-
     struct datastack *d;
 
     size_t currentop;
     struct code_set *current_codestream;
 
-    struct flowcontrolentry flowcontrolstack[1024];
-    size_t flowcontroltop;
+    struct compile_state *cstate;
 
     size_t errorstate;
     size_t executestate;
@@ -174,6 +178,7 @@ struct process_state {
 
 static inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
 struct node_state* newnode();
+void newcstate( struct process_state *P );
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
 struct process_state* newprocess( struct node_state *N );

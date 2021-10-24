@@ -77,13 +77,17 @@ void append_cp( struct process_state *P, size_t v ) {
     P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
 }
 
+void newcstate( struct process_state *P ) {
+
+    P->cstate = GC_malloc( sizeof( struct compile_state ) );
+    P->cstate->parsemode.flags = 0;
+}
 struct process_state* newprocess( struct node_state *N ) {
     struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );
     // more init stuff goes here
     size_t max = 1024;
     new_P->d = GC_malloc( sizeof( struct datastack ) + sizeof ( struct datapoint ) * (max) );
     new_P->d->max = max;
-    new_P->parsemode.flags = 0;
     new_P->node = N;
     
     return new_P;
