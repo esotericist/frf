@@ -2,11 +2,24 @@
 
 a very loosely forth-inspired interpreted language.
 
+aimed at cross-platform, with an ultimate eventual eye towards attempting to make games. yes, there are many existing options. no, they aren't suitable for my needs. a casual examination of the tree will probably reveal to the discerning programmer that i don't think like normal people.
 
+work is very ongoing and it is not a stable platform as of yet, although i do make an earnest attempt to guarantee that any given commit will successfully build on at least linux.
+
+it has been tested on linux (xubuntu 20.04-3) and windows 10 (using msys2).
+## building
+
+on linux, should just be a git clone and building via `cmake` and then `make`. the `cm.sh` script and `frf` symlinks help keep things clean for me, but are not required. i'm not your mom, build it how you want.
+
+on windows, you'll need msys2, update it fully, and install packages for `git`, `cmake`, and `mingw-w64-x86_64-gc` via pacman. from there, it should just be the same steps as linux, just in the mingw-64 shell. don't try it in 32-bit; i as yet make no attempts to support 32-bit systems. (that might change if i get around to android support since so many arm things expect apps to be 32-bit).
+
+macos is as yet untested, but i would be shocked if the current build doesn't work just as per linux since i'm sticking so close to plain c.
 
 ## test programs
 
 these are located in `tests/` for hopefully obvious reasons.
+
+`prototype.frf` is my current scratch space for testing features as i add them to the implementation.
 
 `infloop.frf` is an infinite loop. 🤷‍♀️
 
