@@ -16,7 +16,7 @@
   dup 10 % 0 = if
     swap "\n" strcat . "" swap
   then
-  1 + dup 1000000 >
+  1 + dup 1000 >
 until
 pop .
 
