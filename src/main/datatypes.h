@@ -148,11 +148,23 @@ struct datastack {
     struct datapoint stack[];
 };
 
+struct callstackframe {
+    struct code_set *cword;
+    size_t currentop;
+};
+
+struct callstack {
+    size_t top;
+    size_t max;
+    struct callstackframe stack[];
+};
+
 struct process_state {
     size_t pid;
 
     struct node_state *node;
     struct datastack *d;
+    struct callstack *c;
 
     size_t currentop;
     struct code_set *current_codestream;
@@ -165,13 +177,9 @@ struct process_state {
     bool debugmode;
 
     /**
-     * 
-     * int errorstate
      * atom executestate (active, inactive, killed)
      * 
      * int processlistptr -- pointer to this process' position in the relevant process list of the owning node
-     * 
-     * callstack
      * 
      */    
 };
