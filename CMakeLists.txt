@@ -7,7 +7,7 @@ file(GLOB_RECURSE data         resources/*)
 
 add_executable(frf ${sources} ${data})
 
-target_compile_options(frf PUBLIC -g -Wall -Wfloat-conversion -Werror-implicit-function-declaration ) # whatever flags you need
+target_compile_options(frf PUBLIC -g -fcommon -Wall -Wfloat-conversion -Werror-implicit-function-declaration ) # whatever flags you need
 
 target_include_directories(frf PUBLIC src/main)
 

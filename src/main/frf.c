@@ -1,6 +1,7 @@
 #include <gc.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "sds.h"
 #include "frf.h"
@@ -11,13 +12,16 @@
 #include "stack.h"
 
 
+
 sds readfile( struct process_state *P ) {
     sds to_return = sdsempty();
 
      char buffer[BUFSIZ];
 
+     getcwd(buffer, BUFSIZ);
+     sds filepath = sdscatsds( sdsnew(buffer), sdsnew( "/tests/prototype.frf" ) );
      FILE *thefile;
-     thefile = fopen( "/home/eso/devwork/frf/tests/prototype.frf", "r" );
+     thefile = fopen( filepath, "r" );
 
      while( fgets( buffer, BUFSIZ, thefile ) != NULL ) {
          to_return = sdsnew( buffer );
