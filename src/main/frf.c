@@ -10,8 +10,9 @@
 #include "compile.h"
 #include "prims.h"
 #include "stack.h"
+#include "vm.h"
 
-
+atom(exit)
 
 sds readfile( struct process_state *P ) {
     sds to_return = sdsempty();
@@ -34,43 +35,8 @@ sds readfile( struct process_state *P ) {
      return to_return;
 }
 
-atom(foo)
-atom(bar)
-
-typedef void (*call_prim)(struct process_state *p);
-
 extern sds numstring;
 extern sds opstring;
-
-size_t executetimeslice( struct process_state *P, size_t steps ) {
-    size_t count = 0;
-    while( P->current_codestream->instructioncount > 0 ) {
-        size_t pos = P->currentop++;
-        size_t check_op = P->current_codestream->codestream[pos].u_val;
-        if( check_op == 0 || P->errorstate ) {
-            P->current_codestream = 0;
-            break;
-        }
-        if( check_op & 3 ) {
-            sds stackstate = sdsempty();
-            if( P->debugmode ) {
-                stackstate = dump_stack (P );
-            }
-            call_prim ptr = (void *)(uintptr_t) ( check_op & ~(3) );
-            ptr( P );
-            iListType *tmp = alloc_ilist();
-            tmp->first.p_val = (uintptr_t)ptr;
-            sds primname = atomtostring( sglib_hashed_iListType_find_member( P->node->primtoatomtable, tmp )->second.a_val );
-            if( P->debugmode ) {
-                printf("%s > %s\n", stackstate, primname );
-            }        
-        }
-        if( count++ >= steps ) {
-            break;
-        }
-    }
-    return count;
-}
 
 int main(int argc, char **argv) {
     GC_INIT();
@@ -92,8 +58,12 @@ int main(int argc, char **argv) {
     
     P->currentop = 0;
     size_t ops = executetimeslice(P, 10000000000000);
-    if(P->errorstate) {
-        printf("error: %s\n", atomtostring (P->errorstate ));
+    if(P->errorstate ) {
+        if( P->errorstate == a_exit ) {
+            printf("normal termination.");
+        } else {
+            printf("error: %s\n", atomtostring (P->errorstate ));
+        }
     }
 
     printf("\n%s\nops: %zu\n", dump_stack( P), ops );

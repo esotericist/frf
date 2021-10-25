@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "vm.h"
 
 int errorstate = 0;
 
@@ -30,10 +31,13 @@ uintptr_t tag_prim (void *v) {
 }
 
 void append_prim( struct process_state *P, size_t v ) {
-    void * ptr = fetchprim( P->node, v );
+    void * ptr = atomtoprim( P->node, v );
     append_cp( P, tag_prim( ptr ) );
 }
 
+void append_word( struct process_state *P, void * v  ) {
+    append_cp(P, (uintptr_t)(void *) v );
+}
 
 atom(if)
 atom(else)  
@@ -114,7 +118,7 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
             pos_if = flowtopcell;
             pos_then = P->current_codestream->instructioncount;
             popflowtop( P );
-            void * ptr = fetchprim( P->node, a_cjmp );
+            void * ptr = atomtoprim( P->node, a_cjmp );
             P->current_codestream->codestream[pos_if].u_val = tag_prim( ptr ) ;
             P->current_codestream->codestream[pos_if+1].u_val = pos_then;
         } else if( flowtopatom == a_else ) {
@@ -123,9 +127,9 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
             pos_if = flowtopcell;
             popflowtop ( P );
             pos_then = P->current_codestream->instructioncount;
-            P->current_codestream->codestream[pos_if].u_val = tag_prim( fetchprim( P->node, a_cjmp ) );
+            P->current_codestream->codestream[pos_if].u_val = tag_prim( atomtoprim( P->node, a_cjmp ) );
             P->current_codestream->codestream[pos_if+1].u_val = pos_else+2;
-            P->current_codestream->codestream[pos_else].u_val = tag_prim( fetchprim( P->node, a_jmp ) );
+            P->current_codestream->codestream[pos_else].u_val = tag_prim( atomtoprim( P->node, a_jmp ) );
             P->current_codestream->codestream[pos_else+1].u_val = pos_then;
         } else {
             unexpectedprim( P, maybeop, flowtopatom );
@@ -139,9 +143,9 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
             popflowtop( P );
             append_prim( P, a_cjmp );
             append_cp( P, loopstart );
-            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_continue )  ), loopstart);
-            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_break )  ), loopend+2);
-            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_while )  ), loopend+2);
+            updatecells(P, loopstart, loopend, tag_prim( atomtoprim ( P->node, a_continue )  ), loopstart);
+            updatecells(P, loopstart, loopend, tag_prim( atomtoprim ( P->node, a_break )  ), loopend+2);
+            updatecells(P, loopstart, loopend, tag_prim( atomtoprim ( P->node, a_while )  ), loopend+2);
          } else {
             unexpectedprim( P, maybeop, flowtopatom );
         }
@@ -152,9 +156,9 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
             popflowtop( P );
             append_prim( P, a_jmp );
             append_cp( P, loopstart );
-            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_continue )  ), loopstart);
-            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_break )  ), loopend+2);
-            updatecells(P, loopstart, loopend, tag_prim( fetchprim ( P->node, a_while )  ), loopend+2);
+            updatecells(P, loopstart, loopend, tag_prim( atomtoprim ( P->node, a_continue )  ), loopstart);
+            updatecells(P, loopstart, loopend, tag_prim( atomtoprim ( P->node, a_break )  ), loopend+2);
+            updatecells(P, loopstart, loopend, tag_prim( atomtoprim ( P->node, a_while )  ), loopend+2);
          } else {
             unexpectedprim( P, a_repeat, flowtopatom );
         }
@@ -191,6 +195,10 @@ atom(push_int)
 atom(push_string)
 atom(push_atom)
 
+atom(call)
+atom(exit)
+
+
 // set in frf.c
 // used for comparisons in tokenize
 sds numstring;
@@ -205,7 +213,7 @@ void checktoken( struct process_state *P, sds input) {
 
     sds c = sdsnewlen( input, 1 );
     if( strcount ( c, numstring ) || ( sdslen(input) >=2 && strcount( c, opstring ) ) ) {
-        append_cp( P, ( (uintptr_t)(void *) fetchprim( P->node, a_push_int  ) ) | 3 );
+        append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
         append_cp( P, atoi( input ) );
         return;
     }
@@ -216,10 +224,18 @@ void checktoken( struct process_state *P, sds input) {
         return;
     } else {
         if( maybe_op ) {
-            void * maybe_prim = fetchprim( P->node, maybe_op );
+            void * maybe_prim = atomtoprim( P->node, maybe_op );
             if( maybe_prim ) {
                 append_prim( P, maybe_op );
                 return;
+            } else {
+                void * maybe_word = atomtoword(P->node, maybe_op );
+                if( maybe_word ) {
+                    append_prim( P, a_call );
+                    append_word( P, maybe_word );
+                    return;
+                }
+
             }
         }
     }
@@ -378,7 +394,21 @@ sds parse_compile(struct process_state *P,  sds inputstr ) {
             pmode.comment = true;
             return inputstr;
         } else if( nextchar_a == a__semicolon ) {
-            // word finalization
+            if( sdslen( workingstring ) ) {
+                printf( "unknown token: %s.\n", workingstring );
+                // big error here
+                return inputstr;
+            } else {
+                append_prim( P, a_exit );
+                if( flowtop ) {
+                    printf( "unexpected end of word\n" );
+                    // more big error here
+                } else {
+                    printf( "word added: %s, length: %zu.\n", atomtostring( P->current_codestream->nameatom ) , P->current_codestream->instructioncount );
+                    pmode.compile = false;
+                    popcallstackframe(P);
+                }
+            }
         } else {
             workingstring = sdscat( workingstring, nextchar );
         }
@@ -395,6 +425,45 @@ sds parse_comment(struct process_state *P,  sds inputstr ) {
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__parenr ) {
             pmode.comment = false;
+            return inputstr;
+        } else {
+            continue_str;
+        }
+    }
+    return inputstr;
+}
+
+void define_newword( struct process_state *P,  sds inputstr ) {
+    if( sdscmp( inputstr, sdsnew( ":" ) ) || sdscmp( inputstr, sdsnew( ";" ) ) ||
+        sdscmp( inputstr, sdsnew( "@" ) ) || sdscmp( inputstr, sdsnew( "!" ) ) ||
+        sdscmp( inputstr, sdsnew( "var" ) ) ) {
+            // big error here invocation.
+    }
+
+    size_t wordname = newatom( inputstr );
+    if( wordname ) {
+        pushcallstackframe(P);
+        P->current_codestream=newcodeset( P->node, 1024, wordname );
+        printf( "compiling new word: %s.\n", atomtostring(wordname) );
+    }
+    
+    
+}
+
+sds parse_newword(struct process_state *P,  sds inputstr ) {
+    sds workingstring = sdsempty();
+    sds nextchar = sdsempty();
+    while ( sdslen( inputstr ) )
+    {
+        nextchar = split_string( inputstr, 1 );
+        size_t nextchar_a = verifyatom( nextchar );
+        if( nextchar_a == a__parenl || nextchar_a == a__space ) {
+                if( sdslen( workingstring ) > 0 && sdscmp( workingstring, sdsnew( " " ) ) ) {
+                    define_newword( P, workingstring );
+                }
+                if(nextchar_a == a__parenl ) {
+                    pmode.comment = true;
+                }
             return inputstr;
         } else {
             continue_str;
@@ -420,10 +489,10 @@ void parse_line( struct process_state *P, sds input ) {
         } else if ( pmode.string ) {
             workingstring = parse_string( P, workingstring );
         } else if ( pmode.compile ) {
-            if ( 0 /* word has name? */ ) {
-            // workingstring = parse_newword( workingstring );
+            if ( P->current_codestream->nameatom == 0 ) {
+                workingstring = parse_newword( P, workingstring );
             } else {
-            workingstring = parse_compile( P, workingstring );
+                workingstring = parse_compile( P, workingstring );
             }
         } else {
             workingstring = parse_immed( P, workingstring );

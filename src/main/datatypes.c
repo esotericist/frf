@@ -1,5 +1,6 @@
 
 #include "datatypes.h"
+#include "vm.h"
 
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(iListType, ILIST_COMPARATOR, next_ptr)
 SGLIB_DEFINE_HASHED_CONTAINER_FUNCTIONS(iListType, ilist_hash_size, ilist_hash_function )
@@ -8,6 +9,13 @@ SGLIB_DEFINE_HASHED_CONTAINER_FUNCTIONS(sListType, slist_hash_size, slist_hash_f
 
 struct ilist* alloc_ilist() {
     return GC_malloc( sizeof( struct ilist ));
+}
+
+struct ilist* swap_ilist( struct ilist* old ) {
+    struct ilist *new = alloc_ilist();
+    new->first.a_val = old->second.a_val;
+    new->second.a_val = old->first.a_val;
+    return new;
 }
 
 struct slist* alloc_slist() {
@@ -60,7 +68,7 @@ struct code_set* newcodeset ( struct node_state *N, size_t size, size_t wordatom
     new_cs->length = size;
     if( wordatom ) {
         new_cs->nameatom = wordatom;
-        // registerword
+        registerword( N, wordatom, new_cs );
     }
 
     return new_cs;
@@ -88,6 +96,8 @@ struct process_state* newprocess( struct node_state *N ) {
     size_t max = 1024;
     new_P->d = GC_malloc( sizeof( struct datastack ) + sizeof ( struct datapoint ) * (max) );
     new_P->d->max = max;
+    new_P->c = GC_malloc( sizeof( struct callstack ) + sizeof ( struct callstackframe ) * (max) );
+    new_P->c->max = max;
     new_P->node = N;
     
     return new_P;

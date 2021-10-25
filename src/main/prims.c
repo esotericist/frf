@@ -1,6 +1,7 @@
 #include "prims.h"
 #include "stdlib.h"
 #include "stack.h"
+#include "vm.h"
 
 
 void preregisterprim( void *thefunc,  char *s) {
@@ -28,13 +29,6 @@ void finalizeprims( struct node_state *N ) {
         sglib_hashed_iListType_add( N->atomtoprimtable, new_atom_entry );
 
     }
-}
-
-void * fetchprim( struct node_state *N, size_t atom ) {
-    iListType *it = alloc_ilist();
-    it->first.a_val = atom;
-    struct ilist *tmp = sglib_hashed_iListType_find_member( N->atomtoprimtable, it );
-    return (void*)(uintptr_t)tmp->second.p_val;
 }
 
 #pragma GCC push_options
@@ -169,6 +163,21 @@ prim(while) {
         P->currentop = P->current_codestream->codestream[P->currentop].u_val;
     }
 }
+
+prim(call) {
+    struct code_set *targetword = P->current_codestream->codestream[P->currentop].p_val;
+    P->currentop++;
+    pushcallstackframe(P);
+    if( !P->errorstate ) {
+        P->current_codestream = targetword;
+        P->currentop = 0;
+    }
+}
+
+prim(exit) {
+    popcallstackframe(P);
+}
+
 
 // math prims
 prim2( add, + ) {

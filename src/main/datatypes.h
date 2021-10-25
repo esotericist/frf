@@ -29,6 +29,7 @@ typedef struct ilist {
 
 
 struct ilist* alloc_ilist();
+struct ilist* swap_ilist( struct ilist* old );
 
 unsigned int ilist_comp_function(iListType *e1, iListType *e2 );
 unsigned int ilist_hash_function(iListType *e);
