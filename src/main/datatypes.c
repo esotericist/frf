@@ -1,5 +1,6 @@
 
 #include "datatypes.h"
+#include "sds.h"
 #include "vm.h"
 
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(iListType, ILIST_COMPARATOR, next_ptr)
@@ -52,13 +53,38 @@ unsigned int slist_hash_function(sListType *e) {
     return hash;
 }
 
+sListType* slist_find( sListType **tbl, sds key ) {
+    sListType *elem = alloc_slist();
+    elem->s = sdsdup(key);
+    sListType *found = sglib_hashed_sListType_find_member( tbl, elem );
+    return found;
+}
+
+void definelist_add( struct node_state *N, sds key, sds value ) {
+    sds k = sdsnew(key);
+    if ( !(sdscmp( k, sdsempty() ))) {
+        return;
+    }
+    sListType *elem = alloc_slist();
+    elem->s = k;
+    elem->ptr = (uintptr_t) (void *)sdsnew(value);
+    sglib_hashed_sListType_add( N->definetable, elem );    
+}
+
 struct node_state* newnode() {
     struct node_state *new_N = GC_malloc( sizeof(  struct node_state) );
     sglib_hashed_iListType_init( new_N->atomtoprimtable );
     sglib_hashed_iListType_init( new_N->atomtowordtable );
     sglib_hashed_iListType_init( new_N->primtoatomtable );
     sglib_hashed_iListType_init( new_N->atomtowordtable );
+    sglib_hashed_sListType_init( new_N->definetable );
 
+    definelist_add( new_N, "case", "begin dup " );
+    definelist_add( new_N, "when", "if pop " );
+    definelist_add( new_N, "end", "break then dup " );
+    definelist_add( new_N, "default", "pop 1 if " );
+    definelist_add( new_N, "endcase", "pop pop 1 until " );
+    definelist_add( new_N, "", "" );
 
     return new_N;
 }

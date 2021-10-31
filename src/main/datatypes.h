@@ -46,7 +46,10 @@ SGLIB_DEFINE_HASHED_CONTAINER_PROTOTYPES(iListType, ilist_hash_size, ilist_hash_
 typedef struct slist
 {
     sds s;
-    size_t data;
+    union {
+        size_t data;
+        uintptr_t ptr;
+    };
     struct slist *next_ptr;
 } sListType;
 
@@ -58,6 +61,9 @@ unsigned int slist_hash_function(sListType *e);
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(sListType, SLIST_COMPARATOR, next_ptr)
 
 SGLIB_DEFINE_HASHED_CONTAINER_PROTOTYPES(sListType, slist_hash_size, slist_hash_function )
+
+sListType* slist_find( sListType **tbl, sds key );
+
 
 struct dataobject {
     size_t typeatom;
@@ -75,6 +81,8 @@ struct node_state {
 
     iListType *atomtowordtable[ilist_hash_size];
     iListType *wordtoatomtable[ilist_hash_size];
+
+    sListType *definetable[slist_hash_size];
 
     /**
      * int nextPID

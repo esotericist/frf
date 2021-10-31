@@ -204,13 +204,7 @@ atom(exit)
 sds numstring;
 sds opstring;
 
-void tokenize( struct process_state *P, sds inputstr ) {
-}
-
-typedef void (*call_prim)(struct process_state *p);
-
-void checktoken( struct process_state *P, sds input) {
-
+void tokenize( struct process_state *P, sds input ) {
     sds c = sdsnewlen( input, 1 );
     if( strcount ( c, numstring ) || ( sdslen(input) >=2 && strcount( c, opstring ) ) ) {
         append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
@@ -241,8 +235,20 @@ void checktoken( struct process_state *P, sds input) {
     }
 
     printf( "? %s ?\n", sdstrim( input, sdsnew( " " ) ) );
-    
-}
+ }
+
+typedef void (*call_prim)(struct process_state *p);
+
+#define checktoken(s) do { sListType *elem = slist_find( P->node->definetable, (s));  \
+                        if( elem) { \
+                            inputstr = sdscatsds( sdsnew((char *) (uintptr_t) elem->ptr), inputstr );  \
+                            workingstring =sdsempty(); \
+                        } else { \
+                            tokenize(P, s);\
+                        }\
+                        } while(0)
+
+
 
 sds split_string( sds inputstr, ssize_t index )
 {   
@@ -333,7 +339,7 @@ sds parse_immed(struct process_state *P,  sds inputstr ) {
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__space || nextchar_a == a__newline ) {
             if( sdslen( workingstring) > 0 ) {
-                checktoken( P, workingstring);
+                checktoken( workingstring);
             }
             workingstring = sdsempty();
             
@@ -352,7 +358,7 @@ sds parse_immed(struct process_state *P,  sds inputstr ) {
             return inputstr;
         } else if( nextchar_a == a__parenl ) {
             if( sdslen(workingstring) > 0 ) {
-                checktoken( P, workingstring);
+                checktoken( workingstring);
             }
             workingstring = sdsempty();
             pmode.comment = true;
@@ -376,7 +382,7 @@ sds parse_compile(struct process_state *P,  sds inputstr ) {
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__space || nextchar_a == a__newline ) {
             if( sdslen( workingstring) > 0 ) {
-                checktoken( P, workingstring);
+                checktoken( workingstring);
             }
             workingstring = sdsempty();
             
@@ -388,7 +394,7 @@ sds parse_compile(struct process_state *P,  sds inputstr ) {
             return inputstr;
         } else if( nextchar_a == a__parenl ) {
             if( sdslen(workingstring) > 0 ) {
-                checktoken( P, workingstring);
+                checktoken( workingstring);
             }
             workingstring = sdsempty();
             pmode.comment = true;

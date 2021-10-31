@@ -1,18 +1,19 @@
-
 : fizz ( i -- i s )
-  dup 3 % 0 = if
-    dup 5 % 0 = if
-      "fizzbuzz"
-    else
+  dup case
+    3 % 0 = when
+      dup 5 % 0 = if
+        "fizzbuzz"
+      else 
+        "fizz"
+      then
+    end
+    5 % 0 = when
       "buzz"
-    then
-  else
-    dup 5 % 0 = if
-      "buzz"
-    else
-      dup intostr
-    then
-  then
+    end
+    default
+      intostr
+    end
+  endcase
   " " strcat
 ;
 

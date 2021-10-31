@@ -165,7 +165,7 @@ prim(while) {
 }
 
 prim(call) {
-    struct code_set *targetword = P->current_codestream->codestream[P->currentop].p_val;
+    struct code_set *targetword = (void *)(uintptr_t) P->current_codestream->codestream[P->currentop].p_val;
     P->currentop++;
     pushcallstackframe(P);
     if( !P->errorstate ) {
