@@ -14,18 +14,18 @@
 
 atom(exit)
 
-sds readfile( struct process_state *P ) {
-    sds to_return = sdsempty();
+sfs readfile( struct process_state *P ) {
+    sfs to_return = sfsempty();
 
      char buffer[BUFSIZ];
 
      getcwd(buffer, BUFSIZ);
-     sds filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/prototype.frf" ) );
+     sfs filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/prototype.frf" ) );
      FILE *thefile;
      thefile = fopen( filepath, "r" );
 
      while( fgets( buffer, BUFSIZ, thefile ) != NULL ) {
-         to_return = sdsnew( buffer );
+         to_return = sfsnew( buffer );
          parse_line( P, to_return);
 
      }
@@ -35,14 +35,14 @@ sds readfile( struct process_state *P ) {
      return to_return;
 }
 
-extern sds numstring;
-extern sds opstring;
+extern sfs numstring;
+extern sfs opstring;
 
 int main(int argc, char **argv) {
     GC_INIT();
     atoms_init();
-    numstring = sdsnew( "0123456789" );
-    opstring = sdsnew( "-$%" );
+    numstring = sfsnew( "0123456789" );
+    opstring = sfsnew( "-$%" );
 
     struct node_state *N = newnode();
 
@@ -52,8 +52,8 @@ int main(int argc, char **argv) {
     newcompilestate( P );
     P->current_codestream = newcodeset(N, 1024, 0 );
 
-    sds input = readfile( P );
-    sdstolower ( input );
+    sfs input = readfile( P );
+    sfstolower ( input );
 
     
     P->currentop = 0;

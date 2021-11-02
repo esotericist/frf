@@ -85,21 +85,4 @@ static inline void sfssetlen( sfs s, size_t newlen ) {
     ((struct sfshdr *)((s)-(hdrlen)))->len = newlen;
 }
 
-#define sds sfs
-
-#define sdsnew sfsnew
-#define sdsdup sfsdup
-#define sdsnewlen sfsnewlen
-#define sdstrim sfstrim
-#define sdscat sfscatc
-#define sdscatlen sfscatlen
-#define sdscatsds sfscatsfs
-#define sdsfromlonglong sfsfromlonglong
-#define sdsempty sfsempty
-#define sdscmp sfscmp
-#define sdsrange sfsrange
-#define sdstolower sfstolower
-#define sdslen sfslen
-#define sdscatprintf sfscatprintf
-
 #endif

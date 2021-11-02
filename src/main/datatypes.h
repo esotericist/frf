@@ -9,7 +9,7 @@
 #include "sfs.h"
 
 
-#define str_eq( a, b ) ( sdscmp( (a), (b) ) == 0)
+#define str_eq( a, b ) ( sfscmp( (a), (b) ) == 0)
 
 
 #define ilist_hash_size 32768
@@ -45,7 +45,7 @@ SGLIB_DEFINE_HASHED_CONTAINER_PROTOTYPES(iListType, ilist_hash_size, ilist_hash_
 
 typedef struct slist
 {
-    sds s;
+    sfs s;
     union {
         size_t data;
         uintptr_t ptr;
@@ -57,19 +57,19 @@ struct slist* alloc_slist();
 
 unsigned int slist_hash_function(sListType *e);
 
-#define SLIST_COMPARATOR(e1, e2) (sdscmp((e1->s), (e2->s) ))
+#define SLIST_COMPARATOR(e1, e2) (sfscmp((e1->s), (e2->s) ))
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(sListType, SLIST_COMPARATOR, next_ptr)
 
 SGLIB_DEFINE_HASHED_CONTAINER_PROTOTYPES(sListType, slist_hash_size, slist_hash_function )
 
-sListType* slist_find( sListType **tbl, sds key );
+sListType* slist_find( sListType **tbl, sfs key );
 
 
 struct dataobject {
     size_t typeatom;
     union {
         double d_val;
-        sds s_val;
+        sfs s_val;
         uintptr_t p_val;
     };
 };

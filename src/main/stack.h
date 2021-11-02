@@ -5,12 +5,12 @@
 
 
 // returns a string containing the entire current stack contents
-sds dump_stack( struct process_state *P );
+sfs dump_stack( struct process_state *P );
 
 // fetching values from a codestream (via codepoint)
 int64_t cp_get_int( struct code_point *cp );
 size_t cp_get_atom( struct code_point *cp );
-sds cp_get_string( struct code_point *cp );
+sfs cp_get_string( struct code_point *cp );
 
 // type queries
 static inline bool dp_is_int( struct datapoint *dp ) {
@@ -33,7 +33,7 @@ bool checktrue ( struct datapoint *dp );
 // returns atom indicating data object type
 size_t checktype( struct datapoint *dp );
 // renders string suitable for printing for debug
-sds formatobject( struct node_state *N , struct datapoint *dp );
+sfs formatobject( struct node_state *N , struct datapoint *dp );
 
 //
 // manipulation of the contents of datapoints on a datastack
@@ -42,8 +42,8 @@ int64_t dp_get_int( struct datapoint *dp );
 void dp_put_int( struct datapoint *dp, uint64_t i );
 size_t dp_get_atom( struct datapoint *dp );
 void dp_put_atom( struct datapoint *dp, size_t a );
-sds dp_get_string( struct datapoint *dp );
-void dp_put_string( struct datapoint *dp, sds s );
+sfs dp_get_string( struct datapoint *dp );
+void dp_put_string( struct datapoint *dp, sfs s );
 
 
 #define stackfault(x) P->errorstate = (x); return;
@@ -64,7 +64,7 @@ static inline struct datapoint pop_dp(struct process_state *P ) {
 
 void push_int(struct process_state *P, uint64_t i );
 void push_atom( struct process_state *P, size_t a );
-void push_string( struct process_state *P, sds s );
+void push_string( struct process_state *P, sfs s );
 void push_bool( struct process_state *P, bool t );
 
 atom(expected_integer)
@@ -84,11 +84,11 @@ static inline size_t pop_atom( struct process_state *P ) {
 }
 #define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) } size_t
 
-static inline sds pop_string( struct process_state *P ) {
+static inline sfs pop_string( struct process_state *P ) {
     struct datapoint dp = pop_dp( P ); 
     return dp_get_string( &dp );
 }
-#define require_string needstack(1) if( !dp_is_string( topdp ) ) { stackfault( a_expected_string ) } sds
+#define require_string needstack(1) if( !dp_is_string( topdp ) ) { stackfault( a_expected_string ) } sfs
 
 static inline bool pop_bool(struct process_state *P ) {
     struct datapoint dp = pop_dp( P ); 

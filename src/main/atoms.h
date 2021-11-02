@@ -2,10 +2,10 @@
 #define ATOMS_H_
 #include "datatypes.h"
 
-size_t verifyatom( sds str );
-size_t stringtoatom( sds str );
-size_t newatom( sds str );
-sds atomtostring( size_t atom );
+size_t verifyatom( sfs str );
+size_t stringtoatom( sfs str );
+size_t newatom( sfs str );
+sfs atomtostring( size_t atom );
 void atoms_init();
 
 

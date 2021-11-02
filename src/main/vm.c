@@ -107,13 +107,13 @@ size_t executetimeslice( struct process_state *P, size_t steps ) {
             break;
         }
         if( check_op & 3 ) {
-            sds stackstate = sdsempty();
+            sfs stackstate = sfsempty();
             if( P->debugmode ) {
                 stackstate = dump_stack (P );
             }
             call_prim ptr = funcfrommungedptr( check_op );
             ptr( P );
-            sds primname = atomtostring( primtoatom( P->node, ptr ) );
+            sfs primname = atomtostring( primtoatom( P->node, ptr ) );
             if( P->debugmode ) {
                 printf("%s > %s\n", stackstate, primname );
             }        

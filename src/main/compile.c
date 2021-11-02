@@ -11,9 +11,9 @@ int errorstate = 0;
 
 #define pmode P->compilestate->parsemode
 
-size_t strcount( sds key, sds searched ) {
-    size_t keylen = sdslen(key);
-    size_t searchedlen = sdslen(searched);
+size_t strcount( sfs key, sfs searched ) {
+    size_t keylen = sfslen(key);
+    size_t searchedlen = sfslen(searched);
     size_t count = 0;
     if( keylen > searchedlen) {
         return 0;
@@ -201,18 +201,18 @@ atom(exit)
 
 // set in frf.c
 // used for comparisons in tokenize
-sds numstring;
-sds opstring;
+sfs numstring;
+sfs opstring;
 
-void tokenize( struct process_state *P, sds input ) {
-    sds c = sdsnewlen( input, 1 );
-    if( strcount ( c, numstring ) || ( sdslen(input) >=2 && strcount( c, opstring ) ) ) {
+void tokenize( struct process_state *P, sfs input ) {
+    sfs c = sfsnewlen( input, 1 );
+    if( strcount ( c, numstring ) || ( sfslen(input) >=2 && strcount( c, opstring ) ) ) {
         append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
         append_cp( P, atoi( input ) );
         return;
     }
 
-    sdstolower( input );
+    sfstolower( input );
     size_t maybe_op = verifyatom( input );
     if( checkflowcontrol(P, maybe_op) ) {
         return;
@@ -234,37 +234,37 @@ void tokenize( struct process_state *P, sds input ) {
         }
     }
 
-    printf( "? %s ?\n", sdstrim( input, sdsnew( " " ) ) );
+    printf( "? %s ?\n", sfstrim( input, sfsnew( " " ) ) );
  }
 
 typedef void (*call_prim)(struct process_state *p);
 
 #define checktoken(s) do { sListType *elem = slist_find( P->node->definetable, (s));  \
                         if( elem) { \
-                            inputstr = sdscatsds( sdsnew((char *) (uintptr_t) elem->ptr), inputstr );  \
-                            workingstring =sdsempty(); \
+                            inputstr = sfscatsfs( sfsnew((char *) (uintptr_t) elem->ptr), inputstr );  \
+                            workingstring =sfsempty(); \
                         } else { \
                             tokenize(P, s);\
                         }\
                         } while(0)
 
 
-#define continue_str workingstring = sdscat( workingstring, nextchar )
+#define continue_str workingstring = sfscatc( workingstring, nextchar )
 
-sds parse_atom( struct process_state *P, sds inputstr ) {
-    sds workingstring = sdsempty();
-    sds nextchar = sdsempty();
-    while ( sdslen( inputstr ) )
+sfs parse_atom( struct process_state *P, sfs inputstr ) {
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
     {
         nextchar = sfsnewlen( inputstr, 1 );
-        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__squote ) {
             size_t stringatom = stringtoatom( workingstring );
             append_prim( P, a_push_atom );
             append_cp(P, stringatom );
-            workingstring = sdsempty();
+            workingstring = sfsempty();
             pmode.atom = false;
             return inputstr;
         } else {
@@ -274,17 +274,17 @@ sds parse_atom( struct process_state *P, sds inputstr ) {
     return inputstr;
 }
 
-sds parse_string(struct process_state *P,  sds inputstr ) {
-    size_t a__little_r = stringtoatom( sdsnew( "r" ));
-    size_t a__big_r = stringtoatom( sdsnew( "R" ));
-    size_t a__little_n = stringtoatom( sdsnew( "n" ));
+sfs parse_string(struct process_state *P,  sfs inputstr ) {
+    size_t a__little_r = stringtoatom( sfsnew( "r" ));
+    size_t a__big_r = stringtoatom( sfsnew( "R" ));
+    size_t a__little_n = stringtoatom( sfsnew( "n" ));
 
-    sds workingstring = sdsempty();
-    sds nextchar = sdsempty();
-    while ( sdslen( inputstr ) )
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
     {
         nextchar = sfsnewlen( inputstr, 1 );
-        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
         size_t nextchar_a = verifyatom( nextchar );
 
@@ -299,19 +299,19 @@ sds parse_string(struct process_state *P,  sds inputstr ) {
                 pmode.escape = false;
                 continue_str;
             } else {
-                nextchar = sdsempty();
+                nextchar = sfsempty();
                 pmode.escape = true;
             }
         } else if ( nextchar_a == a__dquote ) {
             if( pmode.escape ) {
                 pmode.escape = false;
                 continue_str;
-                nextchar = sdsempty();
+                nextchar = sfsempty();
             } else {
                 size_t stringatom = stringtoatom( workingstring );
                 append_prim( P, a_push_string );
                 append_cp(P, stringatom );
-                workingstring = sdsempty();
+                workingstring = sfsempty();
                 pmode.string = false;
                 return inputstr;
             }
@@ -323,25 +323,25 @@ sds parse_string(struct process_state *P,  sds inputstr ) {
 }
 
 
-sds parse_immed(struct process_state *P,  sds inputstr ) {
-    sds workingstring = sdsempty();
-    sds nextchar = sdsempty();
-    while ( sdslen( inputstr ) )
+sfs parse_immed(struct process_state *P,  sfs inputstr ) {
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
     {
         nextchar = sfsnewlen( inputstr, 1 );
-        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__space || nextchar_a == a__newline ) {
-            if( sdslen( workingstring) > 0 ) {
+            if( sfslen( workingstring) > 0 ) {
                 checktoken( workingstring);
             }
-            workingstring = sdsempty();
+            workingstring = sfsempty();
             
         } else if( nextchar_a == a__dsign ) {
-            if( sdslen( workingstring) == 0 ) {
+            if( sfslen( workingstring) == 0 ) {
                 pmode.directive = true;
-                return sdscat( nextchar, inputstr );
+                return sfscatc( nextchar, inputstr );
             } else {
                 continue_str;
             }
@@ -352,10 +352,10 @@ sds parse_immed(struct process_state *P,  sds inputstr ) {
             pmode.atom = true;
             return inputstr;
         } else if( nextchar_a == a__parenl ) {
-            if( sdslen(workingstring) > 0 ) {
+            if( sfslen(workingstring) > 0 ) {
                 checktoken( workingstring);
             }
-            workingstring = sdsempty();
+            workingstring = sfsempty();
             pmode.comment = true;
             return inputstr;
         } else if( nextchar_a == a__colon ) {
@@ -368,20 +368,20 @@ sds parse_immed(struct process_state *P,  sds inputstr ) {
     return inputstr;
 }
 
-sds parse_compile(struct process_state *P,  sds inputstr ) {
-    sds workingstring = sdsempty();
-    sds nextchar = sdsempty();
-    while ( sdslen( inputstr ) )
+sfs parse_compile(struct process_state *P,  sfs inputstr ) {
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
     {
         nextchar = sfsnewlen( inputstr, 1 );
-        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__space || nextchar_a == a__newline ) {
-            if( sdslen( workingstring) > 0 ) {
+            if( sfslen( workingstring) > 0 ) {
                 checktoken( workingstring);
             }
-            workingstring = sdsempty();
+            workingstring = sfsempty();
             
         } else if( nextchar_a == a__dquote ) {
             pmode.string = true;
@@ -390,14 +390,14 @@ sds parse_compile(struct process_state *P,  sds inputstr ) {
             pmode.atom = true;
             return inputstr;
         } else if( nextchar_a == a__parenl ) {
-            if( sdslen(workingstring) > 0 ) {
+            if( sfslen(workingstring) > 0 ) {
                 checktoken( workingstring);
             }
-            workingstring = sdsempty();
+            workingstring = sfsempty();
             pmode.comment = true;
             return inputstr;
         } else if( nextchar_a == a__semicolon ) {
-            if( sdslen( workingstring ) ) {
+            if( sfslen( workingstring ) ) {
                 printf( "unknown token: %s.\n", workingstring );
                 // big error here
                 return inputstr;
@@ -413,19 +413,19 @@ sds parse_compile(struct process_state *P,  sds inputstr ) {
                 }
             }
         } else {
-            workingstring = sdscat( workingstring, nextchar );
+            workingstring = sfscatc( workingstring, nextchar );
         }
     }
     return inputstr;
 }
 
-sds parse_comment(struct process_state *P,  sds inputstr ) {
-    sds workingstring = sdsempty();
-    sds nextchar = sdsempty();
-    while ( sdslen( inputstr ) )
+sfs parse_comment(struct process_state *P,  sfs inputstr ) {
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
     {
         nextchar = sfsnewlen( inputstr, 1 );
-        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__parenr ) {
@@ -438,10 +438,10 @@ sds parse_comment(struct process_state *P,  sds inputstr ) {
     return inputstr;
 }
 
-void define_newword( struct process_state *P,  sds inputstr ) {
-    if( sdscmp( inputstr, sdsnew( ":" ) ) || sdscmp( inputstr, sdsnew( ";" ) ) ||
-        sdscmp( inputstr, sdsnew( "@" ) ) || sdscmp( inputstr, sdsnew( "!" ) ) ||
-        sdscmp( inputstr, sdsnew( "var" ) ) ) {
+void define_newword( struct process_state *P,  sfs inputstr ) {
+    if( sfscmp( inputstr, sfsnew( ":" ) ) || sfscmp( inputstr, sfsnew( ";" ) ) ||
+        sfscmp( inputstr, sfsnew( "@" ) ) || sfscmp( inputstr, sfsnew( "!" ) ) ||
+        sfscmp( inputstr, sfsnew( "var" ) ) ) {
             // big error here invocation.
     }
 
@@ -455,17 +455,17 @@ void define_newword( struct process_state *P,  sds inputstr ) {
     
 }
 
-sds parse_newword(struct process_state *P,  sds inputstr ) {
-    sds workingstring = sdsempty();
-    sds nextchar = sdsempty();
-    while ( sdslen( inputstr ) )
+sfs parse_newword(struct process_state *P,  sfs inputstr ) {
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
     {
         nextchar = sfsnewlen( inputstr, 1 );
-        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__parenl || nextchar_a == a__space ) {
-                if( sdslen( workingstring ) > 0 && sdscmp( workingstring, sdsnew( " " ) ) ) {
+                if( sfslen( workingstring ) > 0 && sfscmp( workingstring, sfsnew( " " ) ) ) {
                     define_newword( P, workingstring );
                 }
                 if(nextchar_a == a__parenl ) {
@@ -480,12 +480,11 @@ sds parse_newword(struct process_state *P,  sds inputstr ) {
 }
 
 
-void parse_line( struct process_state *P, sds input ) {
-    sds s_space = sdsnew( " " );
-    input = sdstrim( sdstrim( input, s_space ), "\n" );
-    sds workingstring = sdsdup(input);
-    workingstring = sdscat( workingstring, s_space );
-    while( sdslen( workingstring) > 0 /* and errorstate == 0 */ ) {
+void parse_line( struct process_state *P, sfs input ) {
+    sfs s_space = sfsnew( " " );
+    input = sfstrim( sfstrim( input, s_space ), "\n" );
+    sfs workingstring = sfscatc( input, s_space );
+    while( sfslen( workingstring) > 0 /* and errorstate == 0 */ ) {
         if( pmode.comment ) {
             workingstring = parse_comment( P, workingstring );
 

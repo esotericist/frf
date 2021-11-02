@@ -44,8 +44,8 @@ unsigned int slist_hash_function(sListType *e) {
     // cribbed from http://www.cse.yorku.ca/~oz/hash.html
     int c;
     unsigned long hash = 5381;
-    size_t len = sdslen( e->s );
-    sds str = e->s;
+    size_t len = sfslen( e->s );
+    sfs str = e->s;
     for( int i = 0; i < len; i++ ) {
         c = str[i];
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
@@ -53,21 +53,21 @@ unsigned int slist_hash_function(sListType *e) {
     return hash;
 }
 
-sListType* slist_find( sListType **tbl, sds key ) {
+sListType* slist_find( sListType **tbl, sfs key ) {
     sListType *elem = alloc_slist();
     elem->s = key;
     sListType *found = sglib_hashed_sListType_find_member( tbl, elem );
     return found;
 }
 
-void definelist_add( struct node_state *N, sds key, sds value ) {
-    sds k = sdsnew(key);
-    if ( !(sdscmp( k, sdsempty() ))) {
+void definelist_add( struct node_state *N, sfs key, sfs value ) {
+    sfs k = sfsnew(key);
+    if ( !(sfscmp( k, sfsempty() ))) {
         return;
     }
     sListType *elem = alloc_slist();
     elem->s = k;
-    elem->ptr = (uintptr_t) (void *)sdsnew(value);
+    elem->ptr = (uintptr_t) (void *)sfsnew(value);
     sglib_hashed_sListType_add( N->definetable, elem );    
 }
 

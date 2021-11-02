@@ -16,7 +16,7 @@ extern sListType *atom_table[slist_hash_size];
 void finalizeprims( struct node_state *N ) {
     for(int i = 0; i < numpreprims ; i++ ) {
         uintptr_t new_prim_ptr = (uintptr_t)(void*) preprims[i].thefunc;
-        sds primname = sdstrim ( sdsnew( preprims[i].prim ), " " );
+        sfs primname = sfstrim ( sfsnew( preprims[i].prim ), " " );
         size_t new_atom_val = stringtoatom( primname );
         iListType *new_prim_entry  = alloc_ilist();
         iListType *new_atom_entry = alloc_ilist();
@@ -267,13 +267,13 @@ prim( and ) {
 // strings
 prim (intostr) {
     require_int num = pop_int( P );
-    push_string( P, sdsfromlonglong( num )  );
+    push_string( P, sfsfromlonglong( num )  );
 }
 
 prim (strcat) {
     require_string second = pop_string(P);
     require_string first = pop_string(P);
-    push_string( P, sdscatsds ( first, second ) );
+    push_string( P, sfscatsfs ( first, second ) );
 }
 
 

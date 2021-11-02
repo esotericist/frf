@@ -12,18 +12,18 @@ size_t atomcount = 0;
 // erlang, unbounded atom creation will always eventually kill the crab.
 
 sListType *atom_table[slist_hash_size];
-sds atom_strings[slist_hash_size];
+sfs atom_strings[slist_hash_size];
 
 // in common usage, atoms-as-datatype are restricted to alphanumeric (lowercase only), period,
 // slash, and underscore. all other characters are dropped. string should be converted to
 // lowercase beforehand in most cases.
 // we technically can use atoms to hold arbitrary strings, but that's not typical behavior
 // outside of string literals, due to the risk of unbounded atom generation.
-sds sanitizeatomstring( sds str ) {
+sfs sanitizeatomstring( sfs str ) {
     int i;
     char c;
-    sds outstr = sdsempty();
-    for( i = 0; i < sdslen( str) ; i++ ) {
+    sfs outstr = sfsempty();
+    for( i = 0; i < sfslen( str) ; i++ ) {
         c = str[i];
         switch (c)
         {
@@ -32,7 +32,7 @@ sds sanitizeatomstring( sds str ) {
             case '0' ... '9':
             case '_':
             case 'a' ... 'z': {
-                outstr = sdscatlen(outstr, &c, 1 );
+                outstr = sfscatlen(outstr, &c, 1 );
                 continue;
             }
         }
@@ -42,8 +42,8 @@ sds sanitizeatomstring( sds str ) {
 
 // look up the value for a string you expect already exists as an atom 
 // but don't want to ensure exists
-size_t verifyatom( sds str ) {
-    if (str_eq( sdsempty(), str )) {
+size_t verifyatom( sfs str ) {
+    if (str_eq( sfsempty(), str )) {
         return 0;
     }
     struct slist *it = alloc_slist();
@@ -58,7 +58,7 @@ size_t verifyatom( sds str ) {
 // ensure a string exists as an atom. use with care: this does not perform any validation.
 // normally you want to use newatom() to ensure the atom meets our specifications;
 // in particular case insensitive contexts (primary atom uses) need to be converted to lowercase.
-size_t stringtoatom( sds str ) {
+size_t stringtoatom( sfs str ) {
     int i = verifyatom( str );
     if( i ) {
         return i;
@@ -75,13 +75,13 @@ size_t stringtoatom( sds str ) {
 // registers a string as an atom if it isn't already registered, returns existing value if it already is.
 // leading/trailing spaces are stripped, and string is converted to lowercase because standard atoms
 // are intended to be effectively case insensitive (but always displayed as lowercase when printed).
-size_t newatom( sds str ) {
-    str = sdstrim(  str , " " );
-    sdstolower( str ); 
+size_t newatom( sfs str ) {
+    str = sfstrim(  str , " " );
+    sfstolower( str ); 
     return stringtoatom( sanitizeatomstring( str ) ) ;
 }
 
-sds atomtostring( size_t atom ) {
+sfs atomtostring( size_t atom ) {
     return atom_strings[ atom ];
 }
 
@@ -98,22 +98,22 @@ void preregisteratom( size_t *var,  char *s) {
 
 // sets up baseline atom definitions we know we need, including pre-registered atoms
 void atoms_init() {
-    stringtoatom( sdsempty() );
+    stringtoatom( sfsempty() );
     for(int i = 0; i < numpreatoms ; i++ ) {
-        *(preatoms[i].thevar) = newatom( sdsnew( preatoms[i].atom ) );
+        *(preatoms[i].thevar) = newatom( sfsnew( preatoms[i].atom ) );
     }
     free(preatoms);
-    a__dsign = stringtoatom( sdsnew( "$" ) );
-    a__dquote = stringtoatom( sdsnew( "\"" ) );
-    a__squote = stringtoatom( sdsnew( "'" ) );
-    a__backslash = stringtoatom( sdsnew( "\\" ) );
-    a__colon = stringtoatom( sdsnew( ":" ) );
-    a__semicolon = stringtoatom( sdsnew( ";" ) );
-    a__parenl = stringtoatom( sdsnew( "(" ) );
-    a__parenr = stringtoatom( sdsnew( ")" ) );
-    a__space = stringtoatom( sdsnew( " " ) );
-    a__plus = stringtoatom(sdsnew("+"));
-    a__percent = stringtoatom(sdsnew("%"));
-    a__minus = stringtoatom(sdsnew("-"));
-    a__newline = stringtoatom(sdsnew("\n"));
+    a__dsign = stringtoatom( sfsnew( "$" ) );
+    a__dquote = stringtoatom( sfsnew( "\"" ) );
+    a__squote = stringtoatom( sfsnew( "'" ) );
+    a__backslash = stringtoatom( sfsnew( "\\" ) );
+    a__colon = stringtoatom( sfsnew( ":" ) );
+    a__semicolon = stringtoatom( sfsnew( ";" ) );
+    a__parenl = stringtoatom( sfsnew( "(" ) );
+    a__parenr = stringtoatom( sfsnew( ")" ) );
+    a__space = stringtoatom( sfsnew( " " ) );
+    a__plus = stringtoatom(sfsnew("+"));
+    a__percent = stringtoatom(sfsnew("%"));
+    a__minus = stringtoatom(sfsnew("-"));
+    a__newline = stringtoatom(sfsnew("\n"));
 }
