@@ -56,7 +56,6 @@ typedef char *sfs;
 
 sfs sfsempty( void );
 sfs sfsnew( const char *init );
-static inline sfs sfsdup( sfs s ) { return s; }
 sfs sfsnewlen( const char *init, size_t initlen );
 
 sfs sfsright( sfs s, size_t len);
