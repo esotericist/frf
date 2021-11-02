@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "sds.h"
+#include "sfs.h"
 #include "frf.h"
 #include "datatypes.h"
 #include "atoms.h"
@@ -20,7 +20,7 @@ sds readfile( struct process_state *P ) {
      char buffer[BUFSIZ];
 
      getcwd(buffer, BUFSIZ);
-     sds filepath = sdscatsds( sdsnew(buffer), sdsnew( "/tests/prototype.frf" ) );
+     sds filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/prototype.frf" ) );
      FILE *thefile;
      thefile = fopen( filepath, "r" );
 

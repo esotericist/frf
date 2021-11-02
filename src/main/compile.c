@@ -249,17 +249,6 @@ typedef void (*call_prim)(struct process_state *p);
                         } while(0)
 
 
-
-sds split_string( sds inputstr, ssize_t index )
-{   
-    if( index < 0 ) {
-        index = sdslen( inputstr ) + index;
-    }
-    sds outputstr = sdsnewlen( inputstr, index );
-    sdsrange( inputstr, index, sdslen ( inputstr) );
-    return outputstr;
-}
-
 #define continue_str workingstring = sdscat( workingstring, nextchar )
 
 sds parse_atom( struct process_state *P, sds inputstr ) {
@@ -267,7 +256,9 @@ sds parse_atom( struct process_state *P, sds inputstr ) {
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
-        nextchar = split_string( inputstr, 1 );
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__squote ) {
             size_t stringatom = stringtoatom( workingstring );
@@ -292,7 +283,9 @@ sds parse_string(struct process_state *P,  sds inputstr ) {
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
-        nextchar = split_string( inputstr, 1 );
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        
         size_t nextchar_a = verifyatom( nextchar );
 
         if( (nextchar_a == a__little_r ) || (nextchar_a == a__big_r ) || ( nextchar_a == a__little_n ) ) {
@@ -335,7 +328,9 @@ sds parse_immed(struct process_state *P,  sds inputstr ) {
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
-        nextchar = split_string( inputstr, 1 );
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__space || nextchar_a == a__newline ) {
             if( sdslen( workingstring) > 0 ) {
@@ -378,7 +373,9 @@ sds parse_compile(struct process_state *P,  sds inputstr ) {
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
-        nextchar = split_string( inputstr, 1 );
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__space || nextchar_a == a__newline ) {
             if( sdslen( workingstring) > 0 ) {
@@ -427,7 +424,9 @@ sds parse_comment(struct process_state *P,  sds inputstr ) {
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
-        nextchar = split_string( inputstr, 1 );
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__parenr ) {
             pmode.comment = false;
@@ -461,7 +460,9 @@ sds parse_newword(struct process_state *P,  sds inputstr ) {
     sds nextchar = sdsempty();
     while ( sdslen( inputstr ) )
     {
-        nextchar = split_string( inputstr, 1 );
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sdslen( inputstr) - 1 );
+        
         size_t nextchar_a = verifyatom( nextchar );
         if( nextchar_a == a__parenl || nextchar_a == a__space ) {
                 if( sdslen( workingstring ) > 0 && sdscmp( workingstring, sdsnew( " " ) ) ) {

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "sglib.h"
-#include "sds.h"
+#include "sfs.h"
 
 
 #define str_eq( a, b ) ( sdscmp( (a), (b) ) == 0)

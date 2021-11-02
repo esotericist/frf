@@ -1,6 +1,6 @@
 
 #include "datatypes.h"
-#include "sds.h"
+#include "sfs.h"
 #include "vm.h"
 
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(iListType, ILIST_COMPARATOR, next_ptr)
@@ -55,7 +55,7 @@ unsigned int slist_hash_function(sListType *e) {
 
 sListType* slist_find( sListType **tbl, sds key ) {
     sListType *elem = alloc_slist();
-    elem->s = sdsdup(key);
+    elem->s = key;
     sListType *found = sglib_hashed_sListType_find_member( tbl, elem );
     return found;
 }

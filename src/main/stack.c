@@ -66,9 +66,9 @@ sds formatobject( struct node_state *N , struct datapoint *dp ) {
         sds *strarr = sdssplitlen( tempstring, sdslen(tempstring), "\r", 2, count );
         tempstring =sdsjoin( strarr, &count, "\r" );
         */
-        workingstring = sdscatfmt( workingstring, "'%s'", tempstring );
+        workingstring = sdscatprintf( workingstring, "'%s'", tempstring );
     } else if( dptype == a_type_string ) {
-        workingstring = sdscatfmt( workingstring, "\"%s\"", dp_get_string( dp)  );
+        workingstring = sdscatprintf( workingstring, "\"%s\"", dp_get_string( dp)  );
     } else if( dptype == a_type_stackmark ) {
 
     } else {
@@ -116,7 +116,7 @@ sds dp_get_string( struct datapoint *dp ) {
 
 void dp_put_string( struct datapoint *dp, sds s ) {
     struct dataobject *dobj = newdataobject();
-    dobj->s_val = sdsdup(s);
+    dobj->s_val = s;
     dobj->typeatom = a_type_string;
     dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
 }
