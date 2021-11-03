@@ -36,7 +36,7 @@ bool checktrue( struct datapoint *dp ) {
 }
 
 sfs dump_stack( struct process_state *P ) {
-    sfs s = sfsnew( "stack: " );
+    sfs s = sfsnew( "(" );
     if( dcount == 0 ) {
         return s;
     }
@@ -47,7 +47,7 @@ sfs dump_stack( struct process_state *P ) {
 
         s = sfscatsfs( s, formatobject( P->node, &dstack[i] ) );
     }
-    return s;
+    return sfscatc(s, ")" );
 }
 
 sfs formatobject( struct node_state *N , struct datapoint *dp ) {
