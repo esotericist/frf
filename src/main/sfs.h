@@ -76,6 +76,7 @@ sfs sfsrange(sfs s, ssize_t start, ssize_t end);
 
 sfs sfscatvprintf(sfs s, const char *fmt, va_list ap);
 sfs sfscatprintf(sfs s, const char *fmt, ...);
+
 size_t sfsinstr( sfs strtosearch, sfs key, bool reverse );
 size_t sfsmatchcount( sfs key, sfs searched );
 

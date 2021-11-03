@@ -1,5 +1,7 @@
 debugon
-"abcbcba" dup "b" explode
+"abcbcba" "b" explode
+"hello world" " " explode
+popn popn
 
 exit
 : fizz ( i -- i s )

@@ -312,10 +312,10 @@ prim(and)
 // #endregion
 
 // #region strings
-prim(intostr)
-{
-    require_int num = pop_int(P);
-    push_string(P, sfsfromlonglong(num));
+
+prim(strlen) {
+    require_string s = pop_string(P);
+    push_int( P, sfslen(s));
 }
 
 prim(strcat)
@@ -405,9 +405,52 @@ prim(explode) {
     push_int(P, count);
 }
 
+prim(split) {
+    require_string s2 = pop_string(P);
+    require_string s1 = pop_string(P);
+    size_t index = sfsinstr( s1, s2, false );
+    if( index ) {
+        push_string(P, sfsnewlen( s1, index -1 ));
+        push_string(P, sfsright( s1, sfslen(s1) - index ));
+    } else {
+        push_string(P, s1);
+        push_string(P, sfsempty());
+    }
+}
+
+prim(rsplit) {
+    require_string s2 = pop_string(P);
+    require_string s1 = pop_string(P);
+    size_t index = sfsinstr( s1, s2, true );
+    if( index ) {
+        push_string(P, sfsnewlen( s1, index -1 ));
+        push_string(P, sfsright( s1, sfslen(s1) - index ));
+    } else {
+        push_string(P, s1);
+        push_string(P, sfsempty());
+    }
+}
+
+prim(tolower) {
+    require_string s = pop_string(P);
+    push_string(P, sfstolower(s));
+}
+
+prim(toupper) {
+    require_string s = pop_string(P);
+    push_string(P, sfstoupper(s));
+}
+
 // #endregion
 
 // #region conversion prims
+
+prim(intostr)
+{
+    require_int num = pop_int(P);
+    push_string(P, sfsfromlonglong(num));
+}
+
 prim(ctoi)
 {
     require_string str = pop_string(P);
