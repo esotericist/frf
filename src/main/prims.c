@@ -56,6 +56,23 @@ prim(push_string)
     push_string(P, cp_get_string(&P->current_codestream->codestream[pos]));
 }
 
+prim2(checkisint, int? ) {
+    push_bool( P, dp_is_int( topdp ));
+}
+
+// todo: add floats
+prim2(checkisnum, number? ) {
+    push_bool( P, dp_is_int( topdp ));
+}
+
+prim2(checkisstr, string? ) {
+    push_bool( P, dp_is_string( topdp ));
+}
+
+prim2(checkisatom, atom? ) {
+    push_bool( P, dp_is_atom( topdp ));
+}
+
 // #region stackprims
 prim(dup)
 {
@@ -134,8 +151,7 @@ prim(pop)
 
 prim(popn)
 {
-    needstack(1)
-        require_int count = pop_int(P);
+    require_int count = pop_int(P);
     needstack(count) if (count >= 0)
     {
         for (size_t i = 0; i < count; i++)
@@ -144,6 +160,37 @@ prim(popn)
         }
     }
 }
+
+prim(dupn) {
+    require_int count = pop_int(P);
+    size_t offset = dcount - count;
+    needstack(count) if( count >= 0) {
+        for (size_t i = 0; i < count; i++)
+        {
+            push_dp(P, &dstack[offset + i]);
+        }
+    }
+}
+
+prim(nip) {
+    p_swap(P);
+    pop_dp(P);   
+}
+
+prim(tuck) {
+    p_dup(P);
+    rotate(P, -3);
+}
+
+prim(put) {
+    require_int count = pop_int(P);
+    needstack(count)
+    rotate(P, - (count + 1));
+    rotate(P, count);
+    pop_dp(P);   
+
+}
+
 // #endregion
 
 // #region flow control prims
