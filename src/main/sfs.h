@@ -64,7 +64,8 @@ sfs sfscatlen(sfs s, const void *t, size_t len);
 sfs sfscatc(sfs s, const char *t);
 sfs sfscatsfs(sfs s, const sfs t);
 sfs sfstrim(sfs s, const char *cset);
-void sfstolower(sfs s);
+sfs sfstolower(sfs s);
+sfs sfstoupper(sfs s);
 
 int sfscmp(const sfs s1, const sfs s2);
 sfs sfsfromlonglong(long long value);
@@ -74,6 +75,7 @@ sfs sfsrange(sfs s, ssize_t start, ssize_t end);
 
 sfs sfscatvprintf(sfs s, const char *fmt, va_list ap);
 sfs sfscatprintf(sfs s, const char *fmt, ...);
+size_t sfsmatchcount( sfs key, sfs searched );
 
 
 static inline size_t sfslen(const sfs s) {

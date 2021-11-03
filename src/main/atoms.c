@@ -77,8 +77,7 @@ size_t stringtoatom( sfs str ) {
 // are intended to be effectively case insensitive (but always displayed as lowercase when printed).
 size_t newatom( sfs str ) {
     str = sfstrim(  str , " " );
-    sfstolower( str ); 
-    return stringtoatom( sanitizeatomstring( str ) ) ;
+    return stringtoatom( sanitizeatomstring( sfstolower( str ) ) ) ;
 }
 
 sfs atomtostring( size_t atom ) {

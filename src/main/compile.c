@@ -11,21 +11,6 @@ int errorstate = 0;
 
 #define pmode P->compilestate->parsemode
 
-size_t strcount( sfs key, sfs searched ) {
-    size_t keylen = sfslen(key);
-    size_t searchedlen = sfslen(searched);
-    size_t count = 0;
-    if( keylen > searchedlen) {
-        return 0;
-    }
-    for( size_t i = 0; i < (searchedlen - keylen + 1) ; i++ ) {
-        if( memcmp( key, searched + i, keylen ) == 0 ) {
-            count++;
-        }
-    }
-    return count;
-} 
-
 uintptr_t tag_prim (void *v) {
     return ( (uintptr_t)(void *) v ) | 3;
 }
@@ -206,7 +191,7 @@ sfs opstring;
 
 void tokenize( struct process_state *P, sfs input ) {
     sfs c = sfsnewlen( input, 1 );
-    if( strcount ( c, numstring ) || ( sfslen(input) >=2 && strcount( c, opstring ) ) ) {
+    if( sfsmatchcount ( numstring, c ) || ( sfslen(input) >=2 && sfsmatchcount( opstring, c ) ) ) {
         append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
         append_cp( P, atoi( input ) );
         return;

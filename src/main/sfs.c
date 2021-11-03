@@ -125,10 +125,20 @@ sfs sfstrim(sfs s, const char *cset) {
 }
 
 
-void sfstolower(sfs s) {
+sfs sfstolower(sfs s) {
+    sfs new_s = alloc_sfs( sfslen (s) );
     size_t len = sfslen(s), j;
-    for (j = 0; j < len; j++) s[j] = tolower(s[j]);
+    for (j = 0; j < len; j++) new_s[j] = tolower(s[j]);
+    return new_s;
 }
+
+sfs sfstoupper(sfs s) {
+    sfs new_s = alloc_sfs( sfslen (s) );
+    size_t len = sfslen(s), j;
+    for (j = 0; j < len; j++) new_s[j] = toupper(s[j]);
+    return new_s;
+}
+
 
 int sfscmp(const sfs s1, const sfs s2) {
     size_t l1, l2, minlen;
@@ -313,3 +323,18 @@ sfs sfscatprintf(sfs s, const char *fmt, ...) {
     va_end(ap);
     return t;
 }
+
+size_t sfsmatchcount( sfs strtosearch, sfs key ) {
+    size_t keylen = sfslen(key);
+    size_t searchedlen = sfslen(strtosearch);
+    size_t count = 0;
+    if( keylen > searchedlen) {
+        return 0;
+    }
+    for( size_t i = 0; i < (searchedlen - keylen + 1) ; i++ ) {
+        if( memcmp( key, strtosearch + i, keylen ) == 0 ) {
+            count++;
+        }
+    }
+    return count;
+} 
