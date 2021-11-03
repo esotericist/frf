@@ -1,7 +1,24 @@
-debugon
 "abcbcba" "b" explode
 "hello world" " " explode
 popn popn
+
+"a b c d" "_" " " subst debug_line
+depth popn
+
+"foobar" "foo" stringpfx debug_line pop
+"foobar" "buzz" stringpfx debug_line pop
+"" "foo" stringpfx debug_line pop
+"foo" "" stringpfx debug_line pop
+
+"testing" 2 3 midstr debug_line pop
+"testing" 20 over strlen 1 + midstr debug_line pop
+"  asdf  " " " explode debug_line popn
+
+"a" "b" "c" debug_line
+2 dupn debug_line nip debug_line nip debug_line depth popn
+"a" "b" "c" "d" "e" 3 debug_line put debug_line 
+
+string? number? atom?
 
 exit
 : fizz ( i -- i s )

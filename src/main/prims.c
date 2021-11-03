@@ -397,6 +397,13 @@ prim(strcmpi)
     push_int(P, sfscmp(sfstolower(s1), sfstolower(s2)));
 }
 
+prim(stringpfx) {
+    require_string s2 = pop_string(P);
+    require_string s1 = pop_string(P);
+    push_bool(P, sfscmp(sfsnewlen(s1, sfslen(s2)), s2) == 0 );
+    
+}
+
 prim(strcut)
 {
     require_int index = pop_int(P);
@@ -412,6 +419,20 @@ prim(strcut)
     }
     push_string(P, sfsnewlen(str, index));
     push_string(P, sfsright(str, len - index));
+}
+
+prim(midstr) {
+    require_int i2 = pop_int(P);
+    require_int i1 = pop_int(P) - 1;
+    require_string s = pop_string(P);
+    size_t len = sfslen(s);
+    if(i1 < 0 ) {
+        i1 = 0;
+    }
+    if(i2 > len) {
+        i2 = len;
+    }
+    push_string( P, sfsrange( s, i1, i1 + i2 - 1 ));
 }
 
 prim(instr) {
@@ -486,6 +507,21 @@ prim(tolower) {
 prim(toupper) {
     require_string s = pop_string(P);
     push_string(P, sfstoupper(s));
+}
+
+prim(subst) {
+    require_string s3 = pop_string(P);
+    require_string s2 = pop_string(P);
+    require_string s1 = pop_string(P);
+    size_t count;
+    sfs *strings = sfssplit( s1, s3, &count );
+    sfs result = strings[0];
+    if(count > 1 ) {
+        for( size_t i = 1; i < count; i++ ) {
+            result = sfscatsfs( result, sfscatsfs( s2, strings[i] ) );
+        }
+    }
+    push_string(P, result);
 }
 
 // #endregion
