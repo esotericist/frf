@@ -1,11 +1,11 @@
 #include "stack.h"
 
-size_t checktype( struct datapoint *dp ) {
-    if( dp->u_val == 0 ) {
+size_t checktype( struct datapoint dp ) {
+    if( dp.u_val == 0 ) {
         return a_type_invalid;
     }
-    if( ( dp->u_val & 3 ) == 0) {
-        struct dataobject* dobj = (struct dataobject * ) dp->p_val;
+    if( ( dp.u_val & 3 ) == 0) {
+        struct dataobject* dobj = (struct dataobject * ) dp.p_val;
         if( dobj->typeatom ) {
             return dobj->typeatom;
         } else {
@@ -15,14 +15,14 @@ size_t checktype( struct datapoint *dp ) {
         return a_type_integer;
     } else if( dp_is_atom(dp) ) {
         return a_type_atom;
-    } else if( ( dp->u_val & 3 ) == 3 ) {
+    } else if( ( dp.u_val & 3 ) == 3 ) {
         return a_type_prim;
     }
 
     return a_type_unknown;
 }
 
-bool checktrue( struct datapoint *dp ) {
+bool checktrue( struct datapoint dp ) {
     if( dp_is_int( dp ) ) {
         return dp_get_int( dp ) != 0;
     }
@@ -45,12 +45,12 @@ sfs dump_stack( struct process_state *P ) {
             s = sfscatc( s, ", " );
         }
 
-        s = sfscatsfs( s, formatobject( P->node, &dstack[i] ) );
+        s = sfscatsfs( s, formatobject( P->node, dstack[i] ) );
     }
     return sfscatc(s, ")" );
 }
 
-sfs formatobject( struct node_state *N , struct datapoint *dp ) {
+sfs formatobject( struct node_state *N , struct datapoint dp ) {
     sfs workingstring = sfsempty();
     size_t dptype = checktype( dp );
     if( dptype == a_type_empty  ) {
@@ -91,8 +91,8 @@ sfs cp_get_string( struct code_point *cp ) {
 }
 
 
-int64_t dp_get_int( struct datapoint *dp ) {
-    return (int64_t) dp->u_val >> 2;
+int64_t dp_get_int( struct datapoint dp ) {
+    return (int64_t) dp.u_val >> 2;
 }
 
 void dp_put_int( struct datapoint *dp, uint64_t i ) {
@@ -100,8 +100,8 @@ void dp_put_int( struct datapoint *dp, uint64_t i ) {
 } 
 
 
-size_t dp_get_atom( struct datapoint *dp ) {
-    return (size_t) dp->u_val >> 2;
+size_t dp_get_atom( struct datapoint dp ) {
+    return (size_t) dp.u_val >> 2;
 }
 
 void dp_put_atom( struct datapoint *dp, size_t a ) {
@@ -109,8 +109,8 @@ void dp_put_atom( struct datapoint *dp, size_t a ) {
 } 
 
 
-sfs dp_get_string( struct datapoint *dp ) {
-    struct dataobject *dobj = (struct dataobject*)( uintptr_t ) dp->p_val;
+sfs dp_get_string( struct datapoint dp ) {
+    struct dataobject *dobj = (struct dataobject*)( uintptr_t ) dp.p_val;
     return dobj->s_val;
 }
 

@@ -87,18 +87,18 @@ prim(dup)
 prim(over)
 {
     needstack(2)
-        push_dp(P, &dstack[dcount - 2]);
+        push_dp(P, dstack[dcount - 2]);
 }
 
 prim(pick)
 {
-    require_int count = pop_int(P);
+    require_int count = pop_int;
     if (count < 1)
     {
         stackfault(a_expected_positive_integer)
     }
     needstack(count)
-        push_dp(P, &dstack[dcount - count]);
+        push_dp(P, dstack[dcount - count]);
 }
 
 prim(depth)
@@ -111,8 +111,8 @@ prim(swap)
 {
     needstack(2) struct datapoint second = (pop_dp(P));
     struct datapoint first = (pop_dp(P));
-    push_dp(P, &second);
-    push_dp(P, &first);
+    push_dp(P, second);
+    push_dp(P, first);
 }
 
 void rotate(struct process_state *P, int64_t count)
@@ -140,7 +140,7 @@ void rotate(struct process_state *P, int64_t count)
 
 prim(rotate)
 {
-    require_int count = pop_int(P);
+    require_int count = pop_int;
     rotate(P, count);
 }
 
@@ -157,7 +157,7 @@ prim(pop)
 
 prim(popn)
 {
-    require_int count = pop_int(P);
+    require_int count = pop_int;
     needstack(count) if (count >= 0)
     {
         for (size_t i = 0; i < count; i++)
@@ -168,12 +168,12 @@ prim(popn)
 }
 
 prim(dupn) {
-    require_int count = pop_int(P);
+    require_int count = pop_int;
     size_t offset = dcount - count;
     needstack(count) if( count >= 0) {
         for (size_t i = 0; i < count; i++)
         {
-            push_dp(P, &dstack[offset + i]);
+            push_dp(P, dstack[offset + i]);
         }
     }
 }
@@ -189,7 +189,7 @@ prim(tuck) {
 }
 
 prim(put) {
-    require_int count = pop_int(P);
+    require_int count = pop_int;
     needstack(count)
     rotate(P, - (count + 1));
     rotate(P, count);
@@ -215,7 +215,7 @@ prim(jmp)
 prim(cjmp)
 {
     size_t pos = P->currentop++;
-    require_bool val = pop_bool(P);
+    require_bool val = pop_bool;
     if (!val)
     {
         struct code_point *cp = &P->current_codestream->codestream[pos];
@@ -235,7 +235,7 @@ prim(break)
 
 prim(while)
 {
-    if (pop_bool(P))
+    if (pop_bool)
     {
         P->currentop++;
     }
@@ -266,36 +266,36 @@ prim(exit)
 // #region math prims
 prim2(add, +)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_int( first + second );
 }
 
 prim2(minus, -)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_int( first - second );
 }
 
 prim2(mult, *)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_int( first * second );
 }
 
 prim2(div, /)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_int( first / second );
 }
 
 prim2(modulo, %)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_int( first % second );
 }
 // #endregion
@@ -303,63 +303,63 @@ prim2(modulo, %)
 // #region logic prims
 prim2(isequalto, =)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_bool( first == second );
 }
 
 prim2(isnotsequalto, !=)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_bool( first != second );
 }
 
 prim2(isgreaterthan, >)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_bool( first > second );
 }
 
 prim2(islessthan, <)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_bool( first < second );
 }
 
 prim2(isgreaterorequal, >=)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_bool( first >= second );
 }
 
 prim2(islesserorequal, <=)
 {
-    require_int second = pop_int(P);
-    require_int first = pop_int(P);
+    require_int second = pop_int;
+    require_int first = pop_int;
     push_bool( first <= second );
 }
 
 prim(not )
 {
     needstack(1)
-        push_bool( !pop_bool(P) );
+        push_bool( !pop_bool );
 }
 
 prim(or)
 {
-    require_bool second = pop_bool(P);
-    require_bool first = pop_bool(P);
+    require_bool second = pop_bool;
+    require_bool first = pop_bool;
     push_bool( first || second );
 }
 
 prim(and)
 {
-    require_bool second = pop_bool(P);
-    require_bool first = pop_bool(P);
+    require_bool second = pop_bool;
+    require_bool first = pop_bool;
     push_bool( first && second );
 }
 // #endregion
@@ -367,30 +367,30 @@ prim(and)
 // #region string prims
 
 prim(strlen) {
-    require_string s = pop_string(P);
+    require_string s = pop_string;
     push_int( sfslen(s) );
 }
 
 prim(strcat)
 {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_string( sfscatsfs(s1, s2) );
 }
 
 prim(strcmp)
 {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfscmp(s1, s2) );
 }
 
 // MUF called this 'strncmp', but renaming it to match 'popn'
 prim(strcmpn)
 {
-    require_int len = pop_int(P);
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_int len = pop_int;
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfscmp(sfsnewlen(s1, len), sfsnewlen(s2, len)) );
 }
 
@@ -398,22 +398,22 @@ prim(strcmpn)
 // MUF used 'stringcmp', but that's terrible notation, and i think it should be like 'strcmpn'
 prim(strcmpi)
 {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfscmp(sfstolower(s1), sfstolower(s2)) );
 }
 
 prim(stringpfx) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_bool( sfscmp(sfsnewlen(s1, sfslen(s2)), s2) == 0 );
     
 }
 
 prim(strcut)
 {
-    require_int index = pop_int(P);
-    require_string str = pop_string(P);
+    require_int index = pop_int;
+    require_string str = pop_string;
     size_t len = sfslen(str);
     if (index < 0)
     {
@@ -428,9 +428,9 @@ prim(strcut)
 }
 
 prim(midstr) {
-    require_int i2 = pop_int(P);
-    require_int i1 = pop_int(P) - 1;
-    require_string s = pop_string(P);
+    require_int i2 = pop_int;
+    require_int i1 = pop_int - 1;
+    require_string s = pop_string;
     size_t len = sfslen(s);
     if(i1 < 0 ) {
         i1 = 0;
@@ -442,35 +442,35 @@ prim(midstr) {
 }
 
 prim(instr) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfsinstr( s1, s2, false ) );
 }
 
 // case insensitive instr (was 'instring' in muf)
 prim(instri) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfsinstr( sfstolower(s1), sfstolower(s2), false ) );
 }
 
 // reverse instr
 prim(rinstr) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfsinstr( s1, s2, true ) );
 }
 
 // case insensitive rinstr (was 'rinstring' in muf)
 prim(rinstri) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     push_int( sfsinstr( sfstolower(s1), sfstolower(s2), true ) );
 }
 
 prim(explode) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     size_t count;
     sfs *strings = sfssplit( s1, s2, &count );
     for( size_t i = count; i > 0; --i ) {
@@ -480,8 +480,8 @@ prim(explode) {
 }
 
 prim(split) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     size_t index = sfsinstr( s1, s2, false );
     if( index ) {
         push_string( sfsnewlen( s1, index -1 ));
@@ -493,8 +493,8 @@ prim(split) {
 }
 
 prim(rsplit) {
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     size_t index = sfsinstr( s1, s2, true );
     if( index ) {
         push_string( sfsnewlen( s1, index -1 ));
@@ -506,19 +506,19 @@ prim(rsplit) {
 }
 
 prim(tolower) {
-    require_string s = pop_string(P);
+    require_string s = pop_string;
     push_string( sfstolower(s));
 }
 
 prim(toupper) {
-    require_string s = pop_string(P);
+    require_string s = pop_string;
     push_string( sfstoupper(s));
 }
 
 prim(subst) {
-    require_string s3 = pop_string(P);
-    require_string s2 = pop_string(P);
-    require_string s1 = pop_string(P);
+    require_string s3 = pop_string;
+    require_string s2 = pop_string;
+    require_string s1 = pop_string;
     size_t count;
     sfs *strings = sfssplit( s1, s3, &count );
     sfs result = strings[0];
@@ -536,13 +536,13 @@ prim(subst) {
 
 prim(intostr)
 {
-    require_int num = pop_int(P);
+    require_int num = pop_int;
     push_string( sfsfromlonglong(num));
 }
 
 prim(ctoi)
 {
-    require_string str = pop_string(P);
+    require_string str = pop_string;
     push_int( str[0]);
 }
 // #endregion
@@ -566,14 +566,14 @@ prim(debug_line)
 prim2(print, .)
 {
     needstack(1) struct datapoint dp = pop_dp(P);
-    size_t type = checktype(&dp);
+    size_t type = checktype(dp);
     if (type == a_type_string)
     {
-        printf("%s", dp_get_string(&dp));
+        printf("%s", dp_get_string(dp));
     }
     else
     {
-        printf("%s", formatobject(P->node, &dp));
+        printf("%s", formatobject(P->node, dp));
     }
 }
 // #endregion
