@@ -506,17 +506,17 @@ prim(ctoi)
 // #endregion
 
 // #region debugging
-prim(debugon)
+prim(debug_on)
 {
     P->debugmode = true;
 }
 
-prim(debugoff)
+prim(debug_off)
 {
     P->debugmode = false;
 }
 
-prim(dumpstack)
+prim(debug_line)
 {
     printf("%s\n", dump_stack(P));
 }
