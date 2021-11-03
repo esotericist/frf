@@ -41,36 +41,40 @@ prim(push_int)
 {
     size_t pos = P->currentop++;
     struct code_point *cp = &P->current_codestream->codestream[pos];
-    push_int(P, cp_get_int(cp));
+    push_int( cp_get_int(cp));
 }
 
 prim(push_atom)
 {
     size_t pos = P->currentop++;
-    push_atom(P, cp_get_atom(&P->current_codestream->codestream[pos]));
+    push_atom( cp_get_atom(&P->current_codestream->codestream[pos]));
 }
 
 prim(push_string)
 {
     size_t pos = P->currentop++;
-    push_string(P, cp_get_string(&P->current_codestream->codestream[pos]));
+    push_string( cp_get_string(&P->current_codestream->codestream[pos]));
 }
 
 prim2(checkisint, int? ) {
-    push_bool( P, dp_is_int( topdp ));
+    bool t = dp_is_int( topdp );
+    push_bool( t );
 }
 
 // todo: add floats
 prim2(checkisnum, number? ) {
-    push_bool( P, dp_is_int( topdp ));
+    bool t = dp_is_int( topdp );
+    push_bool( t );
 }
 
 prim2(checkisstr, string? ) {
-    push_bool( P, dp_is_string( topdp ));
+    bool t = dp_is_string( topdp );
+    push_bool( t );
 }
 
 prim2(checkisatom, atom? ) {
-    push_bool( P, dp_is_atom( topdp ));
+    bool t = dp_is_atom( topdp );
+    push_bool( t );
 }
 
 // #region stackprims
@@ -99,7 +103,8 @@ prim(pick)
 
 prim(depth)
 {
-    push_int(P, P->d->top);
+    int64_t v = P->d->top;
+    push_int( v );
 }
 
 prim(swap)
@@ -132,6 +137,7 @@ void rotate(struct process_state *P, int64_t count)
         dstack[dcount - 1] = bottom;
     }
 }
+
 prim(rotate)
 {
     require_int count = pop_int(P);
@@ -262,35 +268,35 @@ prim2(add, +)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_int(P, first + second);
+    push_int( first + second );
 }
 
 prim2(minus, -)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_int(P, first - second);
+    push_int( first - second );
 }
 
 prim2(mult, *)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_int(P, first * second);
+    push_int( first * second );
 }
 
 prim2(div, /)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_int(P, first / second);
+    push_int( first / second );
 }
 
 prim2(modulo, %)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_int(P, first % second);
+    push_int( first % second );
 }
 // #endregion
 
@@ -299,84 +305,84 @@ prim2(isequalto, =)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_bool(P, first == second);
+    push_bool( first == second );
 }
 
 prim2(isnotsequalto, !=)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_bool(P, first != second);
+    push_bool( first != second );
 }
 
 prim2(isgreaterthan, >)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_bool(P, first > second);
+    push_bool( first > second );
 }
 
 prim2(islessthan, <)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_bool(P, first < second);
+    push_bool( first < second );
 }
 
 prim2(isgreaterorequal, >=)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_bool(P, first >= second);
+    push_bool( first >= second );
 }
 
 prim2(islesserorequal, <=)
 {
     require_int second = pop_int(P);
     require_int first = pop_int(P);
-    push_bool(P, first <= second);
+    push_bool( first <= second );
 }
 
 prim(not )
 {
     needstack(1)
-        push_bool(P, !pop_bool(P));
+        push_bool( !pop_bool(P) );
 }
 
 prim(or)
 {
     require_bool second = pop_bool(P);
     require_bool first = pop_bool(P);
-    push_bool(P, first || second);
+    push_bool( first || second );
 }
 
 prim(and)
 {
     require_bool second = pop_bool(P);
     require_bool first = pop_bool(P);
-    push_bool(P, first && second);
+    push_bool( first && second );
 }
 // #endregion
 
-// #region strings
+// #region string prims
 
 prim(strlen) {
     require_string s = pop_string(P);
-    push_int( P, sfslen(s));
+    push_int( sfslen(s) );
 }
 
 prim(strcat)
 {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_string(P, sfscatsfs(s1, s2));
+    push_string( sfscatsfs(s1, s2) );
 }
 
 prim(strcmp)
 {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int(P, sfscmp(s1, s2));
+    push_int( sfscmp(s1, s2) );
 }
 
 // MUF called this 'strncmp', but renaming it to match 'popn'
@@ -385,7 +391,7 @@ prim(strcmpn)
     require_int len = pop_int(P);
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int(P, sfscmp(sfsnewlen(s1, len), sfsnewlen(s2, len)));
+    push_int( sfscmp(sfsnewlen(s1, len), sfsnewlen(s2, len)) );
 }
 
 
@@ -394,13 +400,13 @@ prim(strcmpi)
 {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int(P, sfscmp(sfstolower(s1), sfstolower(s2)));
+    push_int( sfscmp(sfstolower(s1), sfstolower(s2)) );
 }
 
 prim(stringpfx) {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_bool(P, sfscmp(sfsnewlen(s1, sfslen(s2)), s2) == 0 );
+    push_bool( sfscmp(sfsnewlen(s1, sfslen(s2)), s2) == 0 );
     
 }
 
@@ -417,8 +423,8 @@ prim(strcut)
     {
         index = len;
     }
-    push_string(P, sfsnewlen(str, index));
-    push_string(P, sfsright(str, len - index));
+    push_string( sfsnewlen(str, index));
+    push_string( sfsright(str, len - index));
 }
 
 prim(midstr) {
@@ -432,34 +438,34 @@ prim(midstr) {
     if(i2 > len) {
         i2 = len;
     }
-    push_string( P, sfsrange( s, i1, i1 + i2 - 1 ));
+    push_string( sfsrange( s, i1, i1 + i2 - 1 ));
 }
 
 prim(instr) {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int( P, sfsinstr( s1, s2, false ) );
+    push_int( sfsinstr( s1, s2, false ) );
 }
 
 // case insensitive instr (was 'instring' in muf)
 prim(instri) {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int( P, sfsinstr( sfstolower(s1), sfstolower(s2), false ) );
+    push_int( sfsinstr( sfstolower(s1), sfstolower(s2), false ) );
 }
 
 // reverse instr
 prim(rinstr) {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int( P, sfsinstr( s1, s2, true ) );
+    push_int( sfsinstr( s1, s2, true ) );
 }
 
 // case insensitive rinstr (was 'rinstring' in muf)
 prim(rinstri) {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    push_int( P, sfsinstr( sfstolower(s1), sfstolower(s2), true ) );
+    push_int( sfsinstr( sfstolower(s1), sfstolower(s2), true ) );
 }
 
 prim(explode) {
@@ -468,9 +474,9 @@ prim(explode) {
     size_t count;
     sfs *strings = sfssplit( s1, s2, &count );
     for( size_t i = count; i > 0; --i ) {
-        push_string(P, strings[i-1]);
+        push_string( strings[i-1]);
     }
-    push_int(P, count);
+    push_int( count);
 }
 
 prim(split) {
@@ -478,11 +484,11 @@ prim(split) {
     require_string s1 = pop_string(P);
     size_t index = sfsinstr( s1, s2, false );
     if( index ) {
-        push_string(P, sfsnewlen( s1, index -1 ));
-        push_string(P, sfsright( s1, sfslen(s1) - index ));
+        push_string( sfsnewlen( s1, index -1 ));
+        push_string( sfsright( s1, sfslen(s1) - index ));
     } else {
-        push_string(P, s1);
-        push_string(P, sfsempty());
+        push_string( s1);
+        push_string( sfsempty());
     }
 }
 
@@ -491,22 +497,22 @@ prim(rsplit) {
     require_string s1 = pop_string(P);
     size_t index = sfsinstr( s1, s2, true );
     if( index ) {
-        push_string(P, sfsnewlen( s1, index -1 ));
-        push_string(P, sfsright( s1, sfslen(s1) - index ));
+        push_string( sfsnewlen( s1, index -1 ));
+        push_string( sfsright( s1, sfslen(s1) - index ));
     } else {
-        push_string(P, s1);
-        push_string(P, sfsempty());
+        push_string( s1);
+        push_string( sfsempty());
     }
 }
 
 prim(tolower) {
     require_string s = pop_string(P);
-    push_string(P, sfstolower(s));
+    push_string( sfstolower(s));
 }
 
 prim(toupper) {
     require_string s = pop_string(P);
-    push_string(P, sfstoupper(s));
+    push_string( sfstoupper(s));
 }
 
 prim(subst) {
@@ -521,7 +527,7 @@ prim(subst) {
             result = sfscatsfs( result, sfscatsfs( s2, strings[i] ) );
         }
     }
-    push_string(P, result);
+    push_string( result);
 }
 
 // #endregion
@@ -531,13 +537,13 @@ prim(subst) {
 prim(intostr)
 {
     require_int num = pop_int(P);
-    push_string(P, sfsfromlonglong(num));
+    push_string( sfsfromlonglong(num));
 }
 
 prim(ctoi)
 {
     require_string str = pop_string(P);
-    push_int(P, str[0]);
+    push_int( str[0]);
 }
 // #endregion
 

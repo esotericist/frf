@@ -121,18 +121,4 @@ void dp_put_string( struct datapoint *dp, sfs s ) {
     dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
 }
 
-void push_int(struct process_state *P, uint64_t i ) {
-    dp_put_int( &dstack[dcount++], i );
-}
 
-void push_atom( struct process_state *P, size_t a ) {
-    dp_put_atom( &dstack[dcount++], a );
-}
-
-void push_string( struct process_state *P, sfs s ) {
-    dp_put_string( &dstack[dcount++], s );
-}
-
-void push_bool( struct process_state *P, bool t ) {
-    push_atom( P, t ? a_true : a_false );
-}

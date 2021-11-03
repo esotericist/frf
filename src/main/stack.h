@@ -62,10 +62,13 @@ static inline struct datapoint pop_dp(struct process_state *P ) {
     return dstack[--dcount];
 }
 
-void push_int(struct process_state *P, uint64_t i );
-void push_atom( struct process_state *P, size_t a );
-void push_string( struct process_state *P, sfs s );
-void push_bool( struct process_state *P, bool t );
+static inline bool is_true( bool t ){ return t ? true : false; }
+
+#define push_int(x)   dp_put_int( &dstack[dcount++], (x) );
+#define push_atom(x)     dp_put_atom( &dstack[dcount++], (x) );
+#define push_string(x)    dp_put_string( &dstack[dcount++], (x) );
+#define push_bool(x)    push_atom( is_true(x) ? a_true : a_false );
+
 
 atom(expected_integer)
 atom(expected_positive_integer)

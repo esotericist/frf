@@ -18,9 +18,8 @@ depth popn
 2 dupn debug_line nip debug_line nip debug_line depth popn
 "a" "b" "c" "d" "e" 3 debug_line put debug_line 
 
-string? number? atom?
+string? number? atom? depth popn
 
-exit
 : fizz ( i -- i s )
   dup case
     3 % 0 = when
