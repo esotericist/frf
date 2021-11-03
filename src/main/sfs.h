@@ -2,6 +2,7 @@
 #define SFS_H_
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 /* 
  * simple functional strings library, by esotericist (eso at esotericist dot org)
@@ -75,7 +76,11 @@ sfs sfsrange(sfs s, ssize_t start, ssize_t end);
 
 sfs sfscatvprintf(sfs s, const char *fmt, va_list ap);
 sfs sfscatprintf(sfs s, const char *fmt, ...);
+size_t sfsinstr( sfs strtosearch, sfs key, bool reverse );
 size_t sfsmatchcount( sfs key, sfs searched );
+
+sfs *sfssplitlen(const char *s, ssize_t len, const char *sep, int seplen, size_t *count);
+sfs *sfssplit(const sfs s, sfs sep, size_t *count);
 
 
 static inline size_t sfslen(const sfs s) {

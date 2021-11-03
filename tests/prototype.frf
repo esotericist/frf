@@ -1,3 +1,7 @@
+debugon
+"abcbcba" dup "b" explode
+
+exit
 : fizz ( i -- i s )
   dup case
     3 % 0 = when

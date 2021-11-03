@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include "sfs.h"
 
+
 /* 
  * simple functional strings library, by esotericist (eso at esotericist dot org)
  * because i realized after i started on this project i needed immutable strings
@@ -142,14 +143,20 @@ sfs sfstoupper(sfs s) {
 
 int sfscmp(const sfs s1, const sfs s2) {
     size_t l1, l2, minlen;
-    int cmp;
-
     l1 = sfslen(s1);
     l2 = sfslen(s2);
     minlen = (l1 < l2) ? l1 : l2;
-    cmp = memcmp(s1,s2,minlen);
-    if (cmp == 0) return l1>l2? 1: (l1<l2? -1: 0);
-    return cmp;
+    if( l1 > l2 ) {
+        return s1[minlen];
+    } else if( l1 < l2 ) {
+        return - (s2[minlen]);
+    }
+    for( size_t i = 0; i < minlen ; i++ ) {
+        if( s1[i] != s2[i] ) {
+            return s2[i] - s1[i];
+        }
+    }
+    return 0;
 }
 
 /* Helper for sfscatlonglong() doing the actual number -> string
@@ -249,14 +256,13 @@ sfs sfsrange( const sfs s, ssize_t start, ssize_t end) {
     } else {
         start = 0;
     }
-    if (start && newlen) { 
-        new_s = alloc_sfs( newlen );
+    new_s = alloc_sfs( newlen );
+    if( newlen ) {
         memcpy(new_s, s+start, newlen);
         new_s[newlen] = 0;
         sfssetlen(new_s,newlen);
-        return new_s;
     }
-    return NULL;
+    return new_s;
 }
 
 sfs sfscatfmt(sfs s, char const *fmt, ...);
@@ -324,6 +330,28 @@ sfs sfscatprintf(sfs s, const char *fmt, ...) {
     return t;
 }
 
+
+size_t sfsinstr( sfs strtosearch, sfs key, bool reverse ) {
+    size_t keylen = sfslen(key);
+    size_t searchedlen = sfslen(strtosearch);
+    if( keylen > searchedlen) {
+        return 0;
+    }
+    size_t start = 0, end = (searchedlen - keylen) + 1, inc = 1;
+    if( reverse ) {
+        start = end;
+        end = 0;
+        inc = -1;
+    }
+    for( size_t i = start; i != end ; i = i + inc ) {
+        if( memcmp( key, strtosearch + i, keylen ) == 0 ) {
+            return i + 1;
+        }
+    }
+
+    return 0;
+}
+
 size_t sfsmatchcount( sfs strtosearch, sfs key ) {
     size_t keylen = sfslen(key);
     size_t searchedlen = sfslen(strtosearch);
@@ -338,3 +366,70 @@ size_t sfsmatchcount( sfs strtosearch, sfs key ) {
     }
     return count;
 } 
+
+
+/* Split 's' with separator in 'sep'. An array
+ * of sfs strings is returned. *count will be set
+ * by reference to the number of tokens returned.
+ *
+ * On out of memory, zero length string, zero length
+ * separator, NULL is returned.
+ *
+ * Note that 'sep' is able to split a string using
+ * a multi-character separator. For example
+ * sfssplit("foo_-_bar","_-_"); will return two
+ * elements "foo" and "bar".
+ *
+ * This version of the function is binary-safe but
+ * requires length arguments. sdssplit() is just the
+ * same function but for zero-terminated strings.
+ */
+sfs *sfssplitlen(const char *s, ssize_t len, const char *sep, int seplen, size_t *count) {
+    int elements = 0, slots = 5;
+    long start = 0, j;
+    sfs *tokens;
+
+    if (seplen < 1 || len < 0) return NULL;
+
+    tokens = GC_malloc(sizeof(sfs)*slots);
+    if (tokens == NULL) return NULL;
+
+    if (len == 0) {
+        *count = 0;
+        return tokens;
+    }
+    for (j = 0; j < (len-(seplen-1)); j++) {
+        /* make sure there is room for the next element and the final one */
+        if (slots < elements+2) {
+            sfs *newtokens;
+
+            slots *= 2;
+            newtokens = GC_realloc(tokens,sizeof(sfs)*slots);
+            if (newtokens == NULL) goto cleanup;
+            tokens = newtokens;
+        }
+        /* search the separator */
+        if ((seplen == 1 && *(s+j) == sep[0]) || (memcmp(s+j,sep,seplen) == 0)) {
+            tokens[elements] = sfsnewlen(s+start,j-start);
+            if (tokens[elements] == NULL) goto cleanup;
+            elements++;
+            start = j+seplen;
+            j = j+seplen-1; /* skip the separator */
+        }
+    }
+    /* Add the final element. We are sure there is room in the tokens array. */
+    tokens[elements] = sfsnewlen(s+start,len-start);
+    if (tokens[elements] == NULL) goto cleanup;
+    elements++;
+    *count = elements;
+    return tokens;
+
+cleanup:
+    {
+        return NULL;
+    }
+}
+
+sfs *sfssplit(const sfs s, sfs sep, size_t *count) {
+    return sfssplitlen( s, sfslen( s), sep, sfslen( sep ), count );
+}
