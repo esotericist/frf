@@ -397,11 +397,10 @@ prim(rinstri) {
 prim(explode) {
     require_string s2 = pop_string(P);
     require_string s1 = pop_string(P);
-    // size_t len1 = sfslen(s1), len2 = sfslen(s2);
     size_t count;
     sfs *strings = sfssplit( s1, s2, &count );
-    for( size_t i = 0; i < count; i++ ) {
-        push_string(P, strings[i]);
+    for( size_t i = count; i > 0; --i ) {
+        push_string(P, strings[i-1]);
     }
     push_int(P, count);
 }
