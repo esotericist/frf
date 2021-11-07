@@ -227,7 +227,7 @@ void tokenize( struct process_state *P, sfs input ) {
     size_t maybe_op = verifyatom( input );
     if( pmode.directive) {
         if( P->compilestate->keyword == a_var ) {
-            if( parse_atomtovar(P, maybe_op) >= 0 ) {
+            if( maybe_op && parse_atomtovar(P, maybe_op) >= 0 ) {
                 printf( "error: unexpected existing variable %s in variable declaration.\n", atomtostring( maybe_op ) );
             } else {
                 record_var( P, input, vset->count );
@@ -442,7 +442,20 @@ sfs parse_compile(struct process_state *P,  sfs inputstr ) {
                     printf( "unexpected end of word\n" );
                     // more big error here
                 } else {
-                    printf( "word added: %s, length: %zu.\n", atomtostring( P->current_codestream->nameatom ) , P->current_codestream->instructioncount );
+                    sfs wordname = atomtostring( P->current_codestream->nameatom );
+                    size_t icount = P->current_codestream->instructioncount;
+                    size_t vcount = P->current_codestream->vars->count;
+                    printf( "word added: %s, codestream size: %zu, variables: %zu.\n", wordname , icount, vcount );
+                    if( vcount ) {
+                        sfs vlist = sfsnew( "variable list: " );
+                        for( size_t i = 0; i < vcount; i++ ) {
+                            if( i> 0 ) {
+                                vlist = sfscatc(vlist, ", " );
+                            }
+                            vlist = sfscatsfs(vlist, atomtostring(P->current_codestream->vars->vars[i].name));
+                        }
+                        printf( "%s\n", vlist);
+                    }
                     pmode.compile = false;
                     popcallstackframe(P);
                 }

@@ -283,6 +283,7 @@ prim(call)
     {
         P->current_codestream = targetword;
         P->current_varset = grow_variable_set( targetword->vars );
+        P->current_varset->count--;
         P->currentop = 0;
     }
 }

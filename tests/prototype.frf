@@ -1,12 +1,11 @@
 : test
-  debug_on
-  var a
-  a @
-  1 a !
-  a @ @
- 
+  var a var b var c
+  'true' a !
+  "b" b !
+  b c !
+  a b c debug_line 
+
 ;
-a
 
 test
 

@@ -106,7 +106,7 @@ struct variable_set* new_varset() {
 }
 
 struct variable_set* grow_variable_set(struct variable_set *vs) {
-    struct variable_set *new_vs = GC_malloc( sizeof (size_t) + sizeof ( struct variable_entry ) * (vs->count + 1) );
+    struct variable_set *new_vs = GC_malloc( sizeof (size_t) + sizeof ( struct variable_entry ) * (vs->count + 2) );
     for(size_t i = 0; i <= vs->count ; i++ ) {
         new_vs->vars[i].name = vs->vars[i].name;
         new_vs->vars[i].dp.u_val = vs->vars[i].dp.u_val;

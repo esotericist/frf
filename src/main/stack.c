@@ -72,7 +72,9 @@ sfs formatobject( struct process_state *P , struct datapoint dp ) {
     } else if( dptype == a_type_variable ) {
         int64_t thisvar = dp_get_var(dp, P->current_varset );
         if(thisvar >= 0) {
-            workingstring = sfscatprintf( workingstring, "@%s", atomtostring(P->current_varset->vars[thisvar].name)   );
+            size_t v_name = P->current_varset->vars[thisvar].name;
+            struct datapoint *v_dp = & P->current_varset->vars[thisvar].dp;
+            workingstring = sfscatprintf( workingstring, "%s@%s", atomtostring( v_name), formatobject(P, *v_dp )   );
         } else {
             workingstring = sfscatc( workingstring, "(invalidvariable)" );
         }
