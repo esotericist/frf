@@ -31,6 +31,7 @@ sfs sanitizeatomstring( sfs str ) {
             case  '/':
             case '0' ... '9':
             case '_':
+            case '!':
             case 'a' ... 'z': {
                 outstr = sfscatlen(outstr, &c, 1 );
                 continue;

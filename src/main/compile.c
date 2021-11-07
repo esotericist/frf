@@ -207,6 +207,8 @@ atom(push_var)
 atom(call)
 atom(exit)
 atom(var)
+atom2(var_store, var!)
+atom2(exclaim, !)
 
 atom(unexpected_variable)
 
@@ -226,19 +228,28 @@ void tokenize( struct process_state *P, sfs input ) {
     input = sfstolower( input );
     size_t maybe_op = verifyatom( input );
     if( pmode.directive) {
-        if( P->compilestate->keyword == a_var ) {
+        if( P->compilestate->keyword == a_var || P->compilestate->keyword == a_var_store) {
             if( maybe_op && parse_atomtovar(P, maybe_op) >= 0 ) {
                 printf( "error: unexpected existing variable %s in variable declaration.\n", atomtostring( maybe_op ) );
             } else {
                 record_var( P, input, vset->count );
             }
             pmode.directive = false;
+            if(P->compilestate->keyword == a_var_store ) {
+                append_prim( P, a_push_var );
+                append_cp( P, vset->count -1 );
+                append_prim( P, a_exclaim );
+            }
             P->compilestate->keyword = 0;
             return;
         }
     } else if( maybe_op == a_var ) {
         pmode.directive = true;
         P->compilestate->keyword = a_var;
+        return;
+    } else if( maybe_op == a_var_store ) {
+        pmode.directive = true;
+        P->compilestate->keyword = a_var_store;
         return;
     }
     if( checkflowcontrol(P, maybe_op) ) {

@@ -1,13 +1,14 @@
 : test
+  var! f var! e var! d
   var a var b var c
   'true' a !
   "b" b !
   b c !
-  a b c debug_line 
+  a b c d e f debug_line 
 
 ;
 
-test
+1 2 3 test
 
 exit
 "abcbcba" "b" explode

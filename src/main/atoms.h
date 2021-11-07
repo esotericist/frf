@@ -45,6 +45,12 @@ static inline void __attribute__ ((constructor)) a_##x##_() { \
         preregisteratom( &a_##x, (#x)); \
 }
 
+#define atom2(x, y) \
+size_t a_##x; \
+static inline void __attribute__ ((constructor)) a_##x##_() { \
+        preregisteratom( &a_##x, (#y)); \
+}
+
 atom(true)
 atom(false)
 
