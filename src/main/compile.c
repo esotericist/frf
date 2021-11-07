@@ -10,6 +10,7 @@
 int errorstate = 0;
 
 #define pmode P->compilestate->parsemode
+#define vset P->current_codestream->vars
 
 uintptr_t tag_prim (void *v) {
     return ( (uintptr_t)(void *) v ) | 3;
@@ -22,6 +23,28 @@ void append_prim( struct process_state *P, size_t v ) {
 
 void append_word( struct process_state *P, void * v  ) {
     append_cp(P, (uintptr_t)(void *) v );
+}
+
+int64_t parse_atomtovar( struct process_state *P, size_t atom ) {
+    iListType *it = alloc_ilist();
+    it->first.a_val = atom;
+    struct ilist *tmp = sglib_hashed_iListType_find_member( P->compilestate->vartable, it );
+    if(tmp) {
+    return tmp->second.a_val;
+    }
+    return -1;
+}
+
+void record_var(struct process_state *P, sfs varname, size_t varnum ) {
+    size_t varatom = stringtoatom( sfstolower( sfstrim( varname, " ") ) );
+    iListType *newword = alloc_ilist();
+    newword->first.a_val = varatom;
+    newword->second.a_val = varnum;
+    sglib_hashed_iListType_add( P->compilestate->vartable, newword );
+    vset->vars[vset->count].name = varatom;
+    vset->vars[vset->count].dp.u_val = 1;
+    vset = grow_variable_set( vset );
+    
 }
 
 atom(if)
@@ -179,10 +202,13 @@ bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
 atom(push_int)
 atom(push_string)
 atom(push_atom)
+atom(push_var)
 
 atom(call)
 atom(exit)
+atom(var)
 
+atom(unexpected_variable)
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -197,12 +223,36 @@ void tokenize( struct process_state *P, sfs input ) {
         return;
     }
 
-    sfstolower( input );
+    input = sfstolower( input );
     size_t maybe_op = verifyatom( input );
+    if( pmode.directive) {
+        if( P->compilestate->keyword == a_var ) {
+            if( parse_atomtovar(P, maybe_op) >= 0 ) {
+                printf( "error: unexpected existing variable %s in variable declaration.\n", atomtostring( maybe_op ) );
+            } else {
+                record_var( P, input, vset->count );
+            }
+            pmode.directive = false;
+            P->compilestate->keyword = 0;
+            return;
+        }
+    } else if( maybe_op == a_var ) {
+        pmode.directive = true;
+        P->compilestate->keyword = a_var;
+        return;
+    }
     if( checkflowcontrol(P, maybe_op) ) {
         return;
     } else {
         if( maybe_op ) {
+            int64_t maybe_var = parse_atomtovar( P, maybe_op );
+            if( maybe_var >= 0 ) {
+                append_prim( P, a_push_var);
+                append_cp( P, maybe_var );
+
+                return;
+            }
+
             void * maybe_prim = atomtoprim( P->node, maybe_op );
             if( maybe_prim ) {
                 append_prim( P, maybe_op );
@@ -219,7 +269,7 @@ void tokenize( struct process_state *P, sfs input ) {
         }
     }
 
-    printf( "? %s ?\n", sfstrim( input, sfsnew( " " ) ) );
+    printf( "unexpected token: %s\n", sfstrim( input, sfsnew( " " ) ) );
  }
 
 typedef void (*call_prim)(struct process_state *p);
@@ -396,6 +446,7 @@ sfs parse_compile(struct process_state *P,  sfs inputstr ) {
                     pmode.compile = false;
                     popcallstackframe(P);
                 }
+                    sglib_hashed_iListType_init( P->compilestate->vartable );
             }
         } else {
             workingstring = sfscatc( workingstring, nextchar );

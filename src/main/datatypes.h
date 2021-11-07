@@ -120,10 +120,34 @@ struct compile_state {
         };
         unsigned int flags;    
     } parsemode;
-
+    size_t keyword;
+    iListType *vartable[ilist_hash_size];
     struct flowcontrolentry flowcontrolstack[1024];
     size_t flowcontroltop;
+    
+};struct datapoint {
+    union {
+        size_t u_val;
+        uintptr_t p_val;
+    };
 };
+
+struct variable_entry {
+    size_t name; // as atom
+    struct datapoint dp;    
+};
+
+struct variable_set {
+    size_t count;
+    struct variable_entry vars[];
+};
+
+struct variable_object {
+    struct dataobject dobj;
+    struct variable_set *context;
+};
+
+
 struct code_point {
     union {
         size_t u_val;
@@ -136,19 +160,12 @@ struct code_set {
     size_t nameatom;
     size_t length;
     size_t instructioncount;
-    // variableset?
+    struct variable_set *vars;
     struct code_point codestream[];
     /**
      * 
      */
 
-};
-
-struct datapoint {
-    union {
-        size_t u_val;
-        uintptr_t p_val;
-    };
 };
 
 struct datastack {
@@ -159,6 +176,7 @@ struct datastack {
 
 struct callstackframe {
     struct code_set *cword;
+    struct variable_set *varset;
     size_t currentop;
 };
 
@@ -177,6 +195,7 @@ struct process_state {
 
     size_t currentop;
     struct code_set *current_codestream;
+    struct variable_set *current_varset;
 
     struct compile_state *compilestate;
 
@@ -194,11 +213,14 @@ struct process_state {
 };
 
 static inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
+static inline struct variable_object* newvarobject() { return GC_malloc( sizeof ( struct variable_object ) ); } ;
 struct node_state* newnode();
 void newcompilestate( struct process_state *P );
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
 struct process_state* newprocess( struct node_state *N );
+struct variable_set* new_varset();
+struct variable_set* grow_variable_set(struct variable_set *vs);
 
 
 #endif

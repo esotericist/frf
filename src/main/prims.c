@@ -37,6 +37,8 @@ void finalizeprims(struct node_state *N)
 #pragma GCC push_options
 #pragma GCC optimize("align-functions=16")
 
+// #region raw value prims
+
 prim(push_int)
 {
     size_t pos = P->currentop++;
@@ -54,6 +56,31 @@ prim(push_string)
 {
     size_t pos = P->currentop++;
     push_string( cp_get_string(&P->current_codestream->codestream[pos]));
+}
+
+prim(push_var) {
+    size_t pos = P->currentop++;
+    push_var( cp_get_int(&P->current_codestream->codestream[pos]) );
+}
+
+prim2( store_var, ! ) {
+    require_var v = pop_var;
+    if( v >= 0 ) {
+        needstack(1)
+        struct datapoint d = pop_dp(P);
+        P->current_varset->vars[v].dp.u_val = d.u_val;
+    } else {
+        printf( "invalid variable" );
+    }
+}
+
+prim2( fetch_var, @ ) {
+    require_var v = pop_var;
+    if( v >= 0 ) {
+        push_dp(P, P->current_varset->vars[v].dp );
+    } else {
+        printf( "invalid variable" );
+    }
 }
 
 prim2(checkisint, int? ) {
@@ -76,6 +103,8 @@ prim2(checkisatom, atom? ) {
     bool t = dp_is_atom( topdp );
     push_bool( t );
 }
+
+// #endregion
 
 // #region stackprims
 prim(dup)
@@ -253,6 +282,7 @@ prim(call)
     if (!P->errorstate)
     {
         P->current_codestream = targetword;
+        P->current_varset = grow_variable_set( targetword->vars );
         P->currentop = 0;
     }
 }
@@ -573,7 +603,7 @@ prim2(print, .)
     }
     else
     {
-        printf("%s", formatobject(P->node, dp));
+        printf("%s", formatobject(P, dp));
     }
 }
 // #endregion

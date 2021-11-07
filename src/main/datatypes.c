@@ -95,11 +95,25 @@ struct code_set* newcodeset ( struct node_state *N, size_t size, size_t wordatom
     if( wordatom ) {
         new_cs->nameatom = wordatom;
         registerword( N, wordatom, new_cs );
+        new_cs->vars = new_varset();
     }
 
     return new_cs;
 }
 
+struct variable_set* new_varset() {
+    return GC_malloc( sizeof (size_t) + sizeof ( struct variable_entry ) );
+}
+
+struct variable_set* grow_variable_set(struct variable_set *vs) {
+    struct variable_set *new_vs = GC_malloc( sizeof (size_t) + sizeof ( struct variable_entry ) * (vs->count + 1) );
+    for(size_t i = 0; i <= vs->count ; i++ ) {
+        new_vs->vars[i].name = vs->vars[i].name;
+        new_vs->vars[i].dp.u_val = vs->vars[i].dp.u_val;
+    }
+    new_vs->count = vs->count +1;
+    return new_vs;
+}
 
 void append_cp( struct process_state *P, size_t v ) {
     if( P->current_codestream->instructioncount > P->current_codestream->length - 10) {
@@ -115,6 +129,7 @@ void newcompilestate( struct process_state *P ) {
 
     P->compilestate = GC_malloc( sizeof( struct compile_state ) );
     P->compilestate->parsemode.flags = 0;
+    sglib_hashed_iListType_init( P->compilestate->vartable );
 }
 struct process_state* newprocess( struct node_state *N ) {
     struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );

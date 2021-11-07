@@ -1,3 +1,16 @@
+: test
+  debug_on
+  var a
+  a @
+  1 a !
+  a @ @
+ 
+;
+a
+
+test
+
+exit
 "abcbcba" "b" explode
 "hello world" " " explode
 popn popn

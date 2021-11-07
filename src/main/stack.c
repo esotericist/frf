@@ -45,12 +45,12 @@ sfs dump_stack( struct process_state *P ) {
             s = sfscatc( s, ", " );
         }
 
-        s = sfscatsfs( s, formatobject( P->node, dstack[i] ) );
+        s = sfscatsfs( s, formatobject( P, dstack[i] ) );
     }
     return sfscatc(s, ")" );
 }
 
-sfs formatobject( struct node_state *N , struct datapoint dp ) {
+sfs formatobject( struct process_state *P , struct datapoint dp ) {
     sfs workingstring = sfsempty();
     size_t dptype = checktype( dp );
     if( dptype == a_type_empty  ) {
@@ -69,6 +69,13 @@ sfs formatobject( struct node_state *N , struct datapoint dp ) {
         workingstring = sfscatprintf( workingstring, "'%s'", tempstring );
     } else if( dptype == a_type_string ) {
         workingstring = sfscatprintf( workingstring, "\"%s\"", dp_get_string( dp)  );
+    } else if( dptype == a_type_variable ) {
+        int64_t thisvar = dp_get_var(dp, P->current_varset );
+        if(thisvar >= 0) {
+            workingstring = sfscatprintf( workingstring, "@%s", atomtostring(P->current_varset->vars[thisvar].name)   );
+        } else {
+            workingstring = sfscatc( workingstring, "(invalidvariable)" );
+        }
     } else if( dptype == a_type_stackmark ) {
 
     } else {
@@ -122,3 +129,21 @@ void dp_put_string( struct datapoint *dp, sfs s ) {
 }
 
 
+size_t dp_get_var( struct datapoint dp, struct variable_set *vs ) {
+    if( vs == NULL) {
+        return -1;
+    }
+    struct variable_object *vobj = (struct variable_object*)( uintptr_t ) dp.p_val;
+    if(vobj->context == vs ) {
+        return  vobj->dobj.p_val;
+    }
+    return -1;
+}
+
+void dp_put_var( struct datapoint *dp, size_t v, struct variable_set *vs ) {
+    struct variable_object *vobj = newvarobject();
+    vobj->dobj.typeatom = a_type_variable;
+    vobj->dobj.p_val = v;
+    vobj->context = vs;
+    dp->p_val = ( uintptr_t )(struct variable_object*)vobj;
+}

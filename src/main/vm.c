@@ -73,6 +73,7 @@ void unregisterword(struct node_state *N, size_t atom) {
 void pushcallstackframe( struct process_state *P ){
     if( calltop < P->c->max ) {
         callstack[calltop].cword = P->current_codestream;
+        callstack[calltop].varset = P->current_varset;
         callstack[calltop].currentop = P->currentop;
         calltop++;
     } else {
@@ -84,9 +85,11 @@ void popcallstackframe( struct process_state *P ) {
     if( calltop > 0 ) {
         calltop--;
         P->current_codestream = callstack[calltop].cword;
+        P->current_varset = callstack[calltop].varset;
         P->currentop = callstack[calltop].currentop;
         callstack[calltop].cword = 0;
         callstack[calltop].currentop = 0;
+        callstack[calltop].varset = 0;
     } else {
         P->errorstate = a_exit;
     }
@@ -113,8 +116,8 @@ size_t executetimeslice( struct process_state *P, size_t steps ) {
             }
             call_prim ptr = funcfrommungedptr( check_op );
             ptr( P );
-            sfs primname = atomtostring( primtoatom( P->node, ptr ) );
             if( P->debugmode ) {
+                sfs primname = atomtostring( primtoatom( P->node, ptr ) );
                 printf("%s > %s\n", stackstate, primname );
             }        
         }
