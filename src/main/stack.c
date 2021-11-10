@@ -47,7 +47,7 @@ sfs dump_stack( struct process_state *P ) {
 
         s = sfscatsfs( s, formatobject( P, dstack[i] ) );
     }
-    return sfscatc(s, ")" );
+    return sfssubst( sfscatc(s, ")"), sfsnew("\n"), sfsnew("\\n") );
 }
 
 sfs formatobject( struct process_state *P , struct datapoint dp ) {

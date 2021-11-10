@@ -594,15 +594,7 @@ prim(subst) {
     require_string s3 = pop_string;
     require_string s2 = pop_string;
     require_string s1 = pop_string;
-    size_t count;
-    sfs *strings = sfssplit( s1, s3, &count );
-    sfs result = strings[0];
-    if(count > 1 ) {
-        for( size_t i = 1; i < count; i++ ) {
-            result = sfscatsfs( result, sfscatsfs( s2, strings[i] ) );
-        }
-    }
-    push_string( result);
+    push_string( sfssubst( s1, s3, s2 ));
 }
 
 // #endregion

@@ -367,6 +367,17 @@ size_t sfsmatchcount( sfs strtosearch, sfs key ) {
     return count;
 } 
 
+sfs sfssubst( sfs s, sfs sep, sfs repl ) {
+    size_t count;
+    sfs *strings = sfssplit( s, sep, &count );
+    sfs result = strings[0];
+    if(count > 1 ) {
+        for( size_t i = 1; i < count; i++ ) {
+            result = sfscatsfs( result, sfscatsfs( repl, strings[i] ) );
+        }
+    }
+    return result;
+}
 
 /* Split 's' with separator in 'sep'. An array
  * of sfs strings is returned. *count will be set
