@@ -70,7 +70,7 @@ prim2( store_var, ! ) {
         struct datapoint d = pop_dp(P);
         P->current_varset->vars[v].dp.u_val = d.u_val;
     } else {
-        printf( "invalid variable" );
+        runtimefault( "invalid variable" )
     }
 }
 
@@ -79,7 +79,7 @@ prim2( fetch_var, @ ) {
     if( v >= 0 ) {
         push_dp(P, P->current_varset->vars[v].dp );
     } else {
-        printf( "invalid variable" );
+        runtimefault( "invalid variable" )
     }
 }
 

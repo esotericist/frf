@@ -84,18 +84,16 @@ struct node_state {
 
     sListType *definetable[slist_hash_size];
 
+    size_t next_pid;
+
+    iListType *process_table[ilist_hash_size];
+
+    iListType *processlist_active;
+    iListType *processlist_inactive;
+    iListType *processlist_dead;
+
     /**
-     * int nextPID
-     * 
-     * map string defines
-     * 
      * process_state interpreter_process
-     * 
-     * map process_state process_pool (pid keys?)
-     * 
-     * list int activeprocesses
-     * list int inactiveprocesses
-     * list int deadprocesses
      * 
      */ 
 
@@ -199,26 +197,22 @@ struct process_state {
 
     struct compile_state *compilestate;
 
+    size_t max_operations;
+    size_t total_operations;
     size_t errorstate;
     size_t executestate;
+    iListType *processtable_ptr;
+    iListType *activitylist_ptr;
 
     bool debugmode;
 
-    /**
-     * atom executestate (active, inactive, killed)
-     * 
-     * int processlistptr -- pointer to this process' position in the relevant process list of the owning node
-     * 
-     */    
 };
 
 static inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
 static inline struct variable_object* newvarobject() { return GC_malloc( sizeof ( struct variable_object ) ); } ;
-struct node_state* newnode();
 void newcompilestate( struct process_state *P );
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
-struct process_state* newprocess( struct node_state *N );
 struct variable_set* new_varset();
 struct variable_set* grow_variable_set(struct variable_set *vs);
 

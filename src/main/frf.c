@@ -55,18 +55,7 @@ int main(int argc, char **argv) {
     sfs input = readfile( P );
     sfstolower ( input );
 
+    scheduler(N);
     
-    P->currentop = 0;
-    size_t ops = executetimeslice(P, 10000000000000);
-    if(P->errorstate ) {
-        if( P->errorstate == a_exit ) {
-            printf("normal termination.");
-        } else {
-            printf("error: %s\n", atomtostring (P->errorstate ));
-        }
-    }
-
-    printf("\n%s\nops: %zu\n", dump_stack( P), ops );
-
-     return 0;
+    return 0;
 }

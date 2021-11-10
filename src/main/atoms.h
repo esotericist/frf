@@ -66,5 +66,6 @@ atom(type_stackmark)
 atom(type_variable)
 atom(type_unknown)
 atom(type_invalid)
+atom(unspecified_error)
 
 #endif

@@ -2,6 +2,7 @@
 #include "datatypes.h"
 #include "sfs.h"
 #include "vm.h"
+#include "atoms.h"
 
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(iListType, ILIST_COMPARATOR, next_ptr)
 SGLIB_DEFINE_HASHED_CONTAINER_FUNCTIONS(iListType, ilist_hash_size, ilist_hash_function )
@@ -60,35 +61,6 @@ sListType* slist_find( sListType **tbl, sfs key ) {
     return found;
 }
 
-void definelist_add( struct node_state *N, sfs key, sfs value ) {
-    sfs k = sfsnew(key);
-    if ( !(sfscmp( k, sfsempty() ))) {
-        return;
-    }
-    sListType *elem = alloc_slist();
-    elem->s = k;
-    elem->ptr = (uintptr_t) (void *)sfsnew(value);
-    sglib_hashed_sListType_add( N->definetable, elem );    
-}
-
-struct node_state* newnode() {
-    struct node_state *new_N = GC_malloc( sizeof(  struct node_state) );
-    sglib_hashed_iListType_init( new_N->atomtoprimtable );
-    sglib_hashed_iListType_init( new_N->atomtowordtable );
-    sglib_hashed_iListType_init( new_N->primtoatomtable );
-    sglib_hashed_iListType_init( new_N->atomtowordtable );
-    sglib_hashed_sListType_init( new_N->definetable );
-
-    definelist_add( new_N, "case", "begin dup " );
-    definelist_add( new_N, "when", "if pop " );
-    definelist_add( new_N, "end", "break then dup " );
-    definelist_add( new_N, "default", "pop 1 if " );
-    definelist_add( new_N, "endcase", "pop pop 1 until " );
-    definelist_add( new_N, "", "" );
-
-    return new_N;
-}
-
 struct code_set* newcodeset ( struct node_state *N, size_t size, size_t wordatom ) {
     struct code_set *new_cs = GC_malloc( sizeof( struct code_set ) + sizeof ( struct code_point ) * (size)  );
     new_cs->length = size;
@@ -130,16 +102,4 @@ void newcompilestate( struct process_state *P ) {
     P->compilestate = GC_malloc( sizeof( struct compile_state ) );
     P->compilestate->parsemode.flags = 0;
     sglib_hashed_iListType_init( P->compilestate->vartable );
-}
-struct process_state* newprocess( struct node_state *N ) {
-    struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );
-    // more init stuff goes here
-    size_t max = 1024;
-    new_P->d = GC_malloc( sizeof( struct datastack ) + sizeof ( struct datapoint ) * (max) );
-    new_P->d->max = max;
-    new_P->c = GC_malloc( sizeof( struct callstack ) + sizeof ( struct callstackframe ) * (max) );
-    new_P->c->max = max;
-    new_P->node = N;
-    
-    return new_P;
 }

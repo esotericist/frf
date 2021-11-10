@@ -51,12 +51,15 @@ size_t dp_get_var( struct datapoint dp, struct variable_set *vs );
 void dp_put_var( struct datapoint *dp, size_t v, struct variable_set *vs );
 
 
-#define stackfault(x) P->errorstate = (x); return;
 
 atom(stack_underflow)
 
-#define needstack(x)     if( dcount < (x) ) { \
-        stackfault (a_stack_underflow)\
+#define fastexit if( P->errorstate ) { return; }
+#define stackfault(x)  P->errorstate = (x); 
+
+#define needstack(x)     fastexit if( dcount < (x) ) { \
+        stackfault(a_stack_underflow)\
+        runtimefault( "error in %zu: stackunderflow\n" )\
     }
 
 
@@ -69,11 +72,11 @@ static inline struct datapoint pop_dp(struct process_state *P ) {
 
 static inline bool is_true( bool t ){ return t ? true : false; }
 
-#define push_int(x)   dp_put_int( &dstack[dcount++], (x) );
-#define push_atom(x)     dp_put_atom( &dstack[dcount++], (x) );
-#define push_string(x)    dp_put_string( &dstack[dcount++], (x) );
+#define push_int(x)  fastexit dp_put_int( &dstack[dcount++], (x) );
+#define push_atom(x)    fastexit dp_put_atom( &dstack[dcount++], (x) );
+#define push_string(x)   fastexit dp_put_string( &dstack[dcount++], (x) );
 #define push_bool(x)    push_atom( is_true(x) ? a_true : a_false );
-#define push_var(x)     dp_put_var( &dstack[dcount++], (x), P->current_varset );
+#define push_var(x)    fastexit dp_put_var( &dstack[dcount++], (x), P->current_varset );
 
 
 atom(expected_integer)
@@ -83,16 +86,16 @@ atom(expected_string)
 atom(expected_var)
 
 #define pop_int dp_get_int( pop_dp( P ) )
-#define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) } int64_t
+#define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) runtimefault( "error in %zu: expected integer\n")  } int64_t
 
 #define pop_atom dp_get_atom( pop_dp( P  ) )
-#define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) } size_t
+#define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) runtimefault( "error in %zu: expected atom\n")  } size_t
 
 #define pop_string dp_get_string( pop_dp( P ) )
-#define require_string needstack(1) if( !dp_is_string( topdp ) ) { stackfault( a_expected_string ) } sfs
+#define require_string needstack(1) if( !dp_is_string( topdp ) ) { stackfault( a_expected_string ) runtimefault( "error in %zu: expected string\n")  } sfs
 
 #define pop_var dp_get_var( pop_dp( P ) , P->current_varset  )
-#define require_var needstack(1) if( !dp_is_var( topdp ) ) { stackfault( a_expected_var ) } int64_t
+#define require_var needstack(1) if( !dp_is_var( topdp ) ) { stackfault( a_expected_var ) runtimefault( "error in %zu: expected variable\n")  } int64_t
 
 #define pop_bool checktrue( pop_dp( P ) )
 #define require_bool needstack(1) bool

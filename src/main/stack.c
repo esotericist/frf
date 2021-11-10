@@ -36,10 +36,10 @@ bool checktrue( struct datapoint dp ) {
 }
 
 sfs dump_stack( struct process_state *P ) {
-    sfs s = sfsnew( "(" );
     if( dcount == 0 ) {
-        return s;
+        return sfsnew( "()" );
     }
+    sfs s = sfsnew( "(" );
     for( size_t i = 0; i < dcount; i++ ) {
         if( i > 0 ) {
             s = sfscatc( s, ", " );
