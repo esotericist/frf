@@ -90,7 +90,7 @@ void process_setdead( struct process_state *P ) {
 }
 
 void process_reset( struct process_state *P, size_t reasonatom ) {
-    if( P->compilestate->parsemode.compile && P->current_codestream->nameatom ) {
+    if( P->current_codestream->nameatom && P->compilestate && P->compilestate->parsemode.compile  ) {
         printf( "undefining word %s\n", atomtostring( P->current_codestream->nameatom) );
         iListType *entry = alloc_ilist();
         entry->first.a_val = P->current_codestream->nameatom;
@@ -253,6 +253,14 @@ void popcallstackframe( struct process_state *P ) {
     }
 }
 
+void copyframe( struct callstackframe *source, struct callstackframe *dest ) {
+    dest->currentop = source->currentop;
+    dest->cword = source->cword;
+    if(source->varset ) {
+        dest->varset = grow_variable_set(source->varset);
+        dest->varset->count--;
+    }
+}
 
 void * funcfrommungedptr( uintptr_t p ) {
     return (void *)(uintptr_t) ( p & ~(3) );
@@ -273,11 +281,11 @@ size_t executetimeslice( struct process_state *P ) {
                 stackstate = dump_stack (P );
             }
             call_prim ptr = funcfrommungedptr( check_op );
-            ptr( P );
             if( P->debugmode ) {
                 sfs primname = atomtostring( primtoatom( P->node, ptr ) );
-                printf("%s > %s\n", stackstate, primname );
+                printf("[%zu] %s > %s\n", P->pid, stackstate, primname );
             }        
+            ptr( P );
         }
     }
     P->total_operations += count;
@@ -288,22 +296,24 @@ void scheduler( struct node_state *N ) {
     iListType *p_ref;
     struct sglib_iListType_iterator it;
     struct process_state *P;
-
-    for( p_ref =sglib_iListType_it_init(&it, N->processlist_active); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
-        P = ( struct process_state * )(uintptr_t) p_ref->second.p_val;
-        if( P->current_codestream && P->compilestate->parsemode.flags == 0) {
-            executetimeslice(P);
-        } else {
-
-            if(P->errorstate) {
-                procreport(P);
-                freeprocess(P);
+    while (N->processlist_active) {
+        for( p_ref =sglib_iListType_it_init(&it, N->processlist_active); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
+            P = ( struct process_state * )(uintptr_t) p_ref->second.p_val;
+            if( P->current_codestream && ( P->compilestate == NULL || P->compilestate->parsemode.flags == 0)) {
+                executetimeslice(P);
             } else {
-                process_setinactive(P);
+
+                if(P->errorstate) {
+                    procreport(P);
+                    freeprocess(P);
+                } else {
+                    process_setinactive(P);
+                }
             }
         }
-    }
-     for( p_ref =sglib_iListType_it_init(&it, N->processlist_dead); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
+        }
+
+    for( p_ref =sglib_iListType_it_init(&it, N->processlist_dead); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
         P = ( struct process_state * )(uintptr_t) p_ref->second.p_val;
         procreport(P);
         freeprocess(P);

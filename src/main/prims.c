@@ -292,6 +292,50 @@ prim(exit)
 {
     popcallstackframe(P);
 }
+
+prim(pid) {
+    push_int(P->pid)
+}
+
+atom(killed)
+
+prim(kill) {
+    require_int i1 = pop_int;
+    iListType *tmp= alloc_ilist();
+    tmp->first.a_val = i1;
+    if( i1 > 0 ) {
+        tmp = sglib_hashed_iListType_find_member( P->node->process_table, tmp );
+        if( tmp ) {
+            push_int(1);
+            process_kill( (struct process_state *)(uintptr_t) tmp->second.p_val, a_killed, sfsempty() );
+        } else {
+            push_int(0);
+        }
+    }
+}
+
+prim(fork) {
+    struct process_state *new_P = newprocess( P->node );
+    new_P->current_codestream = P->current_codestream;
+    new_P->currentop = P->currentop;
+    if( P->current_varset ) {
+        new_P->current_varset = grow_variable_set(P->current_varset);
+        new_P->current_varset->count--;
+    }
+    new_P->debugmode = P->debugmode;
+    new_P->max_operations = P->max_operations;
+    for( size_t i = 0; i < P->d->top ; i++ ) {
+        push_dp(new_P, P->d->stack[i] );
+    }
+    for( size_t i = 0; i < P->c->top ; i++ ) {
+        copyframe( &P->c->stack[i] , &new_P->c->stack[i] );
+    }
+    push_int(new_P->pid);
+    P = new_P;
+    push_int(0);
+    
+}
+
 // #endregion
 
 // #region math prims

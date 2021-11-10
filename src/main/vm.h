@@ -25,6 +25,7 @@ void unregisterword(struct node_state *N, size_t atom);
 
 void pushcallstackframe( struct process_state *P );
 void popcallstackframe( struct process_state *P );
+void copyframe( struct callstackframe *source, struct callstackframe *dest );
 size_t executetimeslice( struct process_state *P );
 
 void scheduler( struct node_state *N );

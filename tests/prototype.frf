@@ -9,6 +9,9 @@
 ;
 
 1 2 3 test depth popn
+debug_on
+fork pop pid intostr "\n" strcat .
+fork dup if kill then 
 
 exit
 "abcbcba" "b" explode
