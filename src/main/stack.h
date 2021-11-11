@@ -34,6 +34,10 @@ static inline bool dp_is_tuple( struct datapoint dp ) {
     return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && (  ( (struct datapoint*) dp.p_val)->p_val == a_type_tuple );
 }
 
+static inline bool dp_is_structure( struct datapoint dp ) {
+    return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && ((  ( (struct datapoint*) dp.p_val)->p_val == a_type_array ) || (  ( (struct datapoint*) dp.p_val)->p_val == a_type_tuple ));
+}
+
 static inline bool dp_is_mark( struct datapoint dp ) {
     return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && (  ( (struct datapoint*) dp.p_val)->p_val == a_type_stackmark );
 }
@@ -107,6 +111,7 @@ atom(expected_atom)
 atom(expected_string)
 atom(expected_variable)
 atom(expected_mark)
+atom(expected_structure)
 atom(expected_array)
 atom(expected_tuple)
 
@@ -128,6 +133,7 @@ atom(expected_tuple)
 #define pop_tuple dp_get_array( pop_dp( P ) )
 #define require_tuple needstack(1) if( !dp_is_tuple( topdp ) ) { stackfault( a_expected_tuple ) runtimefault( "error in %zu: expected tuple\n")  } struct array_span
 
+#define require_structure needstack(1) if( !dp_is_structure( topdp ) ) { stackfault( a_expected_structure ) runtimefault( "error in %zu: expected array or tuple\n")  } struct array_span
 
 #define pop_mark dp_get_mark( pop_dp( P ) )
 #define require_mark needstack(1) if( !dp_is_mark( topdp ) ) { stackfault( a_expected_string ) runtimefault( "error in %zu: expected stackmark\n")  } bool

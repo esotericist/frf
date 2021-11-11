@@ -55,22 +55,35 @@ void copy_span_skip_dest_idx( struct array_span *source, struct array_span *dest
         runtimefault( "error in %zu: index exceeds bounds\n" );\
     }
 
-/*
-void setitem( struct process_state *P, struct array_span *arr, size_t idx, struct datapoint dp, struct array_span *newarr ) {
-    if( idx >= 0 && idx < arr->size) {
-        newarr = newarrayspan( arr->size );
-        copy_span( arr, newarr );
-        newarr->elems[idx] = dp;
-    } else {
-        P->errorstate = a_range_error;
-        runtimefault( "error in %zu: index exceeds bounds\n" );
-    }
-}
-*/
 
 prim(getitem) {
-
+    require_int idx = pop_int;
+    require_structure *arr = pop_array;
+    struct datapoint dp;
+    get_item(arr, idx, dp)
+    push_dp( P, dp);
 }
+
+prim( setitem ) {
+    require_int idx = pop_int;
+    needstack(1)
+    struct datapoint arrdp= pop_dp(P);
+    struct array_span *arr;
+    if( dp_is_structure(arrdp)) {
+        arr = dp_get_array(arrdp);
+    } else {
+        stackfault( a_expected_structure ) runtimefault( "error in %zu: expected array or tuple\n")
+    }
+    needstack(1) struct datapoint dp = pop_dp(P);
+    struct array_span *newarr;
+    set_item(arr, idx, dp, newarr)
+    if(dp_is_array(arrdp)) {
+        push_arr(newarr);    
+    } else {
+        push_tup(newarr);    
+    }
+}
+
 // #region tuples
 
 prim( tuple_make ) {
@@ -102,15 +115,6 @@ prim( tuple_setitem ) {
     struct array_span *newarr;
     set_item(arr, idx, dp, newarr)
     push_tup(newarr);    
-    if( idx >= 0 && idx < arr->size) {
-        struct array_span *newarr = newarrayspan( arr->size );
-        copy_span( arr, newarr );
-        newarr->elems[idx] = dp;
-        push_tup(newarr);
-    } else {
-        P->errorstate = a_range_error;
-        runtimefault( "error in %zu: index exceeds bounds\n" );
-    }
 }
 
 // #endregion
@@ -147,26 +151,18 @@ prim(array_count) {
 prim(array_getitem) {
     require_int idx = pop_int;
     require_arr *arr = pop_array;
-    if( idx >= 0 && idx < arr->size) {
-        push_dp( P, arr->elems[idx]);
-    } else {
-        push_int(0);
-    }
+    struct datapoint dp;
+    get_item(arr, idx, dp)
+    push_dp( P, dp);
 }
 
 prim(array_setitem) {
     require_int idx = pop_int;
     require_arr *arr = pop_array;
     needstack(1) struct datapoint dp = pop_dp(P);
-    if( idx >= 0 && idx < arr->size) {
-        struct array_span *newarr = newarrayspan( arr->size );
-        copy_span( arr, newarr );
-        newarr->elems[idx] = dp;
-        push_arr(newarr);
-    } else {
-        P->errorstate = a_range_error;
-        runtimefault( "error in %zu: index exceeds bounds\n" );
-    }
+    struct array_span *newarr;
+    set_item(arr, idx, dp, newarr)
+    push_arr(newarr);    
 }
 
 prim(array_appenditem) {

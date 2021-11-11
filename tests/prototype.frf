@@ -1,6 +1,8 @@
 : test (a -- )
   var! myarr
 
+  myarr @ 1 getitem pop
+  'spoon' myarr @ 2 setitem pop
   myarr @ 3 array_insertitem pop
   myarr @ 2 array_delitem pop
   myarr @ array_reverse pop
@@ -9,8 +11,8 @@
 debug_on
 21 { 3 4 5 6 7 8 } array_make test
 
-'test' 3 4 3 tuple_make
-0 tuple_getelement
+'test' 3 4 3 tuple_make dup
+0 getitem
 
 exit
 "bob has " 2 3 + " apples and gave " 1 2 / " to you." 5 array_make array_interpret
