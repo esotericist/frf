@@ -63,6 +63,27 @@ prim(push_var) {
     push_var( cp_get_int(&P->current_codestream->codestream[pos]) );
 }
 
+prim2(push_stackmark, { ) {
+    push_mark
+}
+
+prim2(stackrange, } ) {
+    size_t range, pos;
+    for(size_t i = dcount -1; i >= 0; i-- ) {
+        if(dp_is_mark( dstack[i])) {
+            pos = i;
+            break;
+        }
+    }
+    for(size_t i = pos; i < dcount -1; i++ ) {
+        dstack[i] = dstack[i+1];
+    }
+    dcount--;
+    range = dcount - pos; 
+    push_int(range);
+
+}
+
 prim2( store_var, ! ) {
     require_var v = pop_var;
     if( v >= 0 ) {
@@ -70,7 +91,7 @@ prim2( store_var, ! ) {
         struct datapoint d = pop_dp(P);
         P->current_varset->vars[v].dp.u_val = d.u_val;
     } else {
-        runtimefault( "invalid variable" )
+        runtimefault( "error in %zu: invalid variable" )
     }
 }
 
@@ -79,7 +100,7 @@ prim2( fetch_var, @ ) {
     if( v >= 0 ) {
         push_dp(P, P->current_varset->vars[v].dp );
     } else {
-        runtimefault( "invalid variable" )
+        runtimefault( "error in %zu: invalid variable" )
     }
 }
 
@@ -101,6 +122,16 @@ prim2(checkisstr, string? ) {
 
 prim2(checkisatom, atom? ) {
     bool t = dp_is_atom( topdp );
+    push_bool( t );
+}
+
+prim2(checkisarray, array?) {
+    bool t = dp_is_array( topdp );
+    push_bool( t );
+}
+
+prim2(checkistuple, tuple?) {
+    bool t = dp_is_tuple( topdp );
     push_bool( t );
 }
 

@@ -41,6 +41,14 @@ struct node_state* newnode() {
     definelist_add( new_N, "end", "break then dup " );
     definelist_add( new_N, "default", "pop 1 if " );
     definelist_add( new_N, "endcase", "pop pop 1 until " );
+    definelist_add( new_N, "}t", "} tuple_make" );
+    definelist_add( new_N, "0@", "0 getelement" );
+    definelist_add( new_N, "1@", "1 getelement" );
+    definelist_add( new_N, "2@", "2 getelement" );
+    definelist_add( new_N, "3@", "3 getelement" );
+    definelist_add( new_N, "4@", "4 getelement" );
+    definelist_add( new_N, "5@", "5 getelement" );
+
     definelist_add( new_N, "", "" );
 
     return new_N;

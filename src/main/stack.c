@@ -50,6 +50,19 @@ sfs dump_stack( struct process_state *P ) {
     return sfssubst( sfscatc(s, ")"), sfsnew("\n"), sfsnew("\\n") );
 }
 
+sfs objecttostring( struct datapoint dp ) {
+    sfs workingstring = sfsempty();
+    size_t dptype = checktype( dp );
+    if( dptype == a_type_integer ) {    
+        workingstring = sfsfromlonglong ( dp_get_int( dp ) );
+    } else if( dptype == a_type_atom ) {
+        workingstring = atomtostring( dp_get_atom( dp ) );
+    } else if( dptype == a_type_string ) {
+        workingstring = dp_get_string( dp);
+    }
+    return workingstring;
+}
+
 sfs formatobject( struct process_state *P , struct datapoint dp ) {
     sfs workingstring = sfsempty();
     size_t dptype = checktype( dp );
@@ -61,11 +74,6 @@ sfs formatobject( struct process_state *P , struct datapoint dp ) {
         // workingstring = sfscatprintf( workingstring, "%d" , dp_get_float( dp ) );
     } else if( dptype == a_type_atom ) {
         sfs tempstring = atomtostring( dp_get_atom( dp ) );
-        /*
-        int *count;
-        sfs *strarr = sfssplitlen( tempstring, sfslen(tempstring), "\r", 2, count );
-        tempstring =sfsjoin( strarr, &count, "\r" );
-        */
         workingstring = sfscatprintf( workingstring, "'%s'", tempstring );
     } else if( dptype == a_type_string ) {
         workingstring = sfscatprintf( workingstring, "\"%s\"", dp_get_string( dp)  );
@@ -78,8 +86,31 @@ sfs formatobject( struct process_state *P , struct datapoint dp ) {
         } else {
             workingstring = sfscatc( workingstring, "(invalidvariable)" );
         }
+    } else if( dptype == a_type_array || dptype == a_type_tuple ) {
+        sfs lead = sfsnew("%zu[");
+        sfs tail = sfsnew("]");
+        if( dptype == a_type_tuple) {
+            lead = sfsnew("%zu{");
+            tail = sfsnew("}");
+        }
+        struct array_span *arr = dp_get_array(dp);
+        sfs array_contents = sfscatprintf(sfsempty(), lead , arr->size );
+        if( arr->size > 0 ) {
+            for( size_t i = 0; i < arr->size ; i++ ) {
+                if (i > 0 ) {
+                    array_contents = sfscatc( array_contents, ", " );
+                }
+                struct datapoint *a_dp = & arr->elems[i];
+                array_contents = sfscatsfs( array_contents, formatobject( P, *a_dp ) );
+            }
+            array_contents = sfscatc(array_contents, tail);
+        } else {
+            array_contents = sfscatc( array_contents, tail );
+        }
+        workingstring = sfscatsfs( workingstring, array_contents);
+        
     } else if( dptype == a_type_stackmark ) {
-
+        workingstring = sfsnew( "mark" );
     } else {
         workingstring = sfscatc( workingstring, "(unknownobject)" );
     }
@@ -149,3 +180,31 @@ void dp_put_var( struct datapoint *dp, size_t v, struct variable_set *vs ) {
     vobj->context = vs;
     dp->p_val = ( uintptr_t )(struct variable_object*)vobj;
 }
+
+void dp_put_mark( struct datapoint *dp ) {
+    struct dataobject *dobj = newdataobject();
+    dobj->typeatom = a_type_stackmark;   
+    dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
+ }
+
+struct array_span* dp_get_array( struct datapoint dp ) {
+    struct dataobject *dobj = (struct dataobject*)( uintptr_t ) dp.p_val;
+    struct array_span *arr = (struct array_span*)( uintptr_t ) dobj->p_val;
+    return arr;
+}
+
+void dp_put_array( struct datapoint *dp, struct array_span *arr ) {
+    struct dataobject *dobj = newdataobject();
+    dobj->p_val = ( uintptr_t )(struct array_span*) arr;
+    dobj->typeatom = a_type_array;
+    dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
+}
+
+void dp_put_tuple( struct datapoint *dp, struct array_span *arr ) {
+    struct dataobject *dobj = newdataobject();
+    dobj->p_val = ( uintptr_t )(struct array_span*) arr;
+    dobj->typeatom = a_type_tuple;
+    dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
+}
+
+

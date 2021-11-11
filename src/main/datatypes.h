@@ -130,6 +130,11 @@ struct compile_state {
     };
 };
 
+struct array_span {
+    size_t size;
+    struct datapoint elems[];
+};
+
 struct variable_entry {
     size_t name; // as atom
     struct datapoint dp;    
@@ -210,6 +215,7 @@ struct process_state {
 
 static inline struct dataobject* newdataobject() { return GC_malloc( sizeof ( struct dataobject ) ); } ;
 static inline struct variable_object* newvarobject() { return GC_malloc( sizeof ( struct variable_object ) ); } ;
+static inline struct array_span* newarrayspan( size_t len ) { struct array_span* arr = GC_malloc( sizeof( struct array_span ) + sizeof (struct datapoint ) * len + 1 ); arr->size = len ; return arr;}
 void newcompilestate( struct process_state *P );
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( struct process_state *P, size_t v );
