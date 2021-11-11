@@ -211,6 +211,7 @@ atom2(var_store, var!)
 atom2(exclaim, !)
 
 atom(unexpected_variable)
+atom(unrecognized_token)
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -281,6 +282,7 @@ void tokenize( struct process_state *P, sfs input ) {
     }
 
     printf( "unexpected token: %s\n", sfstrim( input, sfsnew( " " ) ) );
+    process_reset(P, a_unrecognized_token);
  }
 
 typedef void (*call_prim)(struct process_state *p);
@@ -374,6 +376,9 @@ sfs parse_immed(struct process_state *P,  sfs inputstr ) {
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
     {
+        if(P->errorstate) {
+            return workingstring;
+        }
         nextchar = sfsnewlen( inputstr, 1 );
         inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
@@ -419,6 +424,9 @@ sfs parse_compile(struct process_state *P,  sfs inputstr ) {
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
     {
+        if(P->errorstate) {
+            return workingstring;
+        }
         nextchar = sfsnewlen( inputstr, 1 );
         inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
         
@@ -544,7 +552,7 @@ void parse_line( struct process_state *P, sfs input ) {
     sfs s_space = sfsnew( " " );
     input = sfstrim( sfstrim( input, s_space ), "\n" );
     sfs workingstring = sfscatc( input, s_space );
-    while( sfslen( workingstring) > 0 /* and errorstate == 0 */ ) {
+    while( sfslen( workingstring) > 0  && errorstate == NULL  ) {
         if( pmode.comment ) {
             workingstring = parse_comment( P, workingstring );
 

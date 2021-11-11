@@ -24,7 +24,7 @@ sfs readfile( struct process_state *P ) {
      FILE *thefile;
      thefile = fopen( filepath, "r" );
 
-     while( fgets( buffer, BUFSIZ, thefile ) != NULL ) {
+     while( fgets( buffer, BUFSIZ, thefile ) != NULL && P->errorstate == NULL ) {
          to_return = sfsnew( buffer );
          parse_line( P, to_return);
 
