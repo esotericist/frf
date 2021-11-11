@@ -552,7 +552,7 @@ void parse_line( struct process_state *P, sfs input ) {
     sfs s_space = sfsnew( " " );
     input = sfstrim( sfstrim( input, s_space ), "\n" );
     sfs workingstring = sfscatc( input, s_space );
-    while( sfslen( workingstring) > 0  && errorstate == NULL  ) {
+    while( sfslen( workingstring) > 0  && errorstate == 0  ) {
         if( pmode.comment ) {
             workingstring = parse_comment( P, workingstring );
 
