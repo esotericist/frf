@@ -19,13 +19,13 @@
   array_count var! thelen
   0 begin
     dup thelen @ >= if break then
-    thearr @ over getitem .
+    thearr @ over getitem "\r" strcat .
     1 +
    repeat
 
 ;
 
-"frf" test 
+"README.md" test 
 
 test2
 
