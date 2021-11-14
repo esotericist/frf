@@ -89,10 +89,10 @@ prim(fappend) {
         fseek( thefile, 0, SEEK_END  );
         fprintf( thefile, "%s", inputstring );
     }
-    fpos_t finaloffset;
-    fgetpos( thefile, &finaloffset );
     fclose(thefile);
-    push_int( finaloffset.__pos );
+    struct stat statbuf;
+    stat( filename, &statbuf);
+    push_int( statbuf.st_size );
 }
 
 
@@ -110,10 +110,10 @@ prim(fwrite) {
         fprintf( thefile, "%s", inputstring );
         
     }
-    fpos_t finaloffset;
-    fgetpos( thefile, &finaloffset  );
     fclose(thefile);
-    push_int( finaloffset.__pos );
+    struct stat statbuf;
+    stat( filename, &statbuf);
+    push_int( statbuf.st_size );
 }
 
 // ( s:filename i:initialoffset s:delimiter -- i:finaloffset s:outputstring )
