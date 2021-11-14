@@ -81,7 +81,7 @@ prim(fgetdir) {
 prim(fappend) {
     require_string filename = pop_string;
     require_string inputstring = pop_string;
-    FILE *thefile = fopen( filename, "a" );
+    FILE *thefile = fopen( filename, "ab" );
     if( thefile == NULL ) {
         sfs error = sfscatprintf(sfsempty(), "error in %%zu: unable to open file: %s\n", filename );
         runtimefault( error );
@@ -101,7 +101,7 @@ prim(fwrite) {
     require_int initialoffset = pop_int;
     require_string filename = pop_string;
     require_string inputstring = pop_string;
-    FILE *thefile = fopen( filename, "w" );
+    FILE *thefile = fopen( filename, "wb" );
     if( thefile == NULL ) {
         sfs error = sfscatprintf(sfsempty(), "error in %%zu: unable to open file: %s\n", filename );
         runtimefault( error );
