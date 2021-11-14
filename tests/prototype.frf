@@ -22,14 +22,15 @@
     thearr @ over getitem "\r" strcat .
     1 +
    repeat
-
+   pop
 ;
 
 "README.md" test 
-
 test2
 
 exit
+
+
 "bob has " 2 3 + " apples and gave " 1 2 / " to you." 5 array_make array_interpret
 
 (
