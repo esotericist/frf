@@ -17,6 +17,12 @@ void copy_span( struct array_span *source, struct array_span *dest ) {
         }
 }
 
+struct array_span* grow_span( struct array_span *arr ) {
+    struct array_span *newarr = newarrayspan(arr->size + 1 );
+    copy_span(arr, newarr);
+    return newarr;
+}
+
 void copy_span_skip_source_idx( struct array_span *source, struct array_span *dest, size_t source_idx, size_t dest_idx ) {
         for(size_t i = 0; i < source->size; i++ ) {
 
@@ -168,8 +174,7 @@ prim(array_setitem) {
 prim(array_appenditem) {
     require_arr *arr = pop_array;
     needstack(1) struct datapoint dp = pop_dp(P);
-    struct array_span *newarr = newarrayspan( arr->size + 1 );
-    copy_span( arr, newarr );
+    struct array_span *newarr = grow_span( arr );
     newarr->elems[arr->size] = dp;
     push_arr(newarr);
 }

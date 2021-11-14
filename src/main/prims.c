@@ -1,6 +1,3 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include "prims.h"
 #include "stack.h"
@@ -646,81 +643,6 @@ prim(ctoi)
     require_string str = pop_string;
     push_int( str[0]);
 }
-// #endregion
-
-// #region file manipulation prims
-
-// ( -- s:cwd )
-
-
-// ( s:filename -- i:size )
-prim(fsize) {
-    require_string filename = pop_string;
-    struct stat statbuf;
-    if( stat( filename, &statbuf) == -1 ) {
-        runtimefault("error in %zu: unable to open file");
-    }
-    push_int(statbuf.st_size);
-}
-
-prim(fcwd) {
-    char buffer[BUFSIZ];
-    if( getcwd(buffer, BUFSIZ) ) {
-        push_string( sfsnew( buffer ) );
-    }
-}
-
-// ( s:filename, i:initialoffset, s:delimiter -- i:finaloffset s:outputstring )
-prim(freadto) {
-    require_string delimiter = pop_string;
-    require_int initialoffset = pop_int;
-    require_string filename = pop_string;
-    if (!sfscmp( delimiter, sfsnew("$EOF$") )) {
-        delimiter = sfsempty();
-    } else {
-
-    }
-    struct stat statbuf;
-    if( stat( filename, &statbuf) == -1 ) {
-        runtimefault("error in %zu: unable to open file");
-    }
-    if( initialoffset > statbuf.st_size ) {
-        push_string(sfsempty());
-        push_int(statbuf.st_size);
-    }
-    sfs finalstring = sfsempty();
-    size_t finaloffset = 0;
-    FILE *thefile = fopen( filename, "r" );
-    if( thefile == NULL ) {
-        sfs error = sfscatprintf(sfsempty(), "error in %%zu: unable to open file: %s\n", filename );
-        runtimefault( error );
-    } else {
-        char buffer[BUFSIZ];
-        fseek( thefile, initialoffset, SEEK_SET  );
-        size_t i = 0;
-        do{
-            int c = fgetc(thefile);
-            if( feof(thefile) || c == delimiter[0] ) {
-                if( i < BUFSIZ ) {
-                    buffer[i] = 0;
-                }
-                finalstring = sfscatsfs(finalstring, sfsnew(buffer));
-                finaloffset = initialoffset + i + 1;
-                break;
-            }
-            buffer[i] = c;
-            i++;
-            if(i == BUFSIZ ) {
-                finalstring = sfscatsfs(finalstring, sfsnewlen(buffer, i - 1));
-                initialoffset = initialoffset + i;
-                i = 0;
-            }
-        } while ( true );
-    }
-    push_string(finalstring);
-    push_int(finaloffset);
-}
-
 // #endregion
 
 // #region debugging

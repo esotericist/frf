@@ -1,4 +1,4 @@
-: test (s -- arr )
+: readtest (s -- arr )
   var! myfile
   fcwd "/" strcat myfile @ strcat myfile !
   0 array_make
@@ -14,7 +14,7 @@
    then
 ;
 
-: test2 ( arr -- )
+: printtest ( arr -- )
   dup var! thearr
   array_count var! thelen
   0 begin
@@ -25,8 +25,14 @@
    pop
 ;
 
-"README.md" test 
-test2
+( "README.md" readtest 
+printtest )
+
+"words\n" fcwd "/tests/asdf.txt" strcat 0 fwrite pop 
+"more words\n" fcwd "/tests/asdf.txt" strcat fappend pop 
+"tests/asdf.txt" readtest printtest 
+fcwd "/tests/asdf.txt" strcat frm pop
+fcwd "/tests" strcat fgetdir printtest
 
 exit
 
