@@ -14,8 +14,20 @@
    then
 ;
 
-"README.md" test "\n" array_join "\n" strcat .
+: test2 ( arr -- )
+  dup var! thearr
+  array_count var! thelen
+  0 begin
+    dup thelen @ >= if break then
+    thearr @ over getitem .
+    1 +
+   repeat
 
+;
+
+"frf" test 
+
+test2
 
 exit
 "bob has " 2 3 + " apples and gave " 1 2 / " to you." 5 array_make array_interpret
