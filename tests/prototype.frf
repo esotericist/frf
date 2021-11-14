@@ -1,18 +1,21 @@
-: test (a -- )
-  var! myarr
-
-  myarr @ 1 getitem pop
-  'spoon' myarr @ 2 setitem pop
-  myarr @ 3 array_insertitem pop
-  myarr @ 2 array_delitem pop
-  myarr @ array_reverse pop
+: test (s -- arr )
+  var! myfile
+  fcwd "/" strcat myfile @ strcat myfile !
+  0 array_make
+  0 begin
+    myfile @ swap "\n" freadto
+    dup myfile @ fsize > if break then
+    -3 rotate swap array_appenditem swap
+   repeat
+   pop dup strlen if
+    swap array_appenditem 
+   else
+    pop
+   then
 ;
 
-debug_on
-21 { 3 4 5 6 7 8 } array_make test
+"README.md" test "\n" array_join "\n" strcat .
 
-'test' 3 4 3 tuple_make dup
-0 getitem
 
 exit
 "bob has " 2 3 + " apples and gave " 1 2 / " to you." 5 array_make array_interpret
