@@ -60,7 +60,10 @@ prim(fgetdir) {
     if(thedir != NULL) {
         while(( entry = readdir(thedir)) != NULL ) {
             sfs fname = sfsnew(entry->d_name);
-            if(entry->d_type == DT_DIR ) {
+            sfs fullname = sfscatprintf( pathname, "/%s", fname  );
+            struct stat statbuf;
+            stat( fullname, &statbuf);
+            if( statbuf.st_mode & S_IFDIR) {
                 fname = sfscatc(fname, "/" );
             } 
             arr = grow_span(arr);
