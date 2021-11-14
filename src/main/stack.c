@@ -97,6 +97,10 @@ sfs formatobject( struct process_state *P , struct datapoint dp ) {
         sfs array_contents = sfscatprintf(sfsempty(), lead , arr->size );
         if( arr->size > 0 ) {
             for( size_t i = 0; i < arr->size ; i++ ) {
+                if (i > 25 ) {
+                    array_contents = sfscatprintf( array_contents, ", ... %zu_ ", arr->size - 25 );
+                    break;
+                }
                 if (i > 0 ) {
                     array_contents = sfscatc( array_contents, ", " );
                 }
