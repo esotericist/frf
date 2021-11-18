@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <dirent.h>
 #include "stack.h"
@@ -168,4 +169,30 @@ prim(freadto) {
     push_int(finaloffset);
 }
 
+prim(readline) {
+    char *instring = NULL;
+    size_t buffer_size = 0;
+    ssize_t read_size;
+
+    read_size = getline( &instring, &buffer_size, stdin );
+    if( read_size > 0 ) {
+        push_string(sfsnewlen( instring, read_size ));
+    } else {
+        push_string(sfsempty());
+    }
+}
+
+prim2(print, .)
+{
+    needstack(1) struct datapoint dp = pop_dp(P);
+    size_t type = checktype(dp);
+    if (type == a_type_string)
+    {
+        printf("%s", dp_get_string(dp));
+    }
+    else
+    {
+        printf("%s", formatobject(P, dp));
+    }
+}
 // #endregion

@@ -661,17 +661,4 @@ prim(debug_line)
     printf("%s\n", dump_stack(P));
 }
 
-prim2(print, .)
-{
-    needstack(1) struct datapoint dp = pop_dp(P);
-    size_t type = checktype(dp);
-    if (type == a_type_string)
-    {
-        printf("%s", dp_get_string(dp));
-    }
-    else
-    {
-        printf("%s", formatobject(P, dp));
-    }
-}
 // #endregion
