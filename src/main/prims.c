@@ -354,7 +354,7 @@ prim(fork) {
         new_P->current_varset->count--;
     }
     new_P->debugmode = P->debugmode;
-    new_P->max_operations = P->max_operations;
+    new_P->max_slice_ops = P->max_slice_ops;
     for( size_t i = 0; i < P->d->top ; i++ ) {
         push_dp(new_P, P->d->stack[i] );
     }

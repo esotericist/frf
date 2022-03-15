@@ -144,7 +144,7 @@ struct process_state* newprocess( struct node_state *N ) {
     new_P->c = GC_malloc( sizeof( struct callstack ) + sizeof ( struct callstackframe ) * (max) );
     new_P->c->max = max;
     new_P->node = N;
-    new_P->max_operations = 500;
+    new_P->max_slice_ops = 20; // arbitrarily chosen value to keep things cycling between processes
     
     new_P->pid = N->next_pid++;
     new_P->processtable_ptr = alloc_ilist();
@@ -283,7 +283,7 @@ void * funcfrommungedptr( uintptr_t p ) {
 
 size_t executetimeslice( struct process_state *P ) {
     size_t count = 0;
-    while( P->current_codestream && P->current_codestream->instructioncount > 0 && count++ < P->max_operations ) {
+    while( P->current_codestream && P->current_codestream->instructioncount > 0 && count++ < P->max_slice_ops ) {
         size_t pos = P->currentop++;
         uintptr_t check_op = P->current_codestream->codestream[pos].u_val;
         if( check_op == 0 || P->errorstate ) {
@@ -317,8 +317,7 @@ void scheduler( struct node_state *N ) {
             if( P->current_codestream && ( P->compilestate == NULL || P->compilestate->parsemode.flags == 0)) {
                 executetimeslice(P);
             } else {
-
-                if(P->errorstate) {
+               if(P->errorstate) {
                     procreport(P);
                     freeprocess(P);
                 } else {

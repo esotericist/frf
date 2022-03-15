@@ -202,7 +202,7 @@ struct process_state {
 
     struct compile_state *compilestate;
 
-    size_t max_operations;
+    size_t max_slice_ops;
     size_t total_operations;
     size_t errorstate;
     size_t executestate;
