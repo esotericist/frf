@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <uv.h>
 
 #include "sfs.h"
 #include "frf.h"
@@ -38,11 +39,25 @@ sfs readfile( struct process_state *P ) {
 extern sfs numstring;
 extern sfs opstring;
 
-int main(int argc, char **argv) {
+uv_loop_t *uvloop;
+
+void frf_initialization() {
     GC_INIT();
     atoms_init();
     numstring = sfsnew( "0123456789" );
     opstring = sfsnew( "-$%" );
+
+    uvloop = GC_malloc( sizeof(uv_loop_t));
+    uv_loop_init(uvloop);
+}
+
+void frf_teardown() {
+    uv_loop_close(uvloop);
+    GC_free(uvloop);
+}
+
+int main(int argc, char **argv) {
+    frf_initialization();
 
     struct node_state *N = newnode();
 
@@ -55,7 +70,11 @@ int main(int argc, char **argv) {
     sfs input = readfile( P );
     sfstolower ( input );
 
-    scheduler(N);
+    while( N->processlist_active ) {
+        uv_run(uvloop, UV_RUN_DEFAULT);
+        scheduler(N);
+    }
     
+    frf_teardown();
     return 0;
 }

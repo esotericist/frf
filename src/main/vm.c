@@ -311,7 +311,7 @@ void scheduler( struct node_state *N ) {
     iListType *p_ref;
     struct sglib_iListType_iterator it;
     struct process_state *P;
-    while (N->processlist_active) {
+    if (N->processlist_active) {
         for( p_ref =sglib_iListType_it_init(&it, N->processlist_active); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
             P = ( struct process_state * )(uintptr_t) p_ref->second.p_val;
             if( P->current_codestream && ( P->compilestate == NULL || P->compilestate->parsemode.flags == 0)) {

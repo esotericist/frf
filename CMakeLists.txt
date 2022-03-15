@@ -15,7 +15,8 @@ file(COPY ${data} DESTINATION resources)
 
 find_package(PkgConfig)
 pkg_check_modules(GC REQUIRED bdw-gc)
+pkg_check_modules(UV REQUIRED libuv)
 
-target_link_libraries(frf PUBLIC ${GC_LDFLAGS} ${GC_LIBRARIES})
-target_include_directories(frf PUBLIC ${GC_INCLUDE_DIRS})
-target_compile_options(frf PUBLIC ${GC_CFLAGS_OTHER})
+target_link_libraries(frf PUBLIC ${GC_LDFLAGS} ${GC_LIBRARIES} ${UV_LDFLAGS} ${UV_LIBRARIES})
+target_include_directories(frf PUBLIC ${GC_INCLUDE_DIRS} ${UV_INCLUDE_DIRS} )
+target_compile_options(frf PUBLIC ${GC_CFLAGS_OTHER} ${UV_CFLAGS_OTHER})
