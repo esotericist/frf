@@ -122,8 +122,9 @@ struct compile_state {
     iListType *vartable[ilist_hash_size];
     struct flowcontrolentry flowcontrolstack[1024];
     size_t flowcontroltop;
-    
-};struct datapoint {
+};
+
+struct datapoint {
     union {
         size_t u_val;
         uintptr_t p_val;
