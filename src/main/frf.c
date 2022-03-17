@@ -11,6 +11,7 @@
 #include "compile.h"
 #include "prims.h"
 #include "stack.h"
+#include "events.h"
 #include "vm.h"
 
 atom(exit)
@@ -39,28 +40,23 @@ sfs readfile( struct process_state *P ) {
 extern sfs numstring;
 extern sfs opstring;
 
-uv_loop_t *uvloop;
+struct node_state *N;
 
 void frf_initialization() {
     GC_INIT();
     atoms_init();
     numstring = sfsnew( "0123456789" );
     opstring = sfsnew( "-$%" );
+    events_initialization();
 
-    uvloop = GC_malloc( sizeof(uv_loop_t));
-    uv_loop_init(uvloop);
 }
 
 void frf_teardown() {
-    uv_loop_close(uvloop);
-    GC_free(uvloop);
+    events_teardown();
 }
 
-int main(int argc, char **argv) {
-    frf_initialization();
-
-    struct node_state *N = newnode();
-
+void node_bootstrap() {
+    N = newnode();
     finalizeprims( N );
 
     struct process_state *P = newprocess( N );
@@ -70,11 +66,21 @@ int main(int argc, char **argv) {
     sfs input = readfile( P );
     sfstolower ( input );
 
+}
+
+void node_run() {
     while( N->processlist_active ) {
         uv_run(uvloop, UV_RUN_DEFAULT);
         scheduler(N);
-    }
-    
+    }    
+}
+
+int main(int argc, char **argv) {
+    frf_initialization();
+
+    node_bootstrap();
+    node_run();
+
     frf_teardown();
     return 0;
 }

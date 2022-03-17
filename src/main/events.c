@@ -11,6 +11,7 @@
 #include "structures.h"
 #include "prims.h"
 
+uv_loop_t *uvloop;
 
 // swiped from https://stackoverflow.com/a/47229318 on 2021/11/18
 //
@@ -66,6 +67,15 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     return pos;
 }
 
+void events_initialization() {
+    uvloop = GC_malloc( sizeof(uv_loop_t));
+    uv_loop_init(uvloop);
+}
+
+void events_teardown() {
+    uv_loop_close(uvloop);
+    GC_free(uvloop);
+}
 
 #pragma GCC push_options
 #pragma GCC optimize("align-functions=16")
