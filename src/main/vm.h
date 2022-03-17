@@ -7,6 +7,10 @@ struct process_state* newprocess( struct node_state *N );
 void process_reset( struct process_state *P, size_t reasonatom );
 void process_kill( struct process_state *P, size_t reasonatom, sfs text );
 
+void process_addmessage( struct process_state *P, struct array_span *arr );
+size_t process_messagecount( struct process_state *P );
+struct array_span * process_fetchmessage( struct process_state *P );
+
 #define runtimefault(x) \
     if( P->errorstate ) { \
         process_kill( P, P->errorstate, sfsnew((x)) ); \

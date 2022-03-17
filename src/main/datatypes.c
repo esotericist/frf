@@ -4,10 +4,16 @@
 #include "vm.h"
 #include "atoms.h"
 
+SGLIB_DEFINE_LIST_FUNCTIONS(qListType, QLIST_COMPARATOR, next_ptr)
+
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(iListType, ILIST_COMPARATOR, next_ptr)
 SGLIB_DEFINE_HASHED_CONTAINER_FUNCTIONS(iListType, ilist_hash_size, ilist_hash_function )
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(sListType, SLIST_COMPARATOR, next_ptr)
 SGLIB_DEFINE_HASHED_CONTAINER_FUNCTIONS(sListType, slist_hash_size, slist_hash_function )
+
+struct qlist* alloc_qlist() {
+    return GC_malloc( sizeof( struct qlist ));
+}
 
 struct ilist* alloc_ilist() {
     return GC_malloc( sizeof( struct ilist ));

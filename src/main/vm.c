@@ -134,6 +134,22 @@ void process_kill( struct process_state *P, size_t reasonatom, sfs text ) {
     process_reset( P, reasonatom );
 }
 
+void process_addmessage( struct process_state *P, struct array_span *arr ) {
+    qListType *message = alloc_qlist();
+    message->p_val = (uintptr_t)(struct array_span *) arr;
+    sglib_qListType_concat( &P->messagequeue, message );
+}
+
+size_t process_messagecount( struct process_state *P ) {
+    return sglib_qListType_len( P->messagequeue );
+}
+
+struct array_span * process_fetchmessage( struct process_state *P ) {
+    qListType *first = P->messagequeue;
+    struct array_span *arr = (struct array_span *)(uintptr_t) first->p_val;
+    sglib_qListType_delete(&P->messagequeue, first );
+    return arr;
+}
 
 struct process_state* newprocess( struct node_state *N ) {
     struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );

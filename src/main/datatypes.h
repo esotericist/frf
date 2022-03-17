@@ -11,6 +11,14 @@
 
 #define str_eq( a, b ) ( sfscmp( (a), (b) ) == 0)
 
+typedef struct qlist {
+    uintptr_t p_val;
+    struct qlist *next_ptr;
+} qListType;
+
+#define QLIST_COMPARATOR(e1, e2) (e1->p_val - e2->p_val)
+
+SGLIB_DEFINE_LIST_PROTOTYPES(qListType, QLIST_COMPARATOR, next_ptr)
 
 #define ilist_hash_size 32768
 
@@ -27,6 +35,7 @@ typedef struct ilist {
     struct ilist *next_ptr;
 } iListType;
 
+struct qlist* alloc_qlist();
 
 struct ilist* alloc_ilist();
 struct ilist* swap_ilist( struct ilist* old );
@@ -202,6 +211,8 @@ struct process_state {
     struct variable_set *current_varset;
 
     struct compile_state *compilestate;
+
+    qListType *messagequeue;
 
     size_t max_slice_ops;
     size_t total_operations;
