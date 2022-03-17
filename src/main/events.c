@@ -7,7 +7,7 @@
 #include <dirent.h>
 #include "stack.h"
 #include "vm.h"
-#include "files.h"
+#include "events.h"
 #include "structures.h"
 #include "prims.h"
 
@@ -33,7 +33,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     }
 
     if (*lineptr == NULL) {
-        *lineptr = malloc(128);
+        *lineptr = GC_malloc(128);
         if (*lineptr == NULL) {
             return -1;
         }
@@ -47,7 +47,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
             if (new_size < 128) {
                 new_size = 128;
             }
-            char *new_ptr = realloc(*lineptr, new_size);
+            char *new_ptr = GC_realloc(*lineptr, new_size);
             if (new_ptr == NULL) {
                 return -1;
             }
@@ -70,8 +70,47 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 #pragma GCC push_options
 #pragma GCC optimize("align-functions=16")
 
-// #region file manipulation prims
+// #region ipc prims
 
+
+atom(message)
+
+prim(send) {
+    needstack(2)
+    struct datapoint val = pop_dp(P);
+    require_int target_pid = pop_int;
+
+    struct process_state * target_P = process_from_pid(P->node, target_pid);
+    if( target_P == NULL ) {
+        runtimefault( "error in %zu: process doesn't exist" )
+    }
+
+    struct array_span *arr = newarrayspan(3);
+    dp_put_atom(&arr->elems[0], a_message);
+    dp_put_int(&arr->elems[1], P->pid);
+    arr->elems[2].u_val = val.u_val;
+
+    process_addmessage( target_P, arr);
+}
+
+atom(empty)
+
+prim(receive) {
+    if(process_messagecount(P) > 0) {
+        push_tup(process_fetchmessage(P));
+    } else {
+        push_atom(a_empty);
+    } 
+}
+
+prim(messages) {
+    push_int(process_messagecount(P));
+}
+
+
+// #endregion
+
+// #region file manipulation prims
 
 
 // ( s:filename -- i:size )

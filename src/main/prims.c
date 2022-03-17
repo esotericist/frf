@@ -367,40 +367,6 @@ prim(fork) {
     
 }
 
-atom(message)
-
-prim(send) {
-    needstack(2)
-    struct datapoint val = pop_dp(P);
-    require_int target_pid = pop_int;
-
-    struct process_state * target_P = process_from_pid(P->node, target_pid);
-    if( target_P == NULL ) {
-        runtimefault( "error in %zu: process doesn't exist" )
-    }
-
-    struct array_span *arr = newarrayspan(3);
-    dp_put_atom(&arr->elems[0], a_message);
-    dp_put_int(&arr->elems[1], P->pid);
-    arr->elems[2].u_val = val.u_val;
-
-    process_addmessage( target_P, arr);
-}
-
-atom(empty)
-
-prim(receive) {
-    if(process_messagecount(P) > 0) {
-        push_tup(process_fetchmessage(P));
-    } else {
-        push_atom(a_empty);
-    } 
-}
-
-prim(messages) {
-    push_int(process_messagecount(P));
-}
-
 // #endregion
 
 // #region math prims
