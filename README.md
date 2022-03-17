@@ -7,9 +7,16 @@ aimed at cross-platform, with an ultimate eventual eye towards attempting to mak
 work is very ongoing and it is not a stable platform as of yet, although i do make an earnest attempt to guarantee that any given commit will successfully build on at least linux.
 
 it has been tested on linux (xubuntu 20.04-3) and windows 10 (using msys2).
+
 ## building
 
-on linux, should just be a git clone and building via `cmake` and then `make`. the `cm.sh` script and `frf` symlinks help keep things clean for me, but are not required. i'm not your mom, build it how you want.
+
+### requirements
+
+1.  bdw-gc (because i am not up for hand-rolling memory management)
+2.  libuv (because i'm an event driven girl in an event driven world)
+
+on linux, should just be a git clone and building via `cmake` and then `make`. the `cm.sh` script and `frf` symlinks help keep things clean for me, but are not required. i'm not your mom, build it how you want. you very likely already have bdw-gc, and libuv (and bdw-gc if your distro is lacking it by default) should be installed through whatever package manager your distribution uses.
 
 on windows, you'll need msys2, update it fully, and install packages for `git`, `cmake`, and `mingw-w64-x86_64-gc` via pacman. from there, it should just be the same steps as linux, just in the mingw-64 shell. don't try it in 32-bit; i as yet make no attempts to support 32-bit systems. (that might change if i get around to android support since so many arm things expect apps to be 32-bit).
 
