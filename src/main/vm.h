@@ -3,6 +3,7 @@
 
 struct node_state* newnode();
 struct process_state* newprocess( struct node_state *N );
+struct process_state* process_from_pid(struct node_state *N, size_t pid );
 
 void process_reset( struct process_state *P, size_t reasonatom );
 void process_kill( struct process_state *P, size_t reasonatom, sfs text );

@@ -124,6 +124,19 @@ void process_reset( struct process_state *P, size_t reasonatom ) {
     P->errorstate = reasonatom;
 }
 
+struct process_state* process_from_pid(struct node_state *N, size_t pid ) {
+    iListType *P_search = alloc_ilist();
+    P_search->first.a_val = pid;    
+
+    iListType *P_result = sglib_hashed_iListType_find_member( N->process_table, P_search );
+    if( P_result == NULL) {
+        return NULL;
+    } else {
+        return (struct process_state *)(uintptr_t)P_result->second.p_val;
+    }
+}
+
+
 void process_kill( struct process_state *P, size_t reasonatom, sfs text ) {
     
     if( sfsmatchcount( text, sfsnew( "%zu" ) ) ) {
@@ -299,7 +312,7 @@ void * funcfrommungedptr( uintptr_t p ) {
 
 size_t executetimeslice( struct process_state *P ) {
     size_t count = 0;
-    while( P->current_codestream && P->current_codestream->instructioncount > 0 && count++ < P->max_slice_ops ) {
+    while( P->current_codestream && P->current_codestream->instructioncount > 0 && P->executestate == a_active && count++ < P->max_slice_ops ) {
         size_t pos = P->currentop++;
         uintptr_t check_op = P->current_codestream->codestream[pos].u_val;
         if( check_op == 0 || P->errorstate ) {
