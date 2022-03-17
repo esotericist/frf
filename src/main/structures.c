@@ -43,6 +43,15 @@ void copy_span_skip_dest_idx( struct array_span *source, struct array_span *dest
 
 }
 
+void structure_explode( struct process_state *P ) {
+    require_structure *arr = pop_array;
+    for(size_t i = 0; i < arr->size; i++ ) {
+
+        push_dp(P, arr->elems[i]);
+    }
+    push_int(arr->size);
+}
+
 #define get_item(arr, idx, dp) \
     if( idx >= 0 && idx < arr->size) { \
         dp.u_val = arr->elems[idx].u_val; \
@@ -121,6 +130,10 @@ prim( tuple_setitem ) {
     struct array_span *newarr;
     set_item(arr, idx, dp, newarr)
     push_tup(newarr);    
+}
+
+prim( tuple_explode ) {
+    structure_explode(P);
 }
 
 // #endregion
@@ -247,5 +260,8 @@ prim(array_interpret) {
     push_string(workingstring);    
 }
 
+prim(array_explode) {
+    structure_explode(P);
+}
 
 // #endregion
