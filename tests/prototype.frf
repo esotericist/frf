@@ -27,7 +27,7 @@
 
 ( "README.md" readtest 
 printtest )
-
+(
 "words\n" fcwd "/tests/asdf.txt" strcat 0 fwrite debug_line pop 
 "more words\n" fcwd "/tests/asdf.txt" strcat fappend debug_line pop 
 "tests/asdf.txt" readtest debug_line printtest 
@@ -35,7 +35,14 @@ fcwd "/tests/asdf.txt" strcat frm debug_line pop
 fcwd "/tests" strcat fgetdir printtest
 
 readline
-
+)
+debug_on
+messages .
+pid "test" send
+messages .
+receive
+receive
+dup atom?
 exit
 
 

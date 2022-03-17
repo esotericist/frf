@@ -21,7 +21,7 @@ sfs readfile( struct process_state *P ) {
      char buffer[BUFSIZ];
 
      getcwd(buffer, BUFSIZ);
-     sfs filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/prototype.frf" ) );
+     sfs filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/ipctest.frf" ) );
      FILE *thefile;
      thefile = fopen( filepath, "r" );
 
