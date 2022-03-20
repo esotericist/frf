@@ -151,6 +151,9 @@ void process_addmessage( struct process_state *P, struct array_span *arr ) {
     qListType *message = alloc_qlist();
     message->p_val = (uintptr_t)(struct array_span *) arr;
     sglib_qListType_concat( &P->messagequeue, message );
+    if( P->executestate == a_inactive ) {
+        process_setactive(P);
+    }
 }
 
 size_t process_messagecount( struct process_state *P ) {

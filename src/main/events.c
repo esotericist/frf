@@ -85,7 +85,7 @@ void events_teardown() {
 
 atom(message)
 
-prim(send) {
+prim(message_send) {
     needstack(2)
     struct datapoint val = pop_dp(P);
     require_int target_pid = pop_int;
@@ -105,7 +105,7 @@ prim(send) {
 
 atom(empty)
 
-prim(receive) {
+prim(message_receive) {
     if(process_messagecount(P) > 0) {
         push_tup(process_fetchmessage(P));
     } else {
@@ -113,7 +113,16 @@ prim(receive) {
     } 
 }
 
-prim(messages) {
+prim(message_waitfor) {
+    if(process_messagecount(P) == 0) { 
+        process_setinactive(P);
+        P->currentop--;
+    } else {
+        push_int(process_messagecount(P));
+    }    
+}
+
+prim(message_count) {
     push_int(process_messagecount(P));
 }
 

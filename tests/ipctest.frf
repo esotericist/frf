@@ -1,20 +1,32 @@
 : ipctest ( -- )
+  var other_pid
+  var event
+  var payload
   pid
   fork
   dup not if
     pop dup
-    "hello to " swap intostr strcat ", from " strcat pid intostr strcat send
-    exit
+    "hello to " swap intostr strcat ", from " strcat pid intostr strcat message_send
+    message_waitfor if
+      message_receive
+        tuple_explode pop 
+        payload ! other_pid ! event !
+        "received: \"" payload @ strcat "\" from " strcat other_pid @ intostr strcat "\n" strcat .
+      then
   else
     pop pop
     begin
-      messages if
-        receive
+      message_waitfor if
+        message_receive
         tuple_explode pop 
-        "received: \"" swap strcat "\" from " strcat swap intostr strcat .
+        payload ! other_pid ! event !
+        "received: \"" payload @ strcat "\" from " strcat other_pid @ intostr strcat dup "\n" strcat .
+        "return to sender.\n" .
+        other_pid @ swap message_send
         break
       then
     repeat
   then
 ;
 ipctest
+exit
