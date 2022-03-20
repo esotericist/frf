@@ -61,12 +61,12 @@ struct node_state* newnode() {
     return new_N;
 }
 
-void process_setactive( struct process_state *P ) {
+void process_setactive( proc *P ) {
 
     if(P->activitylist_ptr == NULL )  {
         P->activitylist_ptr = alloc_ilist();
         P->activitylist_ptr->first.a_val = P->pid;
-        P->activitylist_ptr->second.p_val = (uintptr_t)(struct process_state *) P;
+        P->activitylist_ptr->second.p_val = (uintptr_t)(proc *) P;
     }
 
     if(P->executestate == a_inactive) {
@@ -79,7 +79,7 @@ void process_setactive( struct process_state *P ) {
     }
 }
 
-void process_setinactive( struct process_state *P ) {
+void process_setinactive( proc *P ) {
     if(P->executestate == a_active) {
         sglib_iListType_delete(&P->node->processlist_active, P->activitylist_ptr );
     }
@@ -89,7 +89,7 @@ void process_setinactive( struct process_state *P ) {
     }
 }
 
-void process_setdead( struct process_state *P ) {
+void process_setdead( proc *P ) {
     iListType *ptr = P->activitylist_ptr;
     if(P->executestate == a_active) {
         sglib_iListType_delete(&P->node->processlist_active, P->activitylist_ptr );
@@ -104,7 +104,7 @@ void process_setdead( struct process_state *P ) {
     }    
 }
 
-void process_reset( struct process_state *P, size_t reasonatom ) {
+void process_reset( proc *P, size_t reasonatom ) {
     if( P->current_codestream->nameatom && P->compilestate && P->compilestate->parsemode.compile  ) {
         printf( "undefining word %s\n", atomtostring( P->current_codestream->nameatom) );
         iListType *entry = alloc_ilist();
@@ -124,7 +124,7 @@ void process_reset( struct process_state *P, size_t reasonatom ) {
     P->errorstate = reasonatom;
 }
 
-struct process_state* process_from_pid(struct node_state *N, size_t pid ) {
+proc* process_from_pid(struct node_state *N, size_t pid ) {
     iListType *P_search = alloc_ilist();
     P_search->first.a_val = pid;    
 
@@ -132,12 +132,12 @@ struct process_state* process_from_pid(struct node_state *N, size_t pid ) {
     if( P_result == NULL) {
         return NULL;
     } else {
-        return (struct process_state *)(uintptr_t)P_result->second.p_val;
+        return (proc *)(uintptr_t)P_result->second.p_val;
     }
 }
 
 
-void process_kill( struct process_state *P, size_t reasonatom, sfs text ) {
+void process_kill( proc *P, size_t reasonatom, sfs text ) {
     
     if( sfsmatchcount( text, sfsnew( "%zu" ) ) ) {
         printf(text, P->pid, atomtostring(reasonatom) );
@@ -147,7 +147,7 @@ void process_kill( struct process_state *P, size_t reasonatom, sfs text ) {
     process_reset( P, reasonatom );
 }
 
-void process_addmessage( struct process_state *P, struct array_span *arr ) {
+void process_addmessage( proc *P, struct array_span *arr ) {
     qListType *message = alloc_qlist();
     message->p_val = (uintptr_t)(struct array_span *) arr;
     sglib_qListType_concat( &P->messagequeue, message );
@@ -156,19 +156,19 @@ void process_addmessage( struct process_state *P, struct array_span *arr ) {
     }
 }
 
-size_t process_messagecount( struct process_state *P ) {
+size_t process_messagecount( proc *P ) {
     return sglib_qListType_len( P->messagequeue );
 }
 
-struct array_span * process_fetchmessage( struct process_state *P ) {
+struct array_span * process_fetchmessage( proc *P ) {
     qListType *first = P->messagequeue;
     struct array_span *arr = (struct array_span *)(uintptr_t) first->p_val;
     sglib_qListType_delete(&P->messagequeue, first );
     return arr;
 }
 
-struct process_state* newprocess( struct node_state *N ) {
-    struct process_state *new_P = GC_malloc( sizeof( struct process_state ) );
+proc* newprocess( struct node_state *N ) {
+    proc *new_P = GC_malloc( sizeof( proc ) );
     // more init stuff goes here
     size_t max = 1024;
     new_P->d = GC_malloc( sizeof( struct datastack ) + sizeof ( struct datapoint ) * (max) );
@@ -181,7 +181,7 @@ struct process_state* newprocess( struct node_state *N ) {
     new_P->pid = N->next_pid++;
     new_P->processtable_ptr = alloc_ilist();
     new_P->processtable_ptr->first.a_val = new_P->pid;
-    new_P->processtable_ptr->second.p_val = (uintptr_t)(struct process_state *) new_P;
+    new_P->processtable_ptr->second.p_val = (uintptr_t)(proc *) new_P;
 
     sglib_hashed_iListType_add( N->process_table, new_P->processtable_ptr );
 
@@ -190,7 +190,7 @@ struct process_state* newprocess( struct node_state *N ) {
     return new_P;
 }
 
-void procreport( struct process_state *P ) {
+void procreport( proc *P ) {
     sfs resultstring = sfscatprintf( sfsempty(), "[%zu] stack: %s. total operations: %zu", P->pid, dump_stack(P), P->total_operations );
     if( P->errorstate == a_exit ) {
         resultstring = sfscatc( resultstring, " OK" );
@@ -200,7 +200,7 @@ void procreport( struct process_state *P ) {
     printf( "%s\n\n", resultstring );    
 }
 
-void freeprocess( struct process_state *P ) {
+void freeprocess( proc *P ) {
 
     if(P->executestate == a_active) {
         sglib_iListType_delete( &P->node->processlist_active, P->activitylist_ptr );
@@ -219,7 +219,7 @@ void freeprocess( struct process_state *P ) {
 #define callstack       P->c->stack
 #define calltop         P->c->top
 
-typedef void (*call_prim)(struct process_state *p);
+typedef void (*call_prim)(proc *p);
 
 
 
@@ -275,7 +275,7 @@ void unregisterword(struct node_state *N, size_t atom) {
     sglib_hashed_iListType_delete( N->wordtoatomtable, newword2 );
 }
 
-void pushcallstackframe( struct process_state *P ){
+void pushcallstackframe( proc *P ){
     if( calltop < P->c->max ) {
         callstack[calltop].cword = P->current_codestream;
         callstack[calltop].varset = P->current_varset;
@@ -286,7 +286,7 @@ void pushcallstackframe( struct process_state *P ){
     } 
 }
 
-void popcallstackframe( struct process_state *P ) {
+void popcallstackframe( proc *P ) {
     if( calltop > 0 ) {
         calltop--;
         P->current_codestream = callstack[calltop].cword;
@@ -313,7 +313,7 @@ void * funcfrommungedptr( uintptr_t p ) {
     return (void *)(uintptr_t) ( p & ~(3) );
 }
 
-size_t executetimeslice( struct process_state *P ) {
+size_t executetimeslice( proc *P ) {
     size_t count = 0;
     while( P->current_codestream && P->current_codestream->instructioncount > 0 && P->executestate == a_active && count++ < P->max_slice_ops ) {
         size_t pos = P->currentop++;
@@ -342,10 +342,10 @@ size_t executetimeslice( struct process_state *P ) {
 void scheduler( struct node_state *N ) {
     iListType *p_ref;
     struct sglib_iListType_iterator it;
-    struct process_state *P;
+    proc *P;
     if (N->processlist_active) {
         for( p_ref =sglib_iListType_it_init(&it, N->processlist_active); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
-            P = ( struct process_state * )(uintptr_t) p_ref->second.p_val;
+            P = ( proc * )(uintptr_t) p_ref->second.p_val;
             if( P->current_codestream && ( P->compilestate == NULL || P->compilestate->parsemode.flags == 0)) {
                 executetimeslice(P);
             } else {
@@ -360,7 +360,7 @@ void scheduler( struct node_state *N ) {
         }
 
     for( p_ref =sglib_iListType_it_init(&it, N->processlist_dead); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
-        P = ( struct process_state * )(uintptr_t) p_ref->second.p_val;
+        P = ( proc * )(uintptr_t) p_ref->second.p_val;
         procreport(P);
         freeprocess(P);
      }

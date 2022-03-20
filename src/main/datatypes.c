@@ -93,7 +93,7 @@ struct variable_set* grow_variable_set(struct variable_set *vs) {
     return new_vs;
 }
 
-void append_cp( struct process_state *P, size_t v ) {
+void append_cp( proc *P, size_t v ) {
     if( P->current_codestream->instructioncount > P->current_codestream->length - 10) {
         size_t size = P->current_codestream->length + 1024;
         P->current_codestream = GC_realloc( P->current_codestream , sizeof( struct code_set ) + sizeof ( struct code_point ) * (size) );
@@ -103,7 +103,7 @@ void append_cp( struct process_state *P, size_t v ) {
     P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
 }
 
-void newcompilestate( struct process_state *P ) {
+void newcompilestate( proc *P ) {
 
     P->compilestate = GC_malloc( sizeof( struct compile_state ) );
     P->compilestate->parsemode.flags = 0;

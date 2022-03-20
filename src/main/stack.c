@@ -35,7 +35,7 @@ bool checktrue( struct datapoint dp ) {
     return false;
 }
 
-sfs dump_stack( struct process_state *P ) {
+sfs dump_stack( proc *P ) {
     if( dcount == 0 ) {
         return sfsnew( "()" );
     }
@@ -63,7 +63,7 @@ sfs objecttostring( struct datapoint dp ) {
     return workingstring;
 }
 
-sfs formatobject( struct process_state *P , struct datapoint dp ) {
+sfs formatobject( proc *P , struct datapoint dp ) {
     sfs workingstring = sfsempty();
     size_t dptype = checktype( dp );
     if( dptype == a_type_empty  ) {

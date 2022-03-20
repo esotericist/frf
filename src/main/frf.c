@@ -16,7 +16,7 @@
 
 atom(exit)
 
-sfs readfile( struct process_state *P ) {
+sfs readfile( proc *P ) {
     sfs to_return = sfsempty();
 
      char buffer[BUFSIZ];
@@ -59,7 +59,7 @@ void node_bootstrap() {
     N = newnode();
     finalizeprims( N );
 
-    struct process_state *P = newprocess( N );
+    proc *P = newprocess( N );
     newcompilestate( P );
     P->current_codestream = newcodeset(N, 1024, 0 );
 

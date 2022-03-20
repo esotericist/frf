@@ -2,6 +2,6 @@
 #define COMPILE_H_
 
 void initcommonstring();
-void parse_line( struct process_state *P, sfs input );
+void parse_line( proc *P, sfs input );
 
 #endif

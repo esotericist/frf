@@ -90,7 +90,7 @@ prim(message_send) {
     struct datapoint val = pop_dp(P);
     require_int target_pid = pop_int;
 
-    struct process_state * target_P = process_from_pid(P->node, target_pid);
+    proc * target_P = process_from_pid(P->node, target_pid);
     if( target_P == NULL ) {
         runtimefault( "error in %zu: process doesn't exist" )
     }

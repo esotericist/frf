@@ -5,7 +5,7 @@
 
 
 // returns a string containing the entire current stack contents
-sfs dump_stack( struct process_state *P );
+sfs dump_stack( proc *P );
 
 // fetching values from a codestream (via codepoint)
 int64_t cp_get_int( struct code_point *cp );
@@ -55,7 +55,7 @@ size_t checktype( struct datapoint dp );
 // renders string suitable for string manipulation
 sfs objecttostring( struct datapoint dp );
 // renders string suitable for printing for debug
-sfs formatobject( struct process_state *P , struct datapoint dp );
+sfs formatobject( proc *P , struct datapoint dp );
 
 //
 // manipulation of the contents of datapoints on a datastack
@@ -87,10 +87,10 @@ atom(stack_underflow)
     }
 
 
-static inline void push_dp( struct process_state *P, struct datapoint dp ) {
+static inline void push_dp( proc *P, struct datapoint dp ) {
     dstack[dcount++] = dp;
 }
-static inline struct datapoint pop_dp(struct process_state *P ) {
+static inline struct datapoint pop_dp(proc *P ) {
     return dstack[--dcount];
 }
 

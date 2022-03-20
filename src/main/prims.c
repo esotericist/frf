@@ -175,7 +175,7 @@ prim(swap)
     push_dp(P, first);
 }
 
-void rotate(struct process_state *P, int64_t count)
+void rotate(proc *P, int64_t count)
 {
     if (count < 0)
     {
@@ -338,7 +338,7 @@ prim(kill) {
         tmp = sglib_hashed_iListType_find_member( P->node->process_table, tmp );
         if( tmp ) {
             push_int(1);
-            process_kill( (struct process_state *)(uintptr_t) tmp->second.p_val, a_killed, sfsempty() );
+            process_kill( (proc *)(uintptr_t) tmp->second.p_val, a_killed, sfsempty() );
         } else {
             push_int(0);
         }
@@ -346,7 +346,7 @@ prim(kill) {
 }
 
 prim(fork) {
-    struct process_state *new_P = newprocess( P->node );
+    proc *new_P = newprocess( P->node );
     new_P->current_codestream = P->current_codestream;
     new_P->currentop = P->currentop;
     if( P->current_varset ) {

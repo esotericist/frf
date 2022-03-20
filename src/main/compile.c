@@ -16,16 +16,16 @@ uintptr_t tag_prim (void *v) {
     return ( (uintptr_t)(void *) v ) | 3;
 }
 
-void append_prim( struct process_state *P, size_t v ) {
+void append_prim( proc *P, size_t v ) {
     void * ptr = atomtoprim( P->node, v );
     append_cp( P, tag_prim( ptr ) );
 }
 
-void append_word( struct process_state *P, void * v  ) {
+void append_word( proc *P, void * v  ) {
     append_cp(P, (uintptr_t)(void *) v );
 }
 
-int64_t parse_atomtovar( struct process_state *P, size_t atom ) {
+int64_t parse_atomtovar( proc *P, size_t atom ) {
     iListType *it = alloc_ilist();
     it->first.a_val = atom;
     struct ilist *tmp = sglib_hashed_iListType_find_member( P->compilestate->vartable, it );
@@ -35,7 +35,7 @@ int64_t parse_atomtovar( struct process_state *P, size_t atom ) {
     return -1;
 }
 
-void record_var(struct process_state *P, sfs varname, size_t varnum ) {
+void record_var(proc *P, sfs varname, size_t varnum ) {
     size_t varatom = stringtoatom( sfstolower( sfstrim( varname, " ") ) );
     iListType *newword = alloc_ilist();
     newword->first.a_val = varatom;
@@ -65,7 +65,7 @@ atom(cjmp)
 #define flowtopatom     flowstack[flowtop].flowatom
 #define flowtopcell     flowstack[flowtop].celltarget
 
-bool searchflowstack( struct process_state *P, size_t searchatom ) {
+bool searchflowstack( proc *P, size_t searchatom ) {
     for(size_t i = flowtop ; i > 0 ; i-- ) {
         if ( flowstack[i].flowatom == searchatom ) {
             return true;
@@ -74,19 +74,19 @@ bool searchflowstack( struct process_state *P, size_t searchatom ) {
     return false;
 }
 
-void addflowframe(struct process_state *P, size_t thisatom ) {
+void addflowframe(proc *P, size_t thisatom ) {
     flowtop++;
     flowstack[flowtop].flowatom = thisatom;
     flowstack[flowtop].celltarget = P->current_codestream->instructioncount;
 }
 
-void popflowtop(struct process_state *P ) {
+void popflowtop(proc *P ) {
     flowstack[flowtop].flowatom = 0;
     flowstack[flowtop].celltarget = 0;
     flowtop--;
 }
 
-void dropflowframe(struct process_state *P, size_t stackitem ) {
+void dropflowframe(proc *P, size_t stackitem ) {
     for ( size_t i = stackitem ; i < flowtop ; i++ ) {
         flowstack[flowtop].flowatom = flowstack[flowtop + 1].flowatom;
         flowstack[flowtop].celltarget = flowstack[flowtop + 1].celltarget;
@@ -95,7 +95,7 @@ void dropflowframe(struct process_state *P, size_t stackitem ) {
 }
 
 /* P, firstcell.i, lastcell.i, keyop.i, targetcell.i */ 
-void updatecells(struct process_state *P, size_t firstcell, size_t lastcell, uintptr_t keyop, size_t targetcell ) {
+void updatecells(proc *P, size_t firstcell, size_t lastcell, uintptr_t keyop, size_t targetcell ) {
     for ( size_t i = firstcell ; i < lastcell ; i++ ) {
         if( P->current_codestream->codestream[i].u_val == keyop && P->current_codestream->codestream[i+1].u_val ==  keyop ) {
             P->current_codestream->codestream[i+1].u_val = targetcell;
@@ -103,11 +103,11 @@ void updatecells(struct process_state *P, size_t firstcell, size_t lastcell, uin
     }
 }
 
-void unexpectedprim( struct process_state *P, size_t foundatom, size_t previousatom ) {
+void unexpectedprim( proc *P, size_t foundatom, size_t previousatom ) {
     printf( "error: unexpected %s after %s\n", atomtostring( foundatom ), atomtostring( previousatom )  );
 }
 
-bool checkflowcontrol(struct process_state *P, size_t maybeop ) {
+bool checkflowcontrol(proc *P, size_t maybeop ) {
     size_t pos_if, pos_then, pos_else, loopstart, loopend;
     if( maybeop == a_if ) {
         addflowframe(P, a_if );
@@ -218,7 +218,7 @@ atom(unrecognized_token)
 sfs numstring;
 sfs opstring;
 
-void tokenize( struct process_state *P, sfs input ) {
+void tokenize( proc *P, sfs input ) {
     sfs c = sfsnewlen( input, 1 );
     if( sfsmatchcount ( numstring, c ) || ( sfslen(input) >=2 && sfsmatchcount( opstring, c ) ) ) {
         append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
@@ -285,7 +285,7 @@ void tokenize( struct process_state *P, sfs input ) {
     process_reset(P, a_unrecognized_token);
  }
 
-typedef void (*call_prim)(struct process_state *p);
+typedef void (*call_prim)(proc *p);
 
 #define checktoken(s) do { sListType *elem = slist_find( P->node->definetable, (s));  \
                         if( elem) { \
@@ -299,7 +299,7 @@ typedef void (*call_prim)(struct process_state *p);
 
 #define continue_str workingstring = sfscatc( workingstring, nextchar )
 
-sfs parse_atom( struct process_state *P, sfs inputstr ) {
+sfs parse_atom( proc *P, sfs inputstr ) {
     sfs workingstring = sfsempty();
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
@@ -322,7 +322,7 @@ sfs parse_atom( struct process_state *P, sfs inputstr ) {
     return inputstr;
 }
 
-sfs parse_string(struct process_state *P,  sfs inputstr ) {
+sfs parse_string(proc *P,  sfs inputstr ) {
     size_t a__little_r = stringtoatom( sfsnew( "r" ));
     size_t a__big_r = stringtoatom( sfsnew( "R" ));
     size_t a__little_n = stringtoatom( sfsnew( "n" ));
@@ -371,7 +371,7 @@ sfs parse_string(struct process_state *P,  sfs inputstr ) {
 }
 
 
-sfs parse_immed(struct process_state *P,  sfs inputstr ) {
+sfs parse_immed(proc *P,  sfs inputstr ) {
     sfs workingstring = sfsempty();
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
@@ -419,7 +419,7 @@ sfs parse_immed(struct process_state *P,  sfs inputstr ) {
     return inputstr;
 }
 
-sfs parse_compile(struct process_state *P,  sfs inputstr ) {
+sfs parse_compile(proc *P,  sfs inputstr ) {
     sfs workingstring = sfsempty();
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
@@ -487,7 +487,7 @@ sfs parse_compile(struct process_state *P,  sfs inputstr ) {
     return inputstr;
 }
 
-sfs parse_comment(struct process_state *P,  sfs inputstr ) {
+sfs parse_comment(proc *P,  sfs inputstr ) {
     sfs workingstring = sfsempty();
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
@@ -506,7 +506,7 @@ sfs parse_comment(struct process_state *P,  sfs inputstr ) {
     return inputstr;
 }
 
-void define_newword( struct process_state *P,  sfs inputstr ) {
+void define_newword( proc *P,  sfs inputstr ) {
     if( sfscmp( inputstr, sfsnew( ":" ) ) || sfscmp( inputstr, sfsnew( ";" ) ) ||
         sfscmp( inputstr, sfsnew( "@" ) ) || sfscmp( inputstr, sfsnew( "!" ) ) ||
         sfscmp( inputstr, sfsnew( "var" ) ) ) {
@@ -523,7 +523,7 @@ void define_newword( struct process_state *P,  sfs inputstr ) {
     
 }
 
-sfs parse_newword(struct process_state *P,  sfs inputstr ) {
+sfs parse_newword(proc *P,  sfs inputstr ) {
     sfs workingstring = sfsempty();
     sfs nextchar = sfsempty();
     while ( sfslen( inputstr ) )
@@ -548,7 +548,7 @@ sfs parse_newword(struct process_state *P,  sfs inputstr ) {
 }
 
 
-void parse_line( struct process_state *P, sfs input ) {
+void parse_line( proc *P, sfs input ) {
     sfs s_space = sfsnew( " " );
     input = sfstrim( sfstrim( input, s_space ), "\n" );
     sfs workingstring = sfscatc( input, s_space );

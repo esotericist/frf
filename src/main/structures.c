@@ -43,7 +43,7 @@ void copy_span_skip_dest_idx( struct array_span *source, struct array_span *dest
 
 }
 
-void structure_explode( struct process_state *P ) {
+void structure_explode( proc *P ) {
     require_structure *arr = pop_array;
     for(size_t i = 0; i < arr->size; i++ ) {
 
