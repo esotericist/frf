@@ -2,6 +2,7 @@
   var other_pid
   var event
   var payload
+  now intostr "\n" strcat . now intostr "\n" strcat .
   pid
   fork
   dup not if
@@ -29,4 +30,8 @@
   then
 ;
 ipctest
+now intostr "\n" strcat .
+3000 "asdf" event_timer
+message_waitfor pop message_receive debug_line
+now intostr "\n" strcat .
 exit

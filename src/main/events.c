@@ -13,6 +13,14 @@
 
 uv_loop_t *uvloop;
 
+// definitions for various event things
+typedef struct timer {
+    sfs timer_handle;
+    proc *P;
+} event_timer;
+
+sListType *timer_table[slist_hash_size];
+
 // swiped from https://stackoverflow.com/a/47229318 on 2021/11/18
 //
 /* The original code is public domain -- Will Hartung 4/9/09 */
@@ -70,6 +78,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 void events_initialization() {
     uvloop = GC_malloc( sizeof(uv_loop_t));
     uv_loop_init(uvloop);
+    sglib_hashed_sListType_init(timer_table);
 }
 
 void events_teardown() {
@@ -79,6 +88,53 @@ void events_teardown() {
 
 #pragma GCC push_options
 #pragma GCC optimize("align-functions=16")
+
+// #region libuv helper prims
+
+// stub: eventually we want a monotonic thing like erlang, but that's work
+prim(now) {
+    push_int(uv_hrtime());
+}
+
+// #endregion
+
+// #region event prims
+
+atom(event_timer)
+atom(complete)
+
+void event_timer_callback( uv_timer_t *req ) {
+    sListType *elem = (sListType *)(void *)req->data;
+    proc *target_P = (proc *)(uintptr_t) elem->ptr;
+
+    struct array_span *arr = newarrayspan(3);
+    dp_put_atom(&arr->elems[0], a_event_timer);
+    dp_put_string(&arr->elems[1], elem->s);
+    dp_put_atom(&arr->elems[2], a_complete);
+
+    process_addmessage( target_P, arr);
+
+    /* sglib_hashed_sListType_delete(timer_table, elem);
+    sglib_hashed_sListType_add(timer_table, elem);
+    */
+}
+
+
+prim(event_timer) {
+    require_string handle = pop_string;
+    require_int delay_in_ms = pop_int;
+    uv_timer_t *timer_handle = GC_malloc(sizeof(uv_timer_t));
+    uv_timer_init(uvloop, timer_handle);
+    uv_timer_start(timer_handle,event_timer_callback, delay_in_ms, 0);
+
+    sListType *timer = alloc_slist();
+    timer->s = handle;
+    timer->ptr = (uintptr_t)(proc *) P;
+    
+    timer_handle->data = timer;
+}
+
+// #endregion
 
 // #region ipc prims
 
