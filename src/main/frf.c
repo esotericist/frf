@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <uv.h>
 
-#include "sfs.h"
 #include "frf.h"
 #include "datatypes.h"
 #include "atoms.h"

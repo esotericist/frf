@@ -1,6 +1,5 @@
 
 #include "datatypes.h"
-#include "sfs.h"
 #include "vm.h"
 #include "atoms.h"
 
