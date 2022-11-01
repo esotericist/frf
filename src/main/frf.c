@@ -69,7 +69,7 @@ void node_bootstrap() {
 
 void node_run() {
     while( N->processlist_active || N->processlist_inactive ) {
-        uv_run(uvloop, UV_RUN_DEFAULT);
+        events_run();
         scheduler(N);
     }    
 }

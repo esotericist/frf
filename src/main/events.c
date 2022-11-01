@@ -86,6 +86,10 @@ void events_teardown() {
     GC_free(uvloop);
 }
 
+void events_run() {
+    uv_run(uvloop, UV_RUN_DEFAULT);
+}
+
 #pragma GCC push_options
 #pragma GCC optimize("align-functions=16")
 

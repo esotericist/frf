@@ -7,6 +7,7 @@
 extern uv_loop_t *uvloop;
 void events_initialization();
 void events_teardown();
+void events_run();
 
 
 #endif
