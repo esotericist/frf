@@ -13,6 +13,8 @@ atom(killed)
 atom(callstack_overflow)
 atom(exit)
 
+// this isn't in vm.h because nothing outside of this file should ever do this
+void process_setdead( proc *P );
 
 
 void definelist_add( struct node_state *N, sfs key, sfs value ) {
@@ -34,7 +36,10 @@ struct node_state* newnode() {
     sglib_hashed_iListType_init( new_N->atomtowordtable );
     sglib_hashed_sListType_init( new_N->definetable );
     sglib_hashed_iListType_init( new_N->process_table );
-    new_N->next_pid = 1;
+    new_N->next_pid = 0;
+
+    proc *P = newprocess( new_N );
+    process_setdead( P );    
 
     definelist_add( new_N, "case", "begin dup " );
     definelist_add( new_N, "when", "if pop " );
@@ -361,6 +366,9 @@ void scheduler( struct node_state *N ) {
 
     for( p_ref =sglib_iListType_it_init(&it, N->processlist_dead); p_ref != NULL ; p_ref=sglib_iListType_it_next(&it) ) {
         P = ( proc * )(uintptr_t) p_ref->second.p_val;
+        if( P->pid == 0 ) {
+            continue;
+        }
         procreport(P);
         freeprocess(P);
      }
