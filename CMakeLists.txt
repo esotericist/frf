@@ -9,6 +9,12 @@ add_executable(frf ${sources} ${data})
 
 target_compile_options(frf PUBLIC -g -fcommon -Wall -Wfloat-conversion -Werror-implicit-function-declaration ) # whatever flags you need
 
+if (win32)
+    target_compile_definitions(frf PUBLIC GC_WIN32_PTHREADS )
+else()
+    target_compile_definitions(frf PUBLIC GC_THREADS )
+endif()
+
 target_include_directories(frf PUBLIC src/main)
 
 file(COPY ${data} DESTINATION resources)
