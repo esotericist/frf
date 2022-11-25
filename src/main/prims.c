@@ -64,13 +64,13 @@ prim(push_var) {
 }
 
 prim2(push_stackmark, { ) {
-    push_mark
+    push_stackmark
 }
 
 prim2(stackrange, } ) {
     size_t range, pos;
     for(size_t i = dcount -1; i >= 0; i-- ) {
-        if(dp_is_mark( dstack[i])) {
+        if(dp_is_stackmark( dstack[i])) {
             pos = i;
             break;
         }

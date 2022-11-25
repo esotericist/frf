@@ -114,7 +114,7 @@ sfs formatobject( proc *P , struct datapoint dp ) {
         workingstring = sfscatsfs( workingstring, array_contents);
         
     } else if( dptype == a_type_stackmark ) {
-        workingstring = sfsnew( "mark" );
+        workingstring = sfsnew( "stackmark" );
     } else {
         workingstring = sfscatc( workingstring, "(unknownobject)" );
     }
@@ -185,7 +185,7 @@ void dp_put_var( struct datapoint *dp, size_t v, struct variable_set *vs ) {
     dp->p_val = ( uintptr_t )(struct variable_object*)vobj;
 }
 
-void dp_put_mark( struct datapoint *dp ) {
+void dp_put_stackmark( struct datapoint *dp ) {
     struct dataobject *dobj = newdataobject();
     dobj->typeatom = a_type_stackmark;   
     dp->p_val = ( uintptr_t )(struct dataobject*)dobj;

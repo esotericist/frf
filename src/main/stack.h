@@ -38,7 +38,7 @@ static inline bool dp_is_structure( struct datapoint dp ) {
     return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && ((  ( (struct datapoint*) dp.p_val)->p_val == a_type_array ) || (  ( (struct datapoint*) dp.p_val)->p_val == a_type_tuple ));
 }
 
-static inline bool dp_is_mark( struct datapoint dp ) {
+static inline bool dp_is_stackmark( struct datapoint dp ) {
     return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && (  ( (struct datapoint*) dp.p_val)->p_val == a_type_stackmark );
 }
 
@@ -68,8 +68,8 @@ sfs dp_get_string( struct datapoint dp );
 void dp_put_string( struct datapoint *dp, sfs s );
 size_t dp_get_var( struct datapoint dp, struct variable_set *vs );
 void dp_put_var( struct datapoint *dp, size_t v, struct variable_set *vs );
-static inline size_t dp_get_mark( struct datapoint dp ) { return a_type_stackmark; }
-void dp_put_mark( struct datapoint *dp );
+static inline size_t dp_get_stackmark( struct datapoint dp ) { return a_type_stackmark; }
+void dp_put_stackmark( struct datapoint *dp );
 struct array_span* dp_get_array( struct datapoint dp );
 void dp_put_array( struct datapoint *dp, struct array_span *arr );
 void dp_put_tuple( struct datapoint *dp, struct array_span *arr );
@@ -99,9 +99,9 @@ static inline bool is_true( bool t ){ return t ? true : false; }
 #define push_int(x)      fastexit dp_put_int( &dstack[dcount++], (x) );
 #define push_atom(x)     fastexit dp_put_atom( &dstack[dcount++], (x) );
 #define push_string(x)   fastexit dp_put_string( &dstack[dcount++], (x) );
-#define push_bool(x)   push_atom( is_true(x) ? a_true : a_false );
+#define push_bool(x)     push_atom( is_true(x) ? a_true : a_false );
 #define push_var(x)      fastexit dp_put_var( &dstack[dcount++], (x), P->current_varset );
-#define push_mark        fastexit dp_put_mark( &dstack[dcount++] );
+#define push_stackmark   fastexit dp_put_stackmark( &dstack[dcount++] );
 #define push_arr(x)      fastexit dp_put_array( &dstack[dcount++], (x) );
 #define push_tup(x)      fastexit dp_put_tuple( &dstack[dcount++], (x) );
 
@@ -110,7 +110,7 @@ atom(expected_positive_integer)
 atom(expected_atom)
 atom(expected_string)
 atom(expected_variable)
-atom(expected_mark)
+atom(expected_stackmark)
 atom(expected_structure)
 atom(expected_array)
 atom(expected_tuple)
@@ -135,8 +135,8 @@ atom(expected_tuple)
 
 #define require_structure needstack(1) if( !dp_is_structure( topdp ) ) { stackfault( a_expected_structure ) runtimefault( "error in %zu: expected array or tuple\n")  } struct array_span
 
-#define pop_mark dp_get_mark( pop_dp( P ) )
-#define require_mark needstack(1) if( !dp_is_mark( topdp ) ) { stackfault( a_expected_string ) runtimefault( "error in %zu: expected stackmark\n")  } bool
+#define pop_stackmark dp_get_stackmark( pop_dp( P ) )
+#define require_stackmark needstack(1) if( !dp_is_stackmark( topdp ) ) { stackfault( a_expected_stackmark ) runtimefault( "error in %zu: expected stackmark\n")  } bool
 
 #define pop_bool checktrue( pop_dp( P ) )
 #define require_bool needstack(1) bool
