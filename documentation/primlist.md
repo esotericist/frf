@@ -12,6 +12,8 @@ notation:
 * `✉` indicates invalid/incoherent to implement at all (generally specific to muck frameworks, notes generally not provided)
 * anything otherwise unadorned is either unimplemented, or undocumented.
 
+all primitive names reduced to lowercase, in all circumstances (even otherwise identical primitive names)
+
 groups are not in the same order as in the muf manual due to my opinions on reevance.
 
 at some point i'll produce a specific-to-frf document of all primitives to account for the ones unique to frf.
@@ -24,9 +26,10 @@ at some point i'll produce a specific-to-frf document of all primitives to accou
   SOCKET?    ✉LOCK?      FLOAT?        VARIABLE?   ARRAY?   
  ✦MARK        }          CHECKARGS     REVERSE     LREVERSE 
  ✔️POPN       ✔️PICK      ✔️PUT          ✉DESCR?      SQL? 
-  MARK?      ✔️NIP       ✔️TUCK
+ ✦MARK?      ✔️NIP       ✔️TUCK
 ```
-note: `MARK` in both codebases is actually spelled `{` in actual programs, mark is just the internal name
+note: `MARK` in both codebases is actually spelled `{` in actual programs, mark is just the internal name in muf. in frf, i use `stackmark`.
+`MARK?` -> `stackmark?`
 
 #### data conversion prims
 

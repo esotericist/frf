@@ -135,6 +135,11 @@ prim2(checkistuple, tuple?) {
     push_bool( t );
 }
 
+prim2(checkisstackmark, stackmark?) {
+    bool t = dp_is_stackmark( topdp );
+    push_bool( t );
+}
+
 // #endregion
 
 // #region stackprims
