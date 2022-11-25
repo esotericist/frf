@@ -36,15 +36,6 @@ fcwd "/tests" strcat fgetdir printtest
 
 readline
 )
-debug_on
-messages .
-pid "test" send
-messages .
-receive
-receive
-dup atom?
-exit
-
 
 "bob has " 2 3 + " apples and gave " 1 2 / " to you." 5 array_make array_interpret
 
@@ -52,7 +43,7 @@ exit
 fork pop pid intostr "\n" strcat .
 fork dup if kill then 
 )
-exit
+
 "abcbcba" "b" explode
 "hello world" " " explode
 popn popn
@@ -74,6 +65,13 @@ depth popn
 "a" "b" "c" "d" "e" 3 debug_line put debug_line 
 
 string? number? atom? depth popn
+
+{ "a" "b" "c" }array dup
+2@ . nl.
+"d" swap 2!
+2@ . nl.
+
+exit
 
 : fizz ( i -- i s )
   dup case

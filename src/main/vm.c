@@ -17,14 +17,17 @@ atom(exit)
 void process_setdead( proc *P );
 
 
-void definelist_add( struct node_state *N, sfs key, sfs value ) {
+void definelist_add( struct node_state *N, char* key, char* value ) {
     sfs k = sfsnew(key);
     if ( !(sfscmp( k, sfsempty() ))) {
         return;
     }
+    
+    // append a trailing space, to ensure the contents of the define don't collide with the next token
+    sfs v = sfscatc( sfsnew(value), " " );
     sListType *elem = alloc_slist();
     elem->s = k;
-    elem->ptr = (uintptr_t) (void *)sfsnew(value);
+    elem->ptr = (uintptr_t) (void *)v;
     sglib_hashed_sListType_add( N->definetable, elem );    
 }
 
@@ -41,11 +44,11 @@ struct node_state* newnode() {
     proc *P = newprocess( new_N );
     process_setdead( P );    
 
-    definelist_add( new_N, "case", "begin dup " );
-    definelist_add( new_N, "when", "if pop " );
-    definelist_add( new_N, "end", "break then dup " );
-    definelist_add( new_N, "default", "pop 1 if " );
-    definelist_add( new_N, "endcase", "pop pop 1 until " );
+    definelist_add( new_N, "case", "begin dup" );
+    definelist_add( new_N, "when", "if pop" );
+    definelist_add( new_N, "end", "break then dup" );
+    definelist_add( new_N, "default", "pop 1 if" );
+    definelist_add( new_N, "endcase", "pop pop 1 until" );
     definelist_add( new_N, "}tuple", "} tuple_make" );
     definelist_add( new_N, "}array", "} array_make" );
     definelist_add( new_N, "0@", "0 getitem" );
@@ -60,8 +63,7 @@ struct node_state* newnode() {
     definelist_add( new_N, "3!", "3 setitem" );
     definelist_add( new_N, "4!", "4 setitem" );
     definelist_add( new_N, "5!", "5 setitem" );
-
-    definelist_add( new_N, "", "" );
+    definelist_add( new_N, "nl.", "\"\\n\" ." );
 
     return new_N;
 }

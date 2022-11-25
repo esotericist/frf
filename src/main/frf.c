@@ -21,7 +21,7 @@ sfs readfile( proc *P ) {
      char buffer[BUFSIZ];
 
      getcwd(buffer, BUFSIZ);
-     sfs filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/ipctest.frf" ) );
+     sfs filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/prototype.frf" ) );
      FILE *thefile;
      thefile = fopen( filepath, "r" );
 

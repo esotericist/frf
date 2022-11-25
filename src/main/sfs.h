@@ -61,10 +61,18 @@ sfs sfsnewlen( const char *init, size_t initlen );
 
 sfs sfsright( sfs s, size_t len);
 
+// result = sfs + (len characters from start of cstring t)
 sfs sfscatlen(sfs s, const void *t, size_t len);
+
+// result = sfs s + c string t
 sfs sfscatc(sfs s, const char *t);
+
+// result = sfs s + sfs t
 sfs sfscatsfs(sfs s, const sfs t);
+
+// result = sfs s without leading/trailing characters contained in c string cset
 sfs sfstrim(sfs s, const char *cset);
+
 sfs sfstolower(sfs s);
 sfs sfstoupper(sfs s);
 
