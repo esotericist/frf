@@ -1,5 +1,5 @@
-#ifndef files_H_
-#define files_H_
+#ifndef events_H_
+#define events_H_
 #include "datatypes.h"
 #include "atoms.h"
 #include <uv.h>
