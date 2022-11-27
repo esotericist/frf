@@ -39,6 +39,7 @@ struct node_state* newnode() {
     sglib_hashed_iListType_init( new_N->atomtowordtable );
     sglib_hashed_sListType_init( new_N->definetable );
     sglib_hashed_iListType_init( new_N->process_table );
+    sglib_hashed_iListType_init( new_N->descriptor_table );
     new_N->next_pid = 0;
 
     proc *P = newprocess( new_N );

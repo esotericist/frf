@@ -101,6 +101,8 @@ struct node_state {
     iListType *processlist_inactive;
     iListType *processlist_dead;
 
+    iListType *descriptor_table[ilist_hash_size];
+
     /**
      * process_state interpreter_process
      * 
@@ -213,6 +215,8 @@ typedef struct process_state {
     struct compile_state *compilestate;
 
     qListType *messagequeue;
+
+    iListType *descriptors;
 
     size_t max_slice_ops;
     size_t total_operations;

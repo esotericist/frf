@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <uv.h>
 #include "stack.h"
 #include "vm.h"
 #include "events.h"
@@ -13,6 +14,12 @@
 
 uv_loop_t *uvloop;
 
+
+atom( file_access )
+atom( file_read )
+atom( file_write )
+atom( file_readwrite )
+
 // definitions for various event things
 typedef struct timer {
     sfs timer_handle;
@@ -20,6 +27,69 @@ typedef struct timer {
 } event_timer;
 
 sListType *timer_table[slist_hash_size];
+
+typedef struct descriptor_type {
+    size_t type_atom;
+    proc* owning_process;
+
+} descriptor_type;
+typedef struct file_descriptor {
+    descriptor_type descriptor;
+
+    sfs path;
+
+    uv_buf_t buf[BUFSIZ];
+
+    uv_req_t open_req;
+    uv_req_t read_req;
+    uv_req_t write_req;
+
+} file_descriptor;
+
+void on_file_read( uv_fs_t *req ) {
+    if( req->result < 0 ) {
+        fprintf(stderr, "Read error: %s\n", uv_strerror(req->result));
+    } else if( req->result == 0 ) {
+
+    } else {
+
+    }
+
+}
+
+void on_file_open( uv_fs_t *req ) {
+    if( req->result >= 0 ) {
+        file_descriptor* desc = ((file_descriptor*)req->data);
+        uv_buf_init( desc->buf, BUFSIZ );
+        uv_fs_read( uvloop, &desc->read_req, req->result, desc->buf, 1, -1, on_file_read );
+    } else {
+        fprintf(stderr, "error opening file: %s\n", uv_strerror((int)req->result));
+    }
+}
+
+
+struct file_descriptor* open_file( proc *P, sfs filepath, size_t mode_atom, int flags ) {
+    int filemode;
+    if(mode_atom == a_file_read ) {
+        filemode = O_RDONLY;
+    } else if( mode_atom == a_file_write ) {
+        filemode = O_WRONLY;
+    } else if( mode_atom == a_file_readwrite ) {
+        filemode = O_RDWR;
+    } else {
+        // some error here
+        return;
+    }
+
+    file_descriptor* desc = GC_malloc( sizeof(file_descriptor) );
+    desc->descriptor.type_atom = a_file_access;
+    desc->descriptor.owning_process = P;
+    desc->path = filepath;
+
+    uv_fs_open(uvloop, &desc->open_req, filepath, flags, filemode, on_file_open );
+    desc->open_req.data = desc;
+}
+
 
 // swiped from https://stackoverflow.com/a/47229318 on 2021/11/18
 //
@@ -87,8 +157,47 @@ void events_teardown() {
 }
 
 void events_run() {
-    uv_run(uvloop, UV_RUN_DEFAULT);
+    uv_run(uvloop, UV_RUN_NOWAIT);
 }
+
+void events_on_read( uv_fs_t *req ) {
+
+}
+
+void events_on_open( uv_fs_t *req ) {
+
+}
+
+void events_readfile( sfs arg ) {
+
+    /*
+    sfs to_return = sfsempty();
+
+    char buffer[BUFSIZ];
+
+    getcwd(buffer, BUFSIZ);
+    sfs filepath = sfscatsfs( sfsnew(buffer), sfsnew( "/tests/ipctest.frf" ) );
+
+
+
+    
+
+    FILE *thefile;
+    thefile = fopen( filepath, "r" );
+
+    while( fgets( buffer, BUFSIZ, thefile ) != NULL &&  P->errorstate == 0  ) {
+        to_return = sfsnew( buffer );
+        // parse_line( P, to_return);
+
+    }
+     
+    fclose(thefile);
+    */
+
+    //return to_return;
+
+}
+
 
 #pragma GCC push_options
 #pragma GCC optimize("align-functions=16")
