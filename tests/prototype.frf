@@ -36,14 +36,14 @@ fcwd "/tests" strcat fgetdir printtest
 
 readline
 )
-
+(
 "bob has " 2 3 + " apples and gave " 1 2 / " to you." 5 array_make array_interpret
-
+)
 (
 fork pop pid intostr "\n" strcat .
 fork dup if kill then 
 )
-
+(
 "abcbcba" "b" explode
 "hello world" " " explode
 popn popn
@@ -71,8 +71,8 @@ string? number? atom? depth popn
 "d" swap 2!
 2@ . nl.
 
-exit
-
+depth pop
+)
 : fizz ( i -- i s )
   dup case
     3 % 0 = when
@@ -99,12 +99,13 @@ exit
     swap "\n" strcat . "" swap
   then
   1 + dup 4 pick >
-until
+ until
 pop . pop
 ;
 
 137 fizzbuzz
-
+nl.
+exit
 (
 1 begin 
     dup 3 = if
