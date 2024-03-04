@@ -1,0 +1,7 @@
+"/sys/class/power_supply/BAT1/current_now" 0 "\n" freadto 4 - strcut pop
+"/sys/class/power_supply/BAT1/voltage_now" 0 "\n" freadto 4 - strcut pop
+stoi swap stoi * dup 1000000 / intostr swap 1000000 % intostr
+"." swap 3 strcut pop strcat strcat
+"<txt>" swap strcat "W</txt>" strcat .
+exit
+
