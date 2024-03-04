@@ -25,8 +25,9 @@
    pop
 ;
 
-( "README.md" readtest 
-printtest )
+ "README.md" readtest 
+printtest 
+exit
 (
 "words\n" fcwd "/tests/asdf.txt" strcat 0 fwrite debug_line pop 
 "more words\n" fcwd "/tests/asdf.txt" strcat fappend debug_line pop 
@@ -73,39 +74,7 @@ string? number? atom? depth popn
 
 depth pop
 )
-: fizz ( i -- i s )
-  dup case
-    3 % 0 = when
-      dup 5 % 0 = if
-        "fizzbuzz"
-      else 
-        "fizz"
-      then
-    end
-    5 % 0 = when
-      "buzz"
-    end
-    default
-      intostr
-    end
-  endcase
-  " " strcat
-;
 
-: fizzbuzz( i -- )
-"" 1 begin
-  fizz rot swap strcat swap
-  dup 10 % 0 = if
-    swap "\n" strcat . "" swap
-  then
-  1 + dup 4 pick >
- until
-pop . pop
-;
-
-137 fizzbuzz
-nl.
-exit
 (
 1 begin 
     dup 3 = if

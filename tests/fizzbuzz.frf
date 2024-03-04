@@ -1,0 +1,33 @@
+: fizz ( i -- i s )
+  dup case
+    3 % 0 = when
+      dup 5 % 0 = if
+        "fizzbuzz"
+      else 
+        "fizz"
+      then
+    end
+    5 % 0 = when
+      "buzz"
+    end
+    default
+      intostr
+    end
+  endcase
+  " " strcat
+;
+
+: fizzbuzz( i -- )
+"" 1 begin
+  fizz rot swap strcat swap
+  dup 10 % 0 = if
+    swap "\n" strcat . "" swap
+  then
+  1 + dup 4 pick >
+ until
+pop . pop
+;
+
+137 fizzbuzz
+nl.
+exit
