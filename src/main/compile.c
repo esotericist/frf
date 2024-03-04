@@ -207,9 +207,12 @@ atom(exit)
 atom(var)
 atom2(var_store, var!)
 atom2(exclaim, !)
+atom(verbose_on)
+atom(verbose_off)
 
 atom(unexpected_variable)
 atom(unrecognized_token)
+atom(unrecogized_directive)
 
 // set in frf.c
 // used for comparisons in tokenize
@@ -296,6 +299,35 @@ typedef void (*call_prim)(proc *p);
 
 
 #define continue_str workingstring = sfscatc( workingstring, nextchar )
+
+sfs parse_directive( proc *P, sfs inputstr) {
+    sfs workingstring = sfsempty();
+    sfs nextchar = sfsempty();
+    while ( sfslen( inputstr ) )
+    {
+        nextchar = sfsnewlen( inputstr, 1 );
+        inputstr = sfsright( inputstr, sfslen( inputstr) - 1 );
+        
+        size_t nextchar_a = verifyatom( nextchar );
+        if( nextchar_a == a__space ) {
+            if( verifyatom( workingstring ) == a_verbose_on ) {
+                P->verbose = true;
+            } else if( verifyatom( workingstring ) == a_verbose_off ) {
+                P->verbose = false;
+            } else {
+                printf( "error: unrecognized directive %s ", workingstring );
+                process_reset(P, a_unrecogized_directive);
+                return inputstr;
+            }
+            workingstring = sfsempty();
+            pmode.directive = false;
+            return inputstr;
+        } else {
+            continue_str;
+        }
+    }
+    return inputstr;
+}
 
 sfs parse_atom( proc *P, sfs inputstr ) {
     sfs workingstring = sfsempty();
@@ -390,7 +422,8 @@ sfs parse_immed(proc *P,  sfs inputstr ) {
         } else if( nextchar_a == a__dsign ) {
             if( sfslen( workingstring) == 0 ) {
                 pmode.directive = true;
-                return sfscatc( nextchar, inputstr );
+                return inputstr;
+                // return sfscatc( nextchar, inputstr );
             } else {
                 continue_str;
             }
@@ -462,16 +495,18 @@ sfs parse_compile(proc *P,  sfs inputstr ) {
                     sfs wordname = atomtostring( P->current_codestream->nameatom );
                     size_t icount = P->current_codestream->instructioncount;
                     size_t vcount = P->current_codestream->vars->count;
-                    printf( "word added: %s, codestream size: %zu, variables: %zu.\n", wordname , icount, vcount );
-                    if( vcount ) {
-                        sfs vlist = sfsnew( "variable list: " );
-                        for( size_t i = 0; i < vcount; i++ ) {
-                            if( i> 0 ) {
-                                vlist = sfscatc(vlist, ", " );
+                    if( P->verbose ) {
+                        printf( "word added: %s, codestream size: %zu, variables: %zu.\n", wordname , icount, vcount );
+                        if( vcount ) {
+                            sfs vlist = sfsnew( "variable list: " );
+                            for( size_t i = 0; i < vcount; i++ ) {
+                                if( i> 0 ) {
+                                    vlist = sfscatc(vlist, ", " );
+                                }
+                                vlist = sfscatsfs(vlist, atomtostring(P->current_codestream->vars->vars[i].name));
                             }
-                            vlist = sfscatsfs(vlist, atomtostring(P->current_codestream->vars->vars[i].name));
+                            printf( "%s\n", vlist);
                         }
-                        printf( "%s\n", vlist);
                     }
                     pmode.compile = false;
                     popcallstackframe(P);
@@ -515,7 +550,9 @@ void define_newword( proc *P,  sfs inputstr ) {
     if( wordname ) {
         pushcallstackframe(P);
         P->current_codestream=newcodeset( P->node, 1024, wordname );
-        printf( "compiling new word: %s.\n", atomtostring(wordname) );
+        if( P->verbose ) {
+            printf( "compiling new word: %s.\n", atomtostring(wordname) );
+        }
     }
     
     
@@ -557,7 +594,7 @@ void parse_line( proc *P, sfs input ) {
         } else if ( pmode.atom ) {
             workingstring = parse_atom( P, workingstring );
         } else if ( pmode.directive ) {
-            // workingstring = parse_directive( workingstring );
+            workingstring = parse_directive( P, workingstring );
         } else if ( pmode.string ) {
             workingstring = parse_string( P, workingstring );
         } else if ( pmode.compile ) {

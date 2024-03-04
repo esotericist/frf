@@ -198,13 +198,15 @@ proc* newprocess( struct node_state *N ) {
 }
 
 void procreport( proc *P ) {
-    sfs resultstring = sfscatprintf( sfsempty(), "[%zu] stack: %s. total operations: %zu", P->pid, dump_stack(P), P->total_operations );
-    if( P->errorstate == a_exit ) {
-        resultstring = sfscatc( resultstring, " OK" );
-    } else {
-        resultstring = sfscatsfs( sfscatc( resultstring, " " ), sfstoupper( atomtostring( P->errorstate ) ) );
+    if( P->verbose ){ 
+        sfs resultstring = sfscatprintf( sfsempty(), "[%zu] stack: %s. total operations: %zu", P->pid, dump_stack(P), P->total_operations );
+        if( P->errorstate == a_exit ) {
+            resultstring = sfscatc( resultstring, " OK" );
+        } else {
+            resultstring = sfscatsfs( sfscatc( resultstring, " " ), sfstoupper( atomtostring( P->errorstate ) ) );
+        }
+        printf( "%s\n\n", resultstring );    
     }
-    printf( "%s\n\n", resultstring );    
 }
 
 void freeprocess( proc *P ) {

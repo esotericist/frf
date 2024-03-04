@@ -222,6 +222,7 @@ typedef struct process_state {
     iListType *activitylist_ptr;
 
     bool debugmode;
+    bool verbose;
 
 } proc;
 

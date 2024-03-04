@@ -1,3 +1,4 @@
+$verbose_on
 : readtest (s -- arr )
   var! myfile
   fcwd "/" strcat myfile @ strcat myfile !
