@@ -648,6 +648,13 @@ prim(ctoi)
     require_string str = pop_string;
     push_int( str[0]);
 }
+
+prim(stoi)
+{
+    require_string str = pop_string;
+    push_int( atoi(str) );
+}
+
 // #endregion
 
 // #region debugging
