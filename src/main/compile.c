@@ -7,8 +7,6 @@
 #include <string.h>
 #include "vm.h"
 
-int errorstate = 0;
-
 #define pmode P->compilestate->parsemode
 #define vset P->current_codestream->vars
 
@@ -552,7 +550,7 @@ void parse_line( proc *P, sfs input ) {
     sfs s_space = sfsnew( " " );
     input = sfstrim( sfstrim( input, s_space ), "\n" );
     sfs workingstring = sfscatc( input, s_space );
-    while( sfslen( workingstring) > 0  && errorstate == 0  ) {
+    while( sfslen( workingstring) > 0  && P->errorstate == 0  ) {
         if( pmode.comment ) {
             workingstring = parse_comment( P, workingstring );
 
