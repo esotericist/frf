@@ -291,7 +291,7 @@ prim(fwrite) {
     push_int( statbuf.st_size );
 }
 
-// ( s:filename i:initialoffset s:delimiter -- i:finaloffset s:outputstring )
+// ( s:filename i:initialoffset s:delimiter -- s:outputstring i:finaloffset )
 prim(freadto) {
     require_string delimiter = pop_string;
     require_int initialoffset = pop_int;
