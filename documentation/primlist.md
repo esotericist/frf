@@ -14,7 +14,7 @@ notation:
 
 all primitive names reduced to lowercase, in all circumstances (even otherwise identical primitive names)
 
-groups are not in the same order as in the muf manual due to my opinions on reevance.
+groups are not in the same order as in the muf manual due to my opinions on relevance.
 
 at some point i'll produce a specific-to-frf document of all primitives to account for the ones unique to frf.
 
@@ -24,7 +24,7 @@ at some point i'll produce a specific-to-frf document of all primitives to accou
  ✔️ROT        ✔️ROTATE     SORT         ✔️SWAP       ✔️DEPTH     
  ✔️NUMBER?    ✉DBREF?    ✔️INT?         ✔️STRING?     ADDRESS?
   SOCKET?    ✉LOCK?      FLOAT?        VARIABLE?   ARRAY?   
- ✦MARK        }          CHECKARGS     REVERSE     LREVERSE 
+ ✦MARK       ✔️}          CHECKARGS     REVERSE     LREVERSE 
  ✔️POPN       ✔️PICK      ✔️PUT          ✉DESCR?      SQL? 
  ✦MARK?      ✔️NIP       ✔️TUCK
 ```
@@ -34,17 +34,24 @@ note: `MARK` in both codebases is actually spelled `{` in actual programs, mark 
 #### data conversion prims
 
 ```markdown
-  ATOI     DBREF     INT    ✔️INTOSTR    ✔️CTOI     ITOC
+ ✦ATOI     DBREF     INT    ✔️INTOSTR    ✔️CTOI     ITOC
   STOD     DTOS      FLOAT   STRTOF      FTOSTR   ITOH
   HTOI     FTOSTRC
 ```
 
+needs a little bit of consistency-doing.
+`ATOI` -> `stoi`
+
 #### variable prims
 ```markdown
- ✔️VAR     VARIABLE     VARIABLE?     LVAR     LOCALVAR
+ ✔️VAR    ✉VARIABLE     VARIABLE?    ✉LVAR    ✉LOCALVAR
  ✔️@      ✔️!           ✉ME           ✉TRIGGER ✉COMMAND
  ✗DESCR  ✔️VAR!
 ```
+
+in this case, `VARIABLE` while looking like it shouldn't be muck-specific, is mostly there to interact with muck-specific localized data that is initialized at process instantiation (me, loc, etc). past that, it relies on there being a numbered list of variable slots already extant, which is not how i'm doing things.
+
+`LVAR` relies on a presumption of semantic relationship between local and global variables that i don't intend to replicate. (and `LOCALVAR` is just the `LVAR` version of `VARIABLE`)
 
 #### control structure prims
 ```markdown
@@ -62,11 +69,13 @@ note: `MARK` in both codebases is actually spelled `{` in actual programs, mark 
 ```
 
 
+the `READ_WANTS_` set relates to assumptions about `READ`, which i don't intend to be implementing as seen in muck (due to it being tied to the player connection concept)
+
 #### math and logic prims
 
 only ints implemented so far. floats (internally in the form of doubles) will come.
 
-implementation detail: integers have two bits less than normal maxint, due to tagged pointer usage. this is unlikely to matter for most purposes, but should be born in mind.
+implementation detail: integers have two bits less than normal maxint, due to tagged pointer usage. this is unlikely to matter for most purposes, but should be borne in mind.
 ```markdown
  ✔️+   ✔️-   ✔️*   ✔️/   ✔️%   ✔️<   ✔️>   ✔️=   ✔️!=   ✔️<=   ✔️>=    ^
   RANDOM     BITOR     BITXOR     BITSHIFT     ++     -- 
@@ -109,7 +118,7 @@ i'm opting for `[orientation]action[count][case insensitivity]`, as shown below.
 
 ```markdown
 ✔️ARRAY_MAKE          ARRAY_MAKE_DICT    ✔️ARRAY_INTERPRET
- ARRAY_EXPLODE      ✔️ARRAY_VALS          ARRAY_KEYS         ✔️ARRAY_COUNT
+✔️ARRAY_EXPLODE      ✔️ARRAY_VALS          ARRAY_KEYS         ✔️ARRAY_COUNT
  ARRAY_FIRST         ARRAY_LAST          ARRAY_PREV          ARRAY_NEXT
 ✔️ARRAY_GETITEM      ✔️ARRAY_SETITEM      ✔️ARRAY_APPENDITEM    ARRAY_SORT
  ARRAY_GETRANGE      ARRAY_SETRANGE      ARRAY_INSERTRANGE  ✔️ARRAY?
