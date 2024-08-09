@@ -38,9 +38,28 @@ extern sfs opstring;
 
 struct node_state *N;
 
+int is_invalid_fd( int num ) {
+    return fcntl(0, F_GETFD) == -1 || errno == EBADF;
+}
+
 void frf_initialization() {
     GC_INIT();
     atoms_init();
+
+
+    // todo: somehow track which ones of these broke, and make this
+    // information somehow usable to the node
+
+    if( is_invalid_fd(0) ) {
+        open("/dev/null", O_RDONLY);
+    }
+    if( is_invalid_fd(1) ) {
+        open("/dev/null", O_WRONLY);
+    }
+    if( is_invalid_fd(2) ) {
+        open("/dev/null", O_RDWR);
+    }
+
     numstring = sfsnew( "0123456789" );
     opstring = sfsnew( "-$%" );
     events_initialization();
