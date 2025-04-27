@@ -1,7 +1,22 @@
-"/sys/class/power_supply/BAT1/current_now" 0 "\n" freadto 4 - strcut pop
-"/sys/class/power_supply/BAT1/voltage_now" 0 "\n" freadto 4 - strcut pop
-stoi swap stoi * dup 1000000 / intostr swap 1000000 % intostr
-"." swap 3 strcut pop strcat strcat
-"<txt>" swap strcat "W</txt>" strcat .
+
+: main
+  var current
+  var voltage
+  "/sys/class/power_supply/BAT1/current_now" 0 "\n" freadto 4 - strcut pop stoi current !
+  "/sys/class/power_supply/BAT1/voltage_now" 0 "\n" freadto 4 - strcut pop stoi voltage !
+  current @ voltage @ * dup 1000000 / intostr swap 1000000 % intostr
+  "." swap 3 strcut pop strcat strcat
+  "<txt>" swap strcat "W</txt>" strcat 
+  "<tool>\n\n current: " 
+  current @ 1000 / intostr strcat
+  "." strcat
+  current @ 1000 % intostr strcat
+  ", voltage: " strcat 
+  voltage @ 1000 / intostr strcat
+  "." strcat
+  voltage @ 1000 % intostr strcat 
+  "</tool>" strcat strcat .  
+;
+main
 exit
 
