@@ -524,6 +524,7 @@ prim(stringpfx) {
 prim(strcut)
 {
     require_int index = pop_int;
+    index--;
     require_string str = pop_string;
     size_t len = sfslen(str);
     if (index < 0)
