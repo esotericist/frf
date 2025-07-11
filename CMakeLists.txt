@@ -7,7 +7,7 @@ file(GLOB_RECURSE data         resources/*)
 
 add_executable(frf ${sources} ${data})
 
-target_compile_options(frf PUBLIC -g -fcommon -Wall -Wfloat-conversion -Werror-implicit-function-declaration ) # whatever flags you need
+target_compile_options(frf PUBLIC -g -O0 -fcommon -Wall -Wfloat-conversion -Werror-implicit-function-declaration ) # whatever flags you need
 
 if (win32)
     target_compile_definitions(frf PUBLIC GC_WIN32_PTHREADS )
