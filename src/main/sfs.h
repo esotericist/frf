@@ -72,6 +72,8 @@ sfs sfscatsfs(sfs s, const sfs t);
 
 // result = sfs s without leading/trailing characters contained in c string cset
 sfs sfstrim(sfs s, const char *cset);
+sfs sfstrimlead(sfs s, const char *cset);
+sfs sfstrimtail(sfs s, const char *cset);
 
 sfs sfstolower(sfs s);
 sfs sfstoupper(sfs s);

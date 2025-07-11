@@ -125,6 +125,36 @@ sfs sfstrim(sfs s, const char *cset) {
     return new_s;
 }
 
+sfs sfstrimlead( sfs s, const char *cset ) {
+    sfs new_s = alloc_sfs( sfslen( s ) );
+    char *start, *end, *sp, *ep;
+    size_t len;
+
+    sp = start = s;
+    ep = end = s+sfslen(s)-1;
+    while(sp <= end && strchr(cset, *sp)) sp++;
+    len = (sp > ep) ? 0 : ((ep-sp)+1);
+    memcpy(new_s, sp, len);
+    new_s[len] = '\0';
+    sfssetlen(new_s,len);
+    return new_s;
+}
+
+sfs sfstrimtail( sfs s, const char *cset ) {
+    sfs new_s = alloc_sfs( sfslen( s ) );
+    char *start, *end, *sp, *ep;
+    size_t len;
+
+    sp = start = s;
+    ep = end = s+sfslen(s)-1;
+    while(ep > sp && strchr(cset, *ep)) ep--;
+    len = (sp > ep) ? 0 : ((ep-sp)+1);
+    memcpy(new_s, sp, len);
+    new_s[len] = '\0';
+    sfssetlen(new_s,len);
+    return new_s;
+}
+
 
 sfs sfstolower(sfs s) {
     sfs new_s = alloc_sfs( sfslen (s) );
