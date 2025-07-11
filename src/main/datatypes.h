@@ -232,6 +232,7 @@ static inline struct array_span* newarrayspan( size_t len ) { struct array_span*
 void newcompilestate( proc *P );
 struct code_set * newcodeset ( struct node_state *N, size_t size, size_t wordatom );
 void append_cp( proc *P, size_t v );
+void append_cpf( proc *P, double v );
 struct variable_set* new_varset();
 struct variable_set* grow_variable_set(struct variable_set *vs);
 

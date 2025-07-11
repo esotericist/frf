@@ -92,14 +92,22 @@ struct variable_set* grow_variable_set(struct variable_set *vs) {
     return new_vs;
 }
 
-void append_cp( proc *P, size_t v ) {
+void grow_codestream( proc *P ) {
     if( P->current_codestream->instructioncount > P->current_codestream->length - 10) {
         size_t size = P->current_codestream->length + 1024;
         P->current_codestream = GC_realloc( P->current_codestream , sizeof( struct code_set ) + sizeof ( struct code_point ) * (size) );
         P->current_codestream->length = size;
     }
+}
 
+void append_cp( proc *P, size_t v ) {
+    grow_codestream( P );
     P->current_codestream->codestream[P->current_codestream->instructioncount++].u_val = v;
+}
+
+void append_cpf( proc *P, double v ) {
+    grow_codestream( P );
+    P->current_codestream->codestream[P->current_codestream->instructioncount++].d_val = v;
 }
 
 void newcompilestate( proc *P ) {

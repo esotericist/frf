@@ -198,6 +198,7 @@ bool checkflowcontrol(proc *P, size_t maybeop ) {
 
 
 atom(push_int)
+atom(push_float)
 atom(push_string)
 atom(push_atom)
 atom(push_var)
@@ -222,8 +223,14 @@ sfs opstring;
 void tokenize( proc *P, sfs input ) {
     sfs c = sfsnewlen( input, 1 );
     if( sfsmatchcount ( numstring, c ) || ( sfslen(input) >=2 && sfsmatchcount( opstring, c ) ) ) {
-        append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
-        append_cp( P, atoi( input ) );
+        if( sfsmatchcount( input, sfsnew(".") ) ) {
+            append_prim( P, a_push_float );
+            append_cpf( P, atof( input ) );
+        } else {
+            append_prim( P, a_push_int );
+            // append_cp( P, ( (uintptr_t)(void *) atomtoprim( P->node, a_push_int  ) ) | 3 );
+            append_cp( P, atoi( input ) );
+        }
         return;
     }
 

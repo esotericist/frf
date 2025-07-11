@@ -71,7 +71,11 @@ sfs formatobject( proc *P , struct datapoint dp ) {
     } else if( dptype == a_type_integer ) {
         workingstring = sfsfromlonglong ( dp_get_int( dp ) );
     } else if( dptype == a_type_float ) {
-        // workingstring = sfscatprintf( workingstring, "%d" , dp_get_float( dp ) );
+        workingstring =  sfstrimtail( sfscatprintf( workingstring, "%f" , dp_get_float( dp ) ) , "0" );
+        if ( !sfscmp( sfsright(workingstring, 1), sfsnew(".") ) ) {
+            workingstring = sfscatc( workingstring, "0" );
+        };
+
     } else if( dptype == a_type_atom ) {
         sfs tempstring = atomtostring( dp_get_atom( dp ) );
         workingstring = sfscatprintf( workingstring, "'%s'", tempstring );
@@ -129,6 +133,9 @@ int64_t cp_get_int( struct code_point *cp ) {
 size_t cp_get_atom( struct code_point *cp ) {
     return (size_t) cp->u_val;
 }
+double cp_get_float( struct code_point *cp) {
+    return (double) cp->d_val;
+}
 
 sfs cp_get_string( struct code_point *cp ) {
     return atomtostring( cp_get_atom( cp ) );
@@ -151,6 +158,18 @@ size_t dp_get_atom( struct datapoint dp ) {
 void dp_put_atom( struct datapoint *dp, size_t a ) {
     dp->u_val = a << 2 | 2;
 } 
+
+double dp_get_float( struct datapoint dp ) {
+    struct dataobject *dobj = (struct dataobject*)( uintptr_t ) dp.p_val;
+    return dobj->d_val;
+}
+
+void dp_put_float( struct datapoint *dp, double f ) {
+    struct dataobject *dobj = newdataobject();
+    dobj->d_val = f;
+    dobj->typeatom = a_type_float;
+    dp->p_val = ( uintptr_t )(struct dataobject*)dobj;
+}
 
 
 sfs dp_get_string( struct datapoint dp ) {

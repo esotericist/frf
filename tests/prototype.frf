@@ -26,8 +26,22 @@ $verbose_on
    pop
 ;
 
+
+debug_on
+5 .
+1.5 intostr
+
+2 2 +
+1 1.2 +
+1.2 2 +
+1.2 1.2 +
+"\n\n\n" .
+0.05 intostr . "\n" .
+
+
+(
  "README.md" readtest 
-printtest 
+printtest )
 exit
 (
 "words\n" fcwd "/tests/asdf.txt" strcat 0 fwrite debug_line pop 

@@ -45,6 +45,12 @@ prim(push_int)
     struct code_point *cp = &P->current_codestream->codestream[pos];
     push_int( cp_get_int(cp));
 }
+prim(push_float)
+{
+    size_t pos = P->currentop++;
+    struct code_point *cp = &P->current_codestream->codestream[pos];
+    push_float( cp_get_float(cp) );
+}
 
 prim(push_atom)
 {
@@ -375,11 +381,43 @@ prim(fork) {
 // #endregion
 
 // #region math prims
+
+
 prim2(add, +)
 {
-    require_int second = pop_int;
-    require_int first = pop_int;
-    push_int( first + second );
+    needstack(2)
+
+    struct datapoint second_num = pop_dp ( P );
+    size_t second_type = checktype( second_num );
+    
+    struct datapoint first_num = pop_dp ( P );   
+    size_t first_type = checktype ( first_num );
+
+    if( first_type == a_type_integer && second_type == a_type_integer ) {
+        push_int( dp_get_int ( first_num ) + dp_get_int( second_num ) );
+    } else {
+
+        double second_float;
+        if( second_type == a_type_integer ) {
+            second_float = (double) dp_get_int( second_num );
+        } else if ( second_type == a_type_float ) {
+            second_float = dp_get_float (second_num);
+        } else {
+            stackfault( a_expected_number );
+            runtimefault( "error in %zu: expected int or float\n" )\
+        }
+        double first_float;
+        if( first_type == a_type_integer ) {
+            first_float = (double) dp_get_int( first_num );
+        } else if ( first_type == a_type_float ) {
+            first_float = dp_get_float (first_num);
+        } else {
+            stackfault( a_expected_number );
+            runtimefault( "error in %zu: expected int or float\n" )\
+        }
+
+        push_float( first_float + second_float ) ;
+    }
 }
 
 prim2(minus, -)
@@ -640,8 +678,23 @@ prim(subst) {
 
 prim(intostr)
 {
-    require_int num = pop_int;
-    push_string( sfsfromlonglong(num));
+    needstack(1)
+    if( dp_is_int( topdp ) ) {
+        int64_t num = pop_int;
+        push_string( sfsfromlonglong(num));
+        return;
+    }
+    if( dp_is_float( topdp ) ) {
+        double num = pop_float;
+        sfs output = sfstrimtail( sfscatprintf( sfsempty(), "%f", num ) , "0" );
+
+        if ( !sfscmp( sfsright(output, 1), sfsnew(".") ) ) {
+            output = sfscatc( output, "0" );
+        };
+        push_string( output );
+        return;
+    }
+    stackfault( a_expected_number )
 }
 
 prim(ctoi)

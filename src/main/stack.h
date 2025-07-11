@@ -9,6 +9,7 @@ sfs dump_stack( proc *P );
 
 // fetching values from a codestream (via codepoint)
 int64_t cp_get_int( struct code_point *cp );
+double cp_get_float( struct code_point *cp );
 size_t cp_get_atom( struct code_point *cp );
 sfs cp_get_string( struct code_point *cp );
 
@@ -18,6 +19,9 @@ static inline bool dp_is_int( struct datapoint dp ) {
 }
 static inline bool dp_is_atom( struct datapoint dp ) {
     return ( dp.u_val & 3 ) == 2 ;
+}
+static inline bool dp_is_float( struct datapoint dp ) {
+    return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && (  ( (struct datapoint*) dp.p_val)->p_val == a_type_float );
 }
 static inline bool dp_is_string( struct datapoint dp ) {
     return ( dp.u_val ) && ( ( dp.u_val & 3 ) == 0 ) && (  ( (struct datapoint*) dp.p_val)->p_val == a_type_string );
@@ -62,6 +66,8 @@ sfs formatobject( proc *P , struct datapoint dp );
 //
 int64_t dp_get_int( struct datapoint dp );
 void dp_put_int( struct datapoint *dp, uint64_t i );
+double dp_get_float( struct datapoint dp );
+void dp_put_float( struct datapoint *dp, double f );
 size_t dp_get_atom( struct datapoint dp );
 void dp_put_atom( struct datapoint *dp, size_t a );
 sfs dp_get_string( struct datapoint dp );
@@ -97,6 +103,7 @@ static inline struct datapoint pop_dp(proc *P ) {
 static inline bool is_true( bool t ){ return t ? true : false; }
 
 #define push_int(x)      fastexit dp_put_int( &dstack[dcount++], (x) );
+#define push_float(x)    fastexit dp_put_float( &dstack[dcount++], (x) );
 #define push_atom(x)     fastexit dp_put_atom( &dstack[dcount++], (x) );
 #define push_string(x)   fastexit dp_put_string( &dstack[dcount++], (x) );
 #define push_bool(x)     push_atom( is_true(x) ? a_true : a_false );
@@ -107,6 +114,8 @@ static inline bool is_true( bool t ){ return t ? true : false; }
 
 atom(expected_integer)
 atom(expected_positive_integer)
+atom(expected_float)
+atom(expected_number)
 atom(expected_atom)
 atom(expected_string)
 atom(expected_variable)
@@ -117,6 +126,8 @@ atom(expected_tuple)
 
 #define pop_int dp_get_int( pop_dp( P ) )
 #define require_int needstack(1) if( !dp_is_int( topdp ) ) { stackfault( a_expected_integer ) runtimefault( "error in %zu: expected integer\n")  } int64_t
+#define pop_float dp_get_float( pop_dp( P ) )
+#define require_float needstack(1) if( !dp_is_float( topdp ) ) { stackfault( a_expected_float ) runtimefault( "error in %zu: expected float\n")  } int64_t
 
 #define pop_atom dp_get_atom( pop_dp( P  ) )
 #define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) runtimefault( "error in %zu: expected atom\n")  } size_t
