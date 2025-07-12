@@ -389,6 +389,7 @@ prim(fork) {
         } else continue;
 
 #define not_both_int( x, y) \
+    return;\
     } while(0);\
     double x; \
     if( x##_type == a_type_integer ) { \
