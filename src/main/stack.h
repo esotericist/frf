@@ -129,6 +129,16 @@ atom(expected_tuple)
 #define pop_float dp_get_float( pop_dp( P ) )
 #define require_float needstack(1) if( !dp_is_float( topdp ) ) { stackfault( a_expected_float ) runtimefault( "error in %zu: expected float\n")  } int64_t
 
+#define require_num(x)\
+    needstack(1)\
+    struct datapoint x##_num = pop_dp( P );\
+    size_t x##_type = checktype( x##_num );\
+    if( !( x##_type == a_type_integer || x##_type == a_type_float ) )\
+    {\
+            stackfault( a_expected_number );\
+            runtimefault( "error in %zu: expected int or float\n" )\
+    }
+
 #define pop_atom dp_get_atom( pop_dp( P  ) )
 #define require_atom needstack(1) if( !dp_is_atom( topdp ) ) { stackfault( a_expected_atom ) runtimefault( "error in %zu: expected atom\n")  } size_t
 

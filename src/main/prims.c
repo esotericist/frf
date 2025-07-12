@@ -383,41 +383,37 @@ prim(fork) {
 // #region math prims
 
 
+#define if_both_nums_int( x, y ) \
+    do {\
+        if( x##_type == a_type_integer && y##_type == a_type_integer ) { \
+        } else continue;
+
+#define not_both_int( x, y) \
+    } while(0);\
+    double x; \
+    if( x##_type == a_type_integer ) { \
+        x = (double) dp_get_int( x##_num ); \
+    } else { \
+        x = dp_get_float( x##_num ); \
+    } \
+    double y; \
+    if( y##_type == a_type_integer ) { \
+        y = (double) dp_get_int( y##_num ); \
+    } else { \
+        y = dp_get_float( y##_num ); \
+    }
+
+    
 prim2(add, +)
 {
-    needstack(2)
+    require_num( second )
+    require_num( first )
 
-    struct datapoint second_num = pop_dp ( P );
-    size_t second_type = checktype( second_num );
-    
-    struct datapoint first_num = pop_dp ( P );   
-    size_t first_type = checktype ( first_num );
-
-    if( first_type == a_type_integer && second_type == a_type_integer ) {
+    if_both_nums_int( first, second ) 
         push_int( dp_get_int ( first_num ) + dp_get_int( second_num ) );
-    } else {
 
-        double second_float;
-        if( second_type == a_type_integer ) {
-            second_float = (double) dp_get_int( second_num );
-        } else if ( second_type == a_type_float ) {
-            second_float = dp_get_float (second_num);
-        } else {
-            stackfault( a_expected_number );
-            runtimefault( "error in %zu: expected int or float\n" )\
-        }
-        double first_float;
-        if( first_type == a_type_integer ) {
-            first_float = (double) dp_get_int( first_num );
-        } else if ( first_type == a_type_float ) {
-            first_float = dp_get_float (first_num);
-        } else {
-            stackfault( a_expected_number );
-            runtimefault( "error in %zu: expected int or float\n" )\
-        }
-
-        push_float( first_float + second_float ) ;
-    }
+    not_both_int( first, second )
+        push_float( first + second ) ;
 }
 
 prim2(minus, -)
