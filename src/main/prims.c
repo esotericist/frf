@@ -385,8 +385,7 @@ prim(fork) {
 
 #define if_both_nums_int( x, y ) \
     do {\
-        if( x##_type == a_type_integer && y##_type == a_type_integer ) { \
-        } else continue;
+        if( !( x##_type == a_type_integer && y##_type == a_type_integer ) ) continue;
 
 #define not_both_int( x, y) \
     return;\
