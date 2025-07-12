@@ -459,6 +459,16 @@ prim2(modulo, %)
     require_int first = pop_int;
     push_int( first % second );
 }
+
+prim( floor ) {
+    require_num(val);
+    if( val_type == a_type_integer ) {
+        push_int( dp_get_int ( val_num ) );
+    } else {
+        push_int( (int) dp_get_float( val_num ) );
+    }
+}
+
 // #endregion
 
 // #region logic prims
