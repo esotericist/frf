@@ -418,23 +418,38 @@ prim2(add, +)
 
 prim2(minus, -)
 {
-    require_int second = pop_int;
-    require_int first = pop_int;
-    push_int( first - second );
+    require_num( second )
+    require_num( first )
+
+    if_both_nums_int( first, second ) 
+        push_int( dp_get_int ( first_num ) - dp_get_int( second_num ) );
+
+    not_both_int( first, second )
+        push_float( first + second ) ;
 }
 
 prim2(mult, *)
 {
-    require_int second = pop_int;
-    require_int first = pop_int;
-    push_int( first * second );
+    require_num( second )
+    require_num( first )
+
+    if_both_nums_int( first, second ) 
+        push_int( dp_get_int ( first_num ) * dp_get_int( second_num ) );
+
+    not_both_int( first, second )
+        push_float( first * second ) ;
 }
 
 prim2(div, /)
 {
-    require_int second = pop_int;
-    require_int first = pop_int;
-    push_int( first / second );
+    require_num( second )
+    require_num( first )
+
+    if_both_nums_int( first, second ) 
+        push_int( dp_get_int ( first_num ) / dp_get_int( second_num ) );
+
+    not_both_int( first, second )
+        push_float( first / second ) ;
 }
 
 prim2(modulo, %)
