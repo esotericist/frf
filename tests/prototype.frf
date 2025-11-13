@@ -27,13 +27,13 @@ $verbose_on
 ;
 
 
-debug_on
+( debug_on )
 
-3 floor .
-3.1 floor .
- 1 1 + .
- 1.0 1 + .
- 1 1.0 + .
+3 floor .nl
+3.1 floor .nl
+ 1 1 + .nl
+ 1.0 1 + .nl
+ 1 1.0 + .nl
  
 
 (
@@ -80,9 +80,9 @@ depth popn
 string? number? atom? depth popn
 
 { "a" "b" "c" }array dup
-2@ . nl.
+2@ .nl
 "d" swap 2!
-2@ . nl.
+2@ .nl
 
 depth pop
 )

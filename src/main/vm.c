@@ -63,7 +63,7 @@ struct node_state* newnode() {
     definelist_add( new_N, "3!", "3 setitem" );
     definelist_add( new_N, "4!", "4 setitem" );
     definelist_add( new_N, "5!", "5 setitem" );
-    definelist_add( new_N, "nl.", "\"\\n\" ." );
+    definelist_add( new_N, ".nl", ". \"\\n\" ." );
 
     return new_N;
 }

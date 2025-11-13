@@ -29,5 +29,5 @@ pop . pop
 ;
 
 137 fizzbuzz
-nl.
+nl .
 exit
