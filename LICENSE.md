@@ -1,8 +1,8 @@
-documentation/mufman.txt was fetched from https://github.com/protomuck/protomuck
-i make no claims to copyright to contents of that file
+src/sglib.h has its license at the beginning of the file
 
-propgrid.pb had no license specified by the creator, but it was clearly intended for use in accordance with the usual conventions of that community.
-see: https://www.purebasic.fr/english/viewtopic.php?f=12&t=50014
+documentation/mufman.txt was fetched from https://github.com/protomuck/protomuck
+i make no claims to copyright to contents of that file, and its license is stored
+in the same directory
 
 all files not otherwise specified are:
 
