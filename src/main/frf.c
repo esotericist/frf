@@ -46,20 +46,6 @@ void frf_initialization() {
     GC_INIT();
     atoms_init();
 
-
-    // todo: somehow track which ones of these broke, and make this
-    // information somehow usable to the node
-
-    if( is_invalid_fd(0) ) {
-        open("/dev/null", O_RDONLY);
-    }
-    if( is_invalid_fd(1) ) {
-        open("/dev/null", O_WRONLY);
-    }
-    if( is_invalid_fd(2) ) {
-        open("/dev/null", O_RDWR);
-    }
-
     numstring = sfsnew( "0123456789" );
     opstring = sfsnew( "-$%" );
     events_initialization();
@@ -73,6 +59,19 @@ void frf_teardown() {
 void node_bootstrap( sfs filepath ) {
     N = newnode();
     finalizeprims( N );
+
+    if( is_invalid_fd(0) ) {
+        open("/dev/null", O_RDONLY);
+        N->frf_stdin = -2;
+    }
+    if( is_invalid_fd(1) ) {
+        open("/dev/null", O_WRONLY);
+        N->frf_stdout = -2;
+    }
+    if( is_invalid_fd(2) ) {
+        open("/dev/null", O_RDWR);
+        N->frf_stderr = -2;
+    }
 
     if (sfslen( sfstrim( filepath, " " ) ) == 0 ) {
         filepath = sfsnew( "tests/prototype.frf" );

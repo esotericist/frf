@@ -41,6 +41,10 @@ struct node_state* newnode() {
     sglib_hashed_iListType_init( new_N->process_table );
     new_N->next_pid = 0;
 
+    new_N->frf_stdin = -1;
+    new_N->frf_stdout = -1;
+    new_N->frf_stderr = -1;
+
     proc *P = newprocess( new_N );
     process_setdead( P );    
 

@@ -101,6 +101,10 @@ struct node_state {
     iListType *processlist_inactive;
     iListType *processlist_dead;
 
+    int frf_stdin;
+    int frf_stdout;
+    int frf_stderr;    
+
     /**
      * process_state interpreter_process
      * 
