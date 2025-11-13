@@ -11,6 +11,11 @@
 #include "structures.h"
 #include "prims.h"
 
+// stupid intellisenseless
+#ifndef S_IFDIR
+    #define S_IFDIR 0
+#endif
+
 uv_loop_t *uvloop;
 
 // definitions for various event things
